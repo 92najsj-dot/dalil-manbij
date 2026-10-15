@@ -188,9 +188,23 @@ async function loadAdminPending(){
    const title=row.title||row.name||'بدون عنوان';
    const desc=adminDescription(row,adminActiveTable);
    const created=row.created_at?new Date(row.created_at).toLocaleString('ar-SY'):'';
-   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'</div></div><div class="adminactions"><button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button></div></article>';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'</div></div><div class="adminactions"><button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button><button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
   }).join('');
  }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الطلبات. سجّل الخروج ثم الدخول مجدداً لتحديث صلاحيات الإدارة.</div>';}
+}
+async function deleteAdminItem(table,id){
+ if(!currentUser||!db||(currentUser.app_metadata&&currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if(['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
+ if(!window.confirm('حذف نهائي؟ سيتم حذف المحتوى من قاعدة البيانات ولا يمكن التراجع.'))return;
+ try{
+  const {data,error}=await db.from(table).delete().eq('id',id).select('id,image_urls');
+  if(error)throw error;
+  if(!data||!data.length){toast('لم يتم الحذف؛ تحقق من الصلاحيات أو حالة المحتوى.');return}
+  const urls=data[0].image_urls||[];
+  const paths=urls.map(u=>{try{return new URL(u).pathname.split('/storage/v1/object/public/manbij-images/')[1]}catch(_){return null}}).filter(Boolean);
+  if(paths.length){const rm=await db.storage.from('manbij-images').remove(paths);if(rm.error)console.warn('Image cleanup failed:',rm.error.message)}
+  toast('تم حذف المحتوى.');await loadAdminPending();await loadData();
+ }catch(e){console.error(e);toast('تعذّر الحذف: '+(e.message||'خطأ غير معروف'))}
 }
 async function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
