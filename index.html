@@ -53,7 +53,7 @@ const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
 const AREAS=['منبج','أبو قلقل','الخفسة','مسكنة','العريمة','ريف منبج الشرقي','ريف منبج الغربي','القرى والبلدات الأخرى'];
 let db=null,currentUser=null,activeCat='الكل',condition='الكل',businesses=[],categories=[],listings=[],requests=[];
 const $=id=>document.getElementById(id);
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function esc(v){return String((v == null ? '' : v)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',4200)}
 function phoneDigits(s){return String(s||'').replace(/[^0-9]/g,'').replace(/^00/,'')}
 function emojiFor(cat){const c=String(cat||'');return ({'محلات':'🏪','مطاعم ومقاهي':'☕','أطباء ومراكز طبية':'🩺','صيدليات':'💊','عقارات ومقاولات':'🏠','سيارات ونقل':'🚗','تعليم وتدريب':'📚','زراعة وخدمات ريفية':'🌾','إلكترونيات':'📱','أثاث ومنزل':'🛋️','ملابس':'👕','خدمات':'🧰','أخرى':'🛍️'})[c]||'🏪'}
@@ -69,7 +69,7 @@ async function loadData(){
   const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await Promise.all([
    db.auth.getSession(),db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),db.from('businesses').select('id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured').eq('status','active').order('is_featured',{ascending:false}).order('name'),db.from('listings').select('id,title,description,price,category,area,item_condition,contact_phone,status,created_at').eq('status','active').order('created_at',{ascending:false}),db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at').eq('status','active').order('created_at',{ascending:false})
   ]);
-  if(sessionErr)throw sessionErr;currentUser=session?.user||null;updateAccountUI();
+  if(sessionErr)throw sessionErr;currentUser=(session ? session.user : undefined)||null;updateAccountUI();
   if(catsErr)console.warn('categories:',catsErr.message);categories=cats||[];
   if(bizErr)console.warn('businesses:',bizErr.message);businesses=biz||[];
   if(adsErr)console.warn('listings:',adsErr.message);listings=ads||[];
@@ -78,7 +78,7 @@ async function loadData(){
   const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
   if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
-  db.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;updateAccountUI()});
+  db.auth.onAuthStateChange((_event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI()});
  }catch(e){console.error(e);setStatus(false,'تعذر الاتصال بقاعدة البيانات');$('businessGrid').innerHTML=empty('ما قدرنا نحمل دليل المحلات. تحقق من الإنترنت وإعدادات Supabase ثم أعد المحاولة.');$('listingGrid').innerHTML=empty('ما قدرنا نحمل الإعلانات حالياً.');$('requestList').innerHTML=empty('ما قدرنا نحمل الطلبات حالياً.');toast('تعذر الاتصال: '+(e.message||'خطأ غير معروف'))}
 }
 function renderCategories(){const all=`<button class="cat ${activeCat==='الكل'?'active':''}" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button>`;const rest=categories.map(c=>`<button class="cat ${activeCat===c.name?'active':''}" data-cat="${esc(c.name)}" onclick="chooseCat(this)"><span class="emoji">${esc(c.icon||emojiFor(c.name))}</span><strong>${esc(c.name)}</strong></button>`).join('');$('categories').innerHTML=all+rest}
@@ -87,12 +87,12 @@ function setCondition(v,el){condition=v;document.querySelectorAll('.pill').forEa
 function matchesArea(x){const a=$('areaFilter').value;return a==='الكل'||x.area===a||x.village===a}
 function matchesQuery(x){const q=$('searchInput').value.trim().toLocaleLowerCase('ar');return !q||[x.name,x.title,x.description,x.category,x.area,x.village,x.address].some(v=>String(v||'').toLocaleLowerCase('ar').includes(q))}
 function renderAll(){renderBusinesses();renderListings()}
-function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الكل'||categories.find(c=>c.id===x.category_id)?.name===activeCat)&&matchesArea(x)&&matchesQuery({...x,category:categories.find(c=>c.id===x.category_id)?.name}));$('businessGrid').innerHTML=arr.length?arr.map(x=>{const cat=categories.find(c=>c.id===x.category_id);const contact=x.whatsapp||x.phone;const wa=phoneDigits(contact);return `<article class="card"><div class="photo">${esc(cat?.icon||emojiFor(cat?.name))}</div><div class="cardbody"><h3>${esc(x.name)}</h3><div class="tag" style="align-self:flex-start">${esc(cat?.name||'محل')}</div><div class="meta">📍 ${esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,180))}</div>`:''}<div class="cardfoot">${contact?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${wa}" target="_blank" rel="noopener noreferrer">واتساب</a>`:''}${x.phone?`<a class="btn primary" style="padding:7px 10px;font-size:12px;text-decoration:none" href="tel:${esc(x.phone)}">اتصال</a>`:''}${x.map_url?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="${esc(x.map_url)}" target="_blank" rel="noopener noreferrer">الخريطة</a>`:''}</div></div></article>`}).join(''):empty('ما في محلات مفعّلة تطابق بحثك حالياً. فيك تضيف محلك ليظهر بعد المراجعة.')}
+function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الكل'||(categories.find(c=>c.id===x.category_id)||{}).name===activeCat)&&matchesArea(x)&&matchesQuery({...x,category:(categories.find(c=>c.id===x.category_id)||{}).name}));$('businessGrid').innerHTML=arr.length?arr.map(x=>{const cat=categories.find(c=>c.id===x.category_id);const contact=x.whatsapp||x.phone;const wa=phoneDigits(contact);return `<article class="card"><div class="photo">${esc((cat ? cat.icon : undefined)||emojiFor((cat ? cat.name : undefined)))}</div><div class="cardbody"><h3>${esc(x.name)}</h3><div class="tag" style="align-self:flex-start">${esc((cat ? cat.name : undefined)||'محل')}</div><div class="meta">📍 ${esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,180))}</div>`:''}<div class="cardfoot">${contact?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${wa}" target="_blank" rel="noopener noreferrer">واتساب</a>`:''}${x.phone?`<a class="btn primary" style="padding:7px 10px;font-size:12px;text-decoration:none" href="tel:${esc(x.phone)}">اتصال</a>`:''}${x.map_url?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="${esc(x.map_url)}" target="_blank" rel="noopener noreferrer">الخريطة</a>`:''}</div></div></article>`}).join(''):empty('ما في محلات مفعّلة تطابق بحثك حالياً. فيك تضيف محلك ليظهر بعد المراجعة.')}
 function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||x.category===activeCat)&&(condition==='الكل'||x.item_condition===condition)&&matchesArea(x)&&matchesQuery(x));$('listingGrid').innerHTML=arr.length?arr.map(x=>`<article class="card"><div class="photo">${emojiFor(x.category)}</div><div class="cardbody"><h3>${esc(x.title)}</h3><div class="price">${Number(x.price||0).toLocaleString('en-US')} ل.س</div><div class="meta">📍 ${esc(x.area||'منبج')} · ${esc(x.category||'أخرى')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل</a>`:''}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
 function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<div class="service"><span class="emoji">🔎</span><div><strong>${esc(r.title)}</strong><small>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'} · ${esc(r.area||'منبج')}</small></div></div>`).join(''):empty('لا توجد طلبات مفعّلة حالياً. أضف طلبك بعد تسجيل الدخول.')}
 function updateAccountUI(){
  $('accountBtn').textContent=currentUser?'حسابي ✓':'حسابي';
- const isAdmin=currentUser?.app_metadata?.role==='admin';
+ const isAdmin=(currentUser && currentUser.app_metadata && currentUser.app_metadata.role)==='admin';
  const panel=$('adminPanel');
  if(panel)panel.style.display=isAdmin?'block':'none';
  if(isAdmin)loadAdminPending();
@@ -104,7 +104,7 @@ function openModal(type){const f=$('modalForm');$('modalbg').style.display='flex
  if(type==='request'){$('modalTitle').textContent='إضافة طلب جديد';html=`<label>شو عم تدور عليه؟<input class="field" name="title" required minlength="3" maxlength="120" placeholder="مثلاً: غسالة مستعملة"></label><label>تفاصيل إضافية<textarea class="field" name="description" rows="3" maxlength="3000"></textarea></label><div class="two"><label>الميزانية بالليرة السورية<input class="field" name="budget" type="number" min="0" step="1"></label><label>القسم<select class="field" name="category"><option>أخرى</option>${categories.map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label></div><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><button class="btn primary" type="submit">إرسال الطلب للمراجعة</button>`}
  if(type==='business'){$('modalTitle').textContent='إضافة محل أو خدمة';html=`<label>اسم المحل أو الخدمة<input class="field" name="name" required minlength="2" maxlength="160"></label><label>التصنيف<select class="field" name="category_id" required>${categoryOptions()}</select></label><label>وصف مختصر<textarea class="field" name="description" rows="3" maxlength="5000"></textarea></label><div class="two"><label>رقم الهاتف<input class="field" name="phone" inputmode="tel"></label><label>واتساب<input class="field" name="whatsapp" inputmode="tel"></label></div><label>العنوان<input class="field" name="address" maxlength="500" placeholder="الحي أو الشارع"></label><div class="two"><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>القرية / الحي<input class="field" name="village" maxlength="160"></label></div><label>رابط الموقع على الخريطة (اختياري)<input class="field" name="map_url" type="url" placeholder="https://..."></label><button class="btn primary" type="submit">إرسال للمراجعة</button><small>سيظهر المحل بعد موافقة الإدارة. لا تضف معلومات شخصية لا تريد نشرها.</small>`}
  f.innerHTML=html}
-async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.');return}const f=e.currentTarget;const d=Object.fromEntries(new FormData(f).entries());const submitter=e.submitter;try{if(d.email&&d.password){const mode=submitter?.value||'login';let result;if(mode==='signup')result=await db.auth.signUp({email:d.email,password:d.password});else result=await db.auth.signInWithPassword({email:d.email,password:d.password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){toast('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب ثم سجّل الدخول.');closeModal();return}currentUser=result.data.user||result.data.session?.user||null;updateAccountUI();toast(mode==='signup'?'تم إنشاء الحساب وتسجيل الدخول.':'أهلاً بعودتك!');closeModal();await loadData();return}
+async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.');return}const f=e.currentTarget;const d=Object.fromEntries(new FormData(f).entries());const submitter=e.submitter;try{if(d.email&&d.password){const mode=(submitter ? submitter.value : undefined)||'login';let result;if(mode==='signup')result=await db.auth.signUp({email:d.email,password:d.password});else result=await db.auth.signInWithPassword({email:d.email,password:d.password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){toast('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب ثم سجّل الدخول.');closeModal();return}currentUser=result.data.user||result.data.(session ? session.user : undefined)||null;updateAccountUI();toast(mode==='signup'?'تم إنشاء الحساب وتسجيل الدخول.':'أهلاً بعودتك!');closeModal();await loadData();return}
  if(!currentUser){toast('سجّل الدخول أولاً.');return}
  let table,payload;if(f.querySelector('[name="item_condition"]')){table='listings';payload={user_id:currentUser.id,title:d.title,description:d.description||null,price:Number(d.price),category:d.category,area:d.area,item_condition:d.item_condition,contact_phone:d.contact_phone||null,status:'pending'}}else if(f.querySelector('[name="category_id"]')){table='businesses';payload={owner_id:currentUser.id,category_id:d.category_id,name:d.name,description:d.description||null,phone:d.phone||null,whatsapp:d.whatsapp||null,address:d.address||null,area:d.area,village:d.village||null,map_url:d.map_url||null,status:'pending'}}else{table='wanted_requests';payload={user_id:currentUser.id,title:d.title,description:d.description||null,budget:d.budget===''?null:Number(d.budget),category:d.category||'أخرى',area:d.area,status:'pending'}}
  const {error}=await db.from(table).insert(payload);if(error)throw error;toast('وصلنا طلبك بنجاح، وسيظهر بعد مراجعة الإدارة.');closeModal();}catch(err){console.error(err);let msg=err.message||'خطأ غير معروف';if(/row-level security|permission denied|not allowed/i.test(msg))msg='قاعدة البيانات رفضت العملية بسبب سياسة الصلاحيات. نحتاج مراجعة سياسة الجدول في Supabase.';toast('ما تمت العملية: '+msg)}}
@@ -118,14 +118,14 @@ function selectAdminTab(table){
  loadAdminPending();
 }
 function adminEscape(value){
- return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ return String((value == null ? '' : value)).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function adminDescription(row,table){
  if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null].filter(Boolean).join(' · ');
  return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null].filter(Boolean).join(' · ');
 }
 async function loadAdminPending(){
- if(!db||currentUser?.app_metadata?.role!=='admin')return;
+ if(!db||(currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin')return;
  const box=$('adminItems');if(!box)return;
  box.innerHTML='<div class="empty">عم نحمل الطلبات المعلّقة…</div>';
  try{
@@ -137,7 +137,7 @@ async function loadAdminPending(){
   }));
   const countNode=$('adminPendingCount');
   if(countNode)countNode.textContent=counts.reduce((a,b)=>a+b,0)+' بانتظار المراجعة';
-  if(!data?.length){box.innerHTML='<div class="empty">ما في '+adminEscape(adminTableLabels[adminActiveTable])+' بانتظار المراجعة حالياً.</div>';return}
+  if(!(data ? data.length : undefined)){box.innerHTML='<div class="empty">ما في '+adminEscape(adminTableLabels[adminActiveTable])+' بانتظار المراجعة حالياً.</div>';return}
   box.innerHTML=data.map(row=>{
    const title=row.title||row.name||'بدون عنوان';
    const desc=adminDescription(row,adminActiveTable);
@@ -147,13 +147,13 @@ async function loadAdminPending(){
  }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الطلبات. سجّل الخروج ثم الدخول مجدداً لتحديث صلاحيات الإدارة.</div>';}
 }
 async function reviewAdminItem(table,id,status){
- if(currentUser?.app_metadata?.role!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
  if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
  if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟'))return;
  try{
   const {data,error}=await db.from(table).update({status}).eq('id',id).eq('status','pending').select('id,status');
   if(error)throw error;
-  if(!data?.length){toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.');return}
+  if(!(data ? data.length : undefined)){toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.');return}
   toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى.');
   await loadAdminPending();
  }catch(e){console.error(e);toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف'))}
