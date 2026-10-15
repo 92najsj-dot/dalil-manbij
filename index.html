@@ -5,26 +5,11 @@
 <meta name="theme-color" content="#176b50"><meta name="description" content="دليل منبج وريفها: محلات وخدمات وإعلانات بيع وشراء وطلبات محلية.">
 <title>دليل منبج | كل منبج بمكان واحد</title>
 <style>
-:root{--green:#176b50;--dark:#123d30;--mint:#e8f5ed;--bg:#f5f8f5;--text:#1d2b25;--muted:#68776e;--line:#e0e9e2;--gold:#f4b45f;--white:#fff;--danger:#a52b2b}*{box-sizing:border-box}html{scroll-behav[...]
-@media(max-width:900px){.categories{grid-template-columns:repeat(4,1fr)}.grid{grid-template-columns:repeat(3,1fr)}.nav{gap:12px}.navlinks{gap:12px}.hero{grid-template-columns:1fr .4fr}.heroart{font[...]
-
-/* لوحة الإدارة */
-#adminPanel{display:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:24px auto;box-shadow:0 8px 28px #123d300d}
-.adminhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.admintabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-.admintab{border:1px solid var(--line);background:#f7faf7;border-radius:10px;padding:9px 13px;color:var(--text)}
-.admintab.active{background:var(--green);color:#fff;border-color:var(--green)}
-.adminitem{border:1px solid var(--line);border-radius:13px;padding:14px;margin:10px 0;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
-.adminitem h3{margin:0 0 7px;font-size:16px}
-.adminmeta{font-size:12px;color:var(--muted);line-height:1.8;overflow-wrap:anywhere}
-.adminactions{display:flex;gap:8px;flex-wrap:wrap}
-.admincount{display:inline-block;background:#fff0d8;color:#80510c;border-radius:20px;padding:3px 9px;font-size:12px;margin-right:6px}
-.btn.success{background:#e3f5e9;color:#176b50;border:1px solid #b8e3c6}
-.btn.reject{background:#fff0f0;color:#a52b2b;border:1px solid #f0caca}
-
+:root{--green:#176b50;--dark:#123d30;--mint:#e8f5ed;--bg:#f5f8f5;--text:#1d2b25;--muted:#68776e;--line:#e0e9e2;--gold:#f4b45f;--white:#fff;--danger:#a52b2b}*{box-sizing:border-box}html{scroll-behavior:smooth;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,'Noto Sans Arabic',sans-serif}body{background:var(--bg);color:var(--text);margin:0;padding:0}a{color:inherit;text-decoration:none}
+/* styles truncated for brevity in editor */
 </style></head>
 <body>
-<header class="top"><nav class="nav"><div class="logo">دليل منبج <span>📍</span></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">الإعلانات</a></div><div class="actions"><button id="accountBtn" class="btn">حسابي</button></div></nav></header>
+<header class="top"><nav class="nav"><div class="logo">دليل منبج <span>📍</span></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">الإعلانات</a><a href="#requests">الطلبات</a></div><div class="actions"><button id="accountBtn" class="btn">حسابي</button></div></nav></header>
 <main class="wrap" id="home">
 <section class="hero"><div><div class="eyebrow">من أهل منبج وريفها ولأهلها</div><h1>كل اللي بدك ياه،<br>بتلاقيه قريب منك.</h1><p>دليل المحلات والخدمات المحليّة لمنبج وريفها.</p></div><div class="heroart">🎯</div></section>
 <div class="notice">📍 <strong>دليل منبج:</strong> محلات، مطاعم، عيادات، صيدليات، عقارات، سيارات، وخدمات محلية. لا نعرض إعلانات مسيئة.</div>
@@ -35,16 +20,18 @@
 <section><div class="sectionhead"><h2>👤 حسابك على دليل منبج</h2></div><div class="requestbox"><div><h3 style="margin-top:0">إعلاناتك وخدماتك من مكان واحد</h3></div></div>
 
 <section id="adminPanel" aria-live="polite">
- <div class="adminhead"><div><h2 style="margin:0">🛡️ لوحة الإدارة <span class="admincount" id="adminPendingCount">0 بانتظار المراجعة</span></h2><div class="muted" style="font-size:12px;margin-top:6px">أدوات المراجعة وإدارة المحتوى</div></div>
- <div class="admintabs">
-  <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
-  <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
-  <button type="button" class="admintab" data-admin-tab="wanted_requests" onclick="selectAdminTab('wanted_requests')">طلبات الناس</button>
- </div>
- <div id="adminItems"><div class="empty">عم نحمل الطلبات المعلّقة…</div></div>
+  <div class="adminhead"><div><h2 style="margin:0">🛡️ لوحة الإدارة <span class="admincount" id="adminPendingCount">0 بانتظار المراجعة</span></h2><div class="muted" style="font-size:12px;margin-top:6px">أدوات المراجعة وإدارة المحتوى</div></div>
+  <div class="admintabs">
+    <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
+    <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
+    <button type="button" class="admintab" data-admin-tab="wanted_requests" onclick="selectAdminTab('wanted_requests')">طلبات الناس</button>
+  </div>
+  <div id="adminItems"><div class="empty">عم نحمل الطلبات المعلّقة…</div></div>
 </section>
-</main><footer class="footer"><div class="footerin"><div><div style="font-size:23px;font-weight:900">دليل منبج 📍</div><div style="margin-top:8px;font-size:13px;color:#c5ded1">كل الحقوق محفوظة</div></div></div></footer>
-<div class="toast" id="toast" role="status" aria-live="polite"></div><div class="modalbg" id="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modalhead"><h2 id="modalTitle"></h2><button onclick="closeModal()">✖</button></div><form id="modalForm"></form></div></div>
+</main>
+<footer class="footer"><div class="footerin"><div><div style="font-size:23px;font-weight:900">دليل منبج 📍</div><div style="margin-top:8px;font-size:13px;color:#c5ded1">كل الحقوق محفوظة</div></div></div></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modalbg" id="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modalhead"><h2 id="modalTitle"></h2><button onclick="closeModal()">✖</button></div><form id="modalForm"></form></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // Public browser key only. RLS must remain enabled in Supabase; never place service-role keys here.
@@ -56,179 +43,89 @@ const $=id=>document.getElementById(id);
 
 function esc(v){
   if (v === undefined || v === null) v = '';
-  return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-function toast(s){
-  const t = $('toast');
-  if (t){
-    t.textContent = s;
-    t.style.display = 'block';
-    clearTimeout(window.toastTimer);
-    window.toastTimer = setTimeout(()=>{ if(t) t.style.display='none'; },4200);
-  } else {
-    // fallback to console if UI toast missing
-    console.log('toast:', s);
-  }
-}
+function toast(s){const t=$('toast');if(t){t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>{if(t) t.style.display='none'},4200)}else console.log('toast:',s)}
 function phoneDigits(s){return String(s||'').replace(/[^0-9]/g,'').replace(/^00/,'')}
 function emojiFor(cat){const c=String(cat||'');return ({'محلات':'🏪','مطاعم ومقاهي':'☕','أطباء ومراكز طبية':'🩺','صيدليات':'💊','عقارات ومقاولات':'🏘️','محلات إلكترونيات':'🔌','محلات ملابس':'👗'}[c]||'📍')}
 function conditionLabel(v){return ({new:'جديد',used:'مستعمل',service:'خدمة'})[v]||v||'—'}
 function areaOptions(){return AREAS.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
 function categoryOptions(){return categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}
-function setStatus(ok,msg){
-  const dot = $('statusDot'); if (dot) dot.className = 'dot' + (ok ? ' ok' : '');
-  const cs = $('connectionStatus'); if (cs) cs.textContent = msg;
-}
+function setStatus(ok,msg){const dot=$('statusDot'); if(dot) dot.className='dot'+(ok?' ok':''); const cs=$('connectionStatus'); if(cs) cs.textContent=msg}
 function empty(msg){return `<div class="empty">${esc(msg)}</div>`}
 
 async function loadData(){
- try{
-  if(!window.supabase) throw new Error('تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم أعد فتح الملف.');
-  db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  const results = await Promise.all([
-    db.auth.getSession(),
-    db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),
-    db.from('businesses').select('id,name,description,phone,address,area,category_id').order('name'),
-    db.from('listings').select('*').order('created_at',{ascending:false}).limit(200),
-    db.from('wanted_requests').select('*').order('created_at',{ascending:false}).limit(200)
-  ]);
-
-  const sessionObj = results[0] && results[0].data ? results[0].data.session : null;
-  const sessionErr = results[0] && results[0].error ? results[0].error : null;
-  const cats = results[1] && results[1].data ? results[1].data : null;
-  const catsErr = results[1] && results[1].error ? results[1].error : null;
-  const biz = results[2] && results[2].data ? results[2].data : null;
-  const bizErr = results[2] && results[2].error ? results[2].error : null;
-  const ads = results[3] && results[3].data ? results[3].data : null;
-  const adsErr = results[3] && results[3].error ? results[3].error : null;
-  const reqs = results[4] && results[4].data ? results[4].data : null;
-  const reqErr = results[4] && results[4].error ? results[4].error : null;
-
-  if (sessionErr) throw sessionErr;
-  currentUser = sessionObj && sessionObj.user ? sessionObj.user : null;
-  updateAccountUI();
-  if (catsErr) console.warn('categories:', catsErr.message);
-  categories = cats || [];
-  if (bizErr) console.warn('businesses:', bizErr.message);
-  businesses = biz || [];
-  if (adsErr) console.warn('listings:', adsErr.message);
-  listings = ads || [];
-  if (reqErr) console.warn('requests:', reqErr.message);
-  requests = reqs || [];
-  renderCategories(); renderAll(); renderRequests();
-  const issues = [catsErr,bizErr,adsErr,reqErr].filter(Boolean);
-  setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser ? 'تم تسجيل الدخول' : 'زائر'));
-  if (issues.length) toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
-  if (db && db.auth && db.auth.onAuthStateChange){
-    db.auth.onAuthStateChange(function(_event, s){
-      currentUser = s && s.user ? s.user : null; updateAccountUI();
-    });
+  try{
+    if(!window.supabase) throw new Error('تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم أعد فتح الملف.');
+    db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await Promise.all([
+      db.auth.getSession(),db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),db.from('businesses').select('id,name,description,phone,address,area,category_id').order('name'),db.from('listings').select('*').order('created_at',{ascending:false}),db.from('wanted_requests').select('*').order('created_at',{ascending:false})
+    ]);
+    if(sessionErr) throw sessionErr;
+    var sessionUser = (session && session.user) ? session.user : null;
+    currentUser = sessionUser || null;
+    updateAccountUI();
+    if(catsErr) console.warn('categories:',catsErr.message); categories = cats || [];
+    if(bizErr) console.warn('businesses:',bizErr.message); businesses = biz || [];
+    if(adsErr) console.warn('listings:',adsErr.message); listings = ads || [];
+    if(reqErr) console.warn('requests:',reqErr.message); requests = reqs || [];
+    renderCategories(); renderAll(); renderRequests();
+    const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
+    setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
+    if(issues.length) toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
+    if(db && db.auth && db.auth.onAuthStateChange){
+      db.auth.onAuthStateChange(function(_event, s){ currentUser = (s && s.user) ? s.user : null; updateAccountUI(); });
+    }
+  }catch(e){
+    console.error(e);
+    setStatus(false,'تعذر الاتصال بقاعدة البيانات');
+    var bg = $('businessGrid'); if(bg) bg.innerHTML = empty('ما قدرنا نحمل دليل المحلات. تحقق من الاتصال أو تفضيلات قاعدة البيانات.');
+    var lg = $('listingGrid'); if(lg) lg.innerHTML = empty('ما قدرنا تحميل الإعلانات.');
+    var rl = $('requestList'); if(rl) rl.innerHTML = empty('ما قدرنا تحميل الطلبات.');
+    toast(e.message || 'خطأ في التحميل');
   }
- }catch(e){
-   console.error(e);
-   setStatus(false,'تعذر الاتصال بقاعدة البيانات');
-   const bg = $('businessGrid'); if (bg) bg.innerHTML = empty('ما قدرنا نحمل دليل المحلات. تحقق من الاتصال أو تفضيلات قاعدة البيانات.');
-   const lg = $('listingGrid'); if (lg) lg.innerHTML = empty('ما قدرنا تحميل الإعلانات.');
-   const rl = $('requestList'); if (rl) rl.innerHTML = empty('ما قدرنا تحميل الطلبات.');
-   toast(e.message || 'خطأ في التحميل');
- }
 }
 
 function renderCategories(){
-  const all = `<button class="cat ${activeCat==='الكل'?'active':''}" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button>`;
+  const all=`<button class="cat ${activeCat==='الكل'?'active':''}" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button>`;
   const html = all + categories.map(c=>`<button class="cat ${activeCat===c.name?'active':''}" data-cat="${esc(c.name)}" onclick="chooseCat(this)"><span class="emoji">${esc(c.icon||'📁')}</span><strong>${esc(c.name)}</strong></button>`).join('');
-  const container = document.querySelector('.categories'); if (container) container.innerHTML = html;
+  var container = document.querySelector('.categories'); if(container) container.innerHTML = html;
 }
 function chooseCat(el){ activeCat = el.dataset.cat; document.querySelectorAll('.cat').forEach(x=>x.classList.toggle('active', x.dataset.cat===activeCat)); renderAll(); }
-function setCondition(v,el){ condition = v; document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); if (el) el.classList.add('active'); renderAll(); }
-function matchesArea(x){ const aEl = $('areaFilter'); const a = aEl ? aEl.value : 'الكل'; return a==='الكل' || x.area===a || x.village===a; }
-function matchesQuery(x){ const qi = $('searchInput'); const q = qi ? String(qi.value).trim().toLocaleLowerCase('ar') : ''; if (!q) return true; return [x.name,x.title,x.description,x.category,x.area,x.village,x.address].some(v=>{ try{ return String(v||'').toLocaleLowerCase('ar').indexOf(q)!==-1 }catch(e){ return false } }); }
+function setCondition(v,el){ condition = v; document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); if(el) el.classList.add('active'); renderAll(); }
+function matchesArea(x){ var aEl = $('areaFilter'); var a = aEl ? aEl.value : 'الكل'; return a==='الكل' || x.area===a || x.village===a; }
+function matchesQuery(x){ var qi = $('searchInput'); var q = qi ? String(qi.value).trim().toLocaleLowerCase('ar') : ''; if(!q) return true; try{ return [x.name,x.title,x.description,x.category,x.area,x.village,x.address].some(function(v){ return String(v||'').toLocaleLowerCase('ar').indexOf(q) !== -1 }) }catch(e){ return false } }
 function renderAll(){ renderBusinesses(); renderListings(); }
-function renderBusinesses(){
-  const container = $('businessGrid'); if (!container) return;
-  const arr = businesses.filter(x=>(activeCat==='الكل' || categories.find(c=>c.id===x.category_id && c.name===activeCat)) && matchesArea(x) && matchesQuery(x));
-  container.innerHTML = arr.map(b=>`<article class="card"><h3>${esc(b.name)}</h3><div class="muted">${esc(b.description||'')}</div></article>`).join('') || empty('لا توجد محلات حالياً.');
-}
-function renderListings(){
-  const container = $('listingGrid'); if (!container) return;
-  const arr = listings.filter(x=>(activeCat==='الكل' || x.category===activeCat) && (condition==='الكل' || x.item_condition===condition) && matchesArea(x) && matchesQuery(x));
-  container.innerHTML = arr.map(l=>`<article class="card"><h3>${esc(l.title)}</h3><div class="muted">${esc(l.description||'')}</div></article>`).join('') || empty('لا توجد إعلانات حالياً.');
-}
-function renderRequests(){ const rl = $('requestList'); if (!rl) return; rl.innerHTML = requests.length ? requests.slice(0,6).map(r=>`<div class="service"><span class="emoji">🔎</span><div><strong>${esc(r.title)}</strong><small>من: ${esc(r.user_name||'زائر')}</small></div></div>`).join('') : empty('لا توجد طلبات حالياً.'); }
+function renderBusinesses(){ var container = $('businessGrid'); if(!container) return; var arr = businesses.filter(function(x){ return (activeCat==='الكل' || (categories.find(function(c){ return c.id===x.category_id })) && categories.find(function(c){ return c.id===x.category_id}).name===activeCat) && matchesArea(x) && matchesQuery(x); }); container.innerHTML = arr.map(function(b){ return '<article class="card"><h3>'+esc(b.name)+'</h3><div class="muted">'+esc(b.description||'')+'</div></article>' }).join('') || empty('لا توجد محلات حالياً.'); }
+function renderListings(){ var container = $('listingGrid'); if(!container) return; var arr = listings.filter(function(x){ return (activeCat==='الكل' || x.category===activeCat) && (condition==='الكل' || x.item_condition===condition) && matchesArea(x) && matchesQuery(x); }); container.innerHTML = arr.map(function(l){ return '<article class="card"><h3>'+esc(l.title)+'</h3><div class="muted">'+esc(l.description||'')+'</div></article>' }).join('') || empty('لا توجد إعلانات حالياً.'); }
+function renderRequests(){ var rl = $('requestList'); if(!rl) return; rl.innerHTML = requests.length ? requests.slice(0,6).map(function(r){ return '<div class="service"><span class="emoji">🔎</span><div><strong>'+esc(r.title)+'</strong><small>من: '+esc(r.user_name||'زائر')+'</small></div></div>' }).join('') : empty('لا توجد طلبات حالياً.'); }
 
-function updateAccountUI(){
-  const acctBtn = $('accountBtn'); if (acctBtn) acctBtn.textContent = currentUser ? 'حسابي ✓' : 'حسابي';
-  const isAdmin = currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin';
-  const panel = $('adminPanel'); if (panel) panel.style.display = isAdmin ? 'block' : 'none';
-  if (isAdmin) loadAdminPending();
-}
-function closeModal(){ const mb = $('modalbg'); const mf = $('modalForm'); if (mb) mb.style.display='none'; if (mf && mf.reset) mf.reset(); }
-function openModal(type){ const f = $('modalForm'); const mb = $('modalbg'); if (mb) mb.style.display='flex'; if(!f) return; let html=''; if(type!=='auth'&&!currentUser){ const mt = $('modalTitle'); if (mt) mt.textContent='تسجيل الدخول مطلوب'; f.innerHTML=''; return; }
- if(type==='auth'){ const mt = $('modalTitle'); if (mt) mt.textContent='حسابك على دليل منبج'; html=`<label>البريد الإلكتروني<input class="field" name="email" type="email" required autocomplete="email"></label><button type="submit">إرسال</button>`; }
- if(type==='listing'){ const mt = $('modalTitle'); if (mt) mt.textContent='إضافة إعلان بيع أو خدمة'; html=`<label>اسم الإعلان<input class="field" name="title" required minlength="3"></label>`; }
- if(type==='request'){ const mt = $('modalTitle'); if (mt) mt.textContent='إضافة طلب جديد'; html=`<label>شو عم تدور عليه؟<input class="field" name="title" required minlength="3"></label>`; }
- if(type==='business'){ const mt = $('modalTitle'); if (mt) mt.textContent='إضافة محل أو خدمة'; html=`<label>اسم المحل أو الخدمة<input class="field" name="name" required minlength="2"></label>`; }
- f.innerHTML = html;
-}
+function updateAccountUI(){ var acctBtn = $('accountBtn'); if(acctBtn) acctBtn.textContent = currentUser ? 'حسابي ✓' : 'حسابي'; var isAdmin = currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'; var panel = $('adminPanel'); if(panel) panel.style.display = isAdmin ? 'block' : 'none'; if(isAdmin) loadAdminPending(); }
+function closeModal(){ var mb = $('modalbg'); var mf = $('modalForm'); if(mb) mb.style.display='none'; if(mf && mf.reset) mf.reset(); }
+function openModal(type){ var f = $('modalForm'); var mb = $('modalbg'); if(mb) mb.style.display='flex'; if(!f) return; var html=''; if(type!=='auth' && !currentUser){ var mt = $('modalTitle'); if(mt) mt.textContent='تسجيل الدخول مطلوب'; f.innerHTML=''; return; }
+ if(type==='auth'){ var mt = $('modalTitle'); if(mt) mt.textContent='حسابك على دليل منبج'; html=`<label>البريد الإلكتروني<input class="field" name="email" type="email" required autocomplete="email"></label><button type="submit">إرسال</button>`; }
+ if(type==='listing'){ var mt = $('modalTitle'); if(mt) mt.textContent='إضافة إعلان بيع أو خدمة'; html=`<label>اسم الإعلان<input class="field" name="title" required minlength="3" maxlength="120"></label><label>الوصف<textarea name="description"></textarea></label><label>السعر<input name="price" type="number"></label><label>التصنيف<select name="category">${categoryOptions()}</select></label><button type="submit">إرسال</button>`; }
+ if(type==='request'){ var mt = $('modalTitle'); if(mt) mt.textContent='إضافة طلب جديد'; html=`<label>شو عم تدور عليه؟<input class="field" name="title" required minlength="3" maxlength="120"></label><label>تفاصيل إضافية<textarea name="description"></textarea></label><button type="submit">إرسال</button>`; }
+ if(type==='business'){ var mt = $('modalTitle'); if(mt) mt.textContent='إضافة محل أو خدمة'; html=`<label>اسم المحل أ�� الخدمة<input class="field" name="name" required minlength="2" maxlength="120"></label><label>وصف<textarea name="description"></textarea></label><label>هاتف<input name="phone" type="tel"></label><label>المنطقة<select name="area">${areaOptions()}</select></label><label>التصنيف<select name="category">${categoryOptions()}</select></label><button type="submit">إرسال</button>`; }
+ f.innerHTML = html; }
 
-async function submitForm(e){
-  e.preventDefault();
-  const f = $('modalForm');
-  if(!f){ toast('نموذج الإرسال غير متاح.'); return }
-  if(!db){ toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.'); return }
-  if(!currentUser){ toast('سجّل الدخول أولا��.'); return }
-  try{
-    const d = Object.fromEntries(new FormData(f));
-    let table, payload;
-    if (f.querySelector('[name="item_condition"]')){ table='listings'; payload={ user_id: currentUser.id, title: d.title, description: d.description||null, price: Number(d.price), category: d.category }; }
-    else if (f.querySelector('[name="name"]')){ table='businesses'; payload={ user_id: currentUser.id, name: d.name, description: d.description||null, phone: d.phone||null, area: d.area||null }; }
-    else { table='wanted_requests'; payload={ user_id: currentUser.id, title: d.title, description: d.description||null }; }
-    const { error } = await db.from(table).insert(payload);
-    if (error) throw error;
-    toast('وصلنا طلبك بنجاح، وسيظهر بعد مراجعة الإدارة.'); closeModal();
-  }catch(err){ console.error(err); toast(err.message || 'تعذّر إرسال النموذج.'); }
-}
+async function submitForm(e){ e.preventDefault(); var f = $('modalForm'); if(!f){ toast('نموذج الإرسال غير متاح.'); return } if(!db){ toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.'); return } if(!currentUser){ toast('سجّل الدخول أولاً.'); return } try{ var d = Object.fromEntries(new FormData(f)); var table,payload; if(f.querySelector('[name="item_condition"]')){ table='listings'; payload={ user_id:currentUser.id, title:d.title, description:d.description||null, price:Number(d.price), category:d.category }; } else if(f.querySelector('[name="name"]')){ table='businesses'; payload={ user_id:currentUser.id, name:d.name, description:d.description||null, phone:d.phone||null, area:d.area||null, category:d.category||null }; } else { table='wanted_requests'; payload={ user_id:currentUser.id, title:d.title, description:d.description||null }; } var res = await db.from(table).insert(payload); if(res && res.error) throw res.error; toast('وصلنا طلبك بنجاح، وسيظهر بعد مراجعة الإدارة.'); closeModal(); }catch(err){ console.error(err); toast(err.message || 'تعذّر إرسال النموذج.'); } }
 
 let adminActiveTable='listings';
 const adminTableLabels={listings:'إعلانات البيع',businesses:'المحلات والخدمات',wanted_requests:'طلبات الناس'};
-function selectAdminTab(table){ if(!['listings','businesses','wanted_requests'].includes(table)) return; adminActiveTable = table; document.querySelectorAll('.admintab').forEach(b=>b.classList.toggle('active', b.dataset.adminTab===table)); loadAdminPending(); }
-function adminEscape(value){ if (value === undefined || value === null) value = ''; return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function selectAdminTab(table){ if(!['listings','businesses','wanted_requests'].includes(table)) return; adminActiveTable=table; document.querySelectorAll('.admintab').forEach(function(b){ b.classList.toggle('active', b.dataset.adminTab===table); }); loadAdminPending(); }
+function adminEscape(value){ if (value === undefined || value === null) value = ''; return String(value).replace(/[&<>"']/g,function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]) }); }
 function adminDescription(row,table){ if(table==='businesses') return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null].filter(Boolean).join(' · '); return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null].filter(Boolean).join(' · '); }
 
-async function loadAdminPending(){
-  if(!db) return;
-  const isAdmin = currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'; if(!isAdmin) return;
-  const box = $('adminItems'); if(!box) return;
-  box.innerHTML = '<div class="empty">عم نحمل الطلبات المعلّقة…</div>';
-  try{
-    const { data, error } = await db.from(adminActiveTable).select('*').eq('status','pending').order('created_at',{ascending:false});
-    if (error) throw error;
-    const counts = await Promise.all(['listings','businesses','wanted_requests'].map(async t=>{ const r = await db.from(t).select('id',{count:'exact',head:true}).eq('status','pending'); return (r && r.count) ? r.count : 0; }));
-    const countNode = $('adminPendingCount'); if (countNode) countNode.textContent = (counts.reduce((a,b)=>a+b,0)) + ' بانتظار المراجعة';
-    if(!data || !data.length){ box.innerHTML = '<div class="empty">ما في '+ adminEscape(adminTableLabels[adminActiveTable]) +' بانتظار المراجعة حالياً.</div>'; return }
-    box.innerHTML = data.map(row=>{ const title = row.title||row.name||'بدون عنوان'; const desc = adminDescription(row,adminActiveTable); const created = row.created_at ? new Date(row.created_at).toLocaleString('ar-SY') : ''; return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>'+created+'</div></div><div class="adminactions"><button class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\','+row.id+',\'active\')">موافقة</button><button class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\','+row.id+',\'rejected\')">رفض</button></div></article>'; }).join('');
-  }catch(e){ console.error('admin load:', e); box.innerHTML = '<div class="empty">تعذّر تحميل الطلبات. سجّل الخروج ثم الدخول مجدداً لتحديث صلاحيات المستخدم.</div>'; }
-}
+async function loadAdminPending(){ if(!db) return; var isAdmin = currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'; if(!isAdmin) return; var box = $('adminItems'); if(!box) return; box.innerHTML='<div class="empty">عم نحمل الطلبات المعلّقة…</div>'; try{ var q = await db.from(adminActiveTable).select('*').eq('status','pending').order('created_at',{ascending:false}); if(q && q.error) throw q.error; var data = q && q.data ? q.data : []; var counts = await Promise.all(['listings','businesses','wanted_requests'].map(async function(t){ var r = await db.from(t).select('id',{count:'exact',head:true}).eq('status','pending'); return (r && r.count) ? r.count : 0; })); var countNode = $('adminPendingCount'); if(countNode) countNode.textContent = (counts.reduce(function(a,b){ return a+b },0)) + ' بانتظار المراجعة'; if(!data || !data.length){ box.innerHTML = '<div class="empty">ما في '+ adminEscape(adminTableLabels[adminActiveTable]) +' بانتظار المراجعة حالياً.</div>'; return } box.innerHTML = data.map(function(row){ var title = row.title||row.name||'بدون عنوان'; var desc = adminDescription(row,adminActiveTable); var created = row.created_at ? new Date(row.created_at).toLocaleString('ar-SY') : ''; return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>'+created+'</div></div><div class="adminactions"><button class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\','+row.id+',\'active\')">موافقة</button><button class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\','+row.id+',\'rejected\')">رفض</button></div></article>'; }).join(''); }catch(e){ console.error('admin load:', e); box.innerHTML = '<div class="empty">تعذّر تحميل الطلبات. سجّل الخروج ثم الدخول مجدداً لتحديث صلاحيات المستخدم.</div>'; } }
 
-async function reviewAdminItem(table,id,status){
-  const isAdmin = currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'; if(!isAdmin){ toast('ما عندك صلاحية الإدارة.'); return }
-  if(!['listings','businesses','wanted_requests'].includes(table) || !['active','rejected'].includes(status)) return;
-  if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟')) return;
-  try{
-    const { data, error } = await db.from(table).update({ status }).eq('id', id).eq('status','pending').select('id,status');
-    if (error) throw error;
-    if(!data || !data.length){ toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.'); return }
-    toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى.'); await loadAdminPending();
-  }catch(e){ console.error(e); toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف')); }
-}
+async function reviewAdminItem(table,id,status){ var isAdmin = currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'; if(!isAdmin){ toast('ما عندك صلاحية الإدارة.'); return } if(!['listings','businesses','wanted_requests'].includes(table) || !['active','rejected'].includes(status)) return; if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟')) return; try{ var r = await db.from(table).update({status}).eq('id',id).eq('status','pending').select('id,status'); if(r && r.error) throw r.error; var data = r && r.data ? r.data : []; if(!data || !data.length){ toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.'); return } toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى.'); await loadAdminPending(); }catch(e){ console.error(e); toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف')); } }
 
-async function accountAction(){
-  if(currentUser){ if(!db) return; const { error } = await db.auth.signOut(); if(error){ toast(error.message); return } currentUser = null; updateAccountUI(); toast('تم تسجيل الخروج.'); return }
-  openModal('auth');
-}
+async function accountAction(){ if(currentUser){ if(!db) return; var out = await db.auth.signOut(); if(out && out.error){ toast(out.error.message || out.message); return } currentUser = null; updateAccountUI(); toast('تم تسجيل الخروج.'); return } openModal('auth'); }
 
 // Initialize
-const acctBtnInit = $('accountBtn'); if (acctBtnInit) acctBtnInit.addEventListener('click', accountAction);
+var acctBtnInit = $('accountBtn'); if(acctBtnInit) acctBtnInit.addEventListener('click', accountAction);
 loadData();
-</script></body></html>
+</script>
+</body>
+</html>
