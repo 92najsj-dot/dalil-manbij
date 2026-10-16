@@ -51,7 +51,8 @@
 // Public browser key only. RLS must remain enabled in Supabase; never place service-role keys here.
 const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
 const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
-const recoveryLinkAtLoad=window.location.hash.includes('type=recovery');
+const recoveryLinkAtLoad=window.location.hash.includes('type=recovery')||new URLSearchParams(window.location.search).has('code');
+let recoveryModalOpened=false;
 const AREAS=['منبج','أبو قلقل','الخفسة','مسكنة','العريمة','ريف منبج الشرقي','ريف منبج الغربي','القرى والبلدات الأخرى'];
 let db=null,currentUser=null,activeCat='الكل',condition='الكل',businesses=[],categories=[],listings=[],requests=[];
 const $=id=>document.getElementById(id);
@@ -80,8 +81,8 @@ async function loadData(){
   const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
   if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
-  db.auth.onAuthStateChange((_event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI()});
-  if(recoveryLinkAtLoad)openPasswordUpdateModal();
+  db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
+  if(recoveryLinkAtLoad){const {data:{session:recoverySession}}=await db.auth.getSession();if(recoverySession&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}}
  }catch(e){console.error(e);setStatus(false,'تعذر الاتصال بقاعدة البيانات');$('businessGrid').innerHTML=empty('ما قدرنا نحمل دليل المحلات. تحقق من الإنترنت وإعدادات Supabase ثم أعد المحاولة.');$('listingGrid').innerHTML=empty('ما قدرنا نحمل الإعلانات حالياً.');$('requestList').innerHTML=empty('ما قدرنا نحمل الطلبات حالياً.');toast('تعذر الاتصال: '+(e.message||'خطأ غير معروف'))}
 }
 function renderCategories(){const all=`<button class="cat ${activeCat==='الكل'?'active':''}" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button>`;const rest=categories.map(c=>`<button class="cat ${activeCat===c.name?'active':''}" data-cat="${esc(c.name)}" onclick="chooseCat(this)"><span class="emoji">${esc(c.icon||emojiFor(c.name))}</span><strong>${esc(c.name)}</strong></button>`).join('');$('categories').innerHTML=all+rest}
