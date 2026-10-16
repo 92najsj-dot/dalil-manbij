@@ -34,3 +34,36 @@ create policy "Users can update their own display name"
 
 grant select on public.public_profiles to anon, authenticated;
 grant insert, update on public.public_profiles to authenticated;
+
+-- Seed the optional public profile from signup metadata. Empty names remain NULL.
+create or replace function public.create_public_profile_for_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  chosen_name text;
+begin
+  chosen_name := nullif(btrim(coalesce(new.raw_user_meta_data ->> 'display_name', '')), '');
+  if chosen_name is not null and char_length(chosen_name) between 2 and 40 then
+    insert into public.public_profiles(user_id, display_name)
+    values (new.id, chosen_name)
+    on conflict (user_id) do update
+      set display_name = excluded.display_name,
+          updated_at = now();
+  else
+    insert into public.public_profiles(user_id, display_name)
+    values (new.id, null)
+    on conflict (user_id) do nothing;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created_public_profile on auth.users;
+create trigger on_auth_user_created_public_profile
+  after insert on auth.users
+  for each row execute function public.create_public_profile_for_new_user();
+
+revoke all on function public.create_public_profile_for_new_user() from public, anon, authenticated;
