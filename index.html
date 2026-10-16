@@ -47,7 +47,7 @@
 </section>
 </main><section class="promo-cta" aria-labelledby="promoCtaTitle"><div class="promo-cta-card"><div><h2 id="promoCtaTitle">🚀 روّج إعلانك على دليل منبج</h2><p>خلّي إعلانك يوصل لعدد أكبر من أهالي منبج وريفها.</p></div><button type="button" class="promo-cta-button" onclick="openPromoContact()">روّج إعلانك 📣</button></div></section>
 <footer class="footer"><div class="footerin"><div><div style="font-size:23px;font-weight:900">دليل منبج 📍</div><div style="margin-top:8px;font-size:13px;color:#c5ded1">كل اللي بدك ياه، بتلاقيه قريب منك.</div></div><div style="font-size:13px;line-height:2">منبج وريفها<br>تواصل مباشرة مع صاحب الإعلان عند توفر وسيلة التواصل<br><a href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer" aria-label="حساب دليل منبج على إنستغرام" style="display:inline-block;margin-top:8px;padding:7px 12px;border:1px solid #8ab9a3;border-radius:10px;color:#fff;text-decoration:none;font-weight:700">📸 تابعنا على إنستغرام @dalil_manbij</a><br><a href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer" aria-label="صفحة دليل منبج على فيسبوك" style="display:inline-block;margin-top:8px;padding:7px 12px;border:1px solid #8ab9a3;border-radius:10px;color:#fff;text-decoration:none;font-weight:700">📘 تابعنا على فيسبوك</a><br>© دليل منبج</div></div></footer>
-<div class="modalbg" id="promoContactModal" role="dialog" aria-modal="true" aria-labelledby="promoContactTitle" onclick="if(event.target===this)closePromoContact()"><div class="modal"><div class="modalhead"><h2 id="promoContactTitle">📣 ترويج إعلانك</h2><button class="close" type="button" onclick="closePromoContact()" aria-label="إغلاق">✕</button></div><div class="promo-contact-text"><p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ تواصل معنا لترويج إعلانك وتمييزه على دليل منبج.</p><p>اضغط الزر بالأسفل وراسلنا عبر صفحة دليل منبج على فيسبوك لنتفق على تفاصيل الترويج.</p><a class="promo-contact-link" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">تواصل معنا على فيسبوك ↗</a></div></div></div>
+<div class="modalbg" id="promoContactModal" role="dialog" aria-modal="true" aria-labelledby="promoContactTitle" onclick="if(event.target===this)closePromoContact()"><div class="modal"><div class="modalhead"><h2 id="promoContactTitle">📣 ترويج إعلانك</h2><button class="close" type="button" onclick="closePromoContact()" aria-label="إغلاق">✕</button></div><div class="promo-contact-text"><p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ تواصل معنا لترويج إعلانك وتمييزه على دليل منبج.</p><p>اضغط الزر بالأسفل وراسلنا عبر إنستغرام دليل منبج لنتفق على تفاصيل الترويج.</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">تواصل معنا على إنستغرام ↗</a></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="modalbg" id="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modalhead"><h2 id="modalTitle">إضافة</h2><button class="close" onclick="closeModal()" aria-label="إغلاق">✕</button></div><form id="modalForm" onsubmit="submitForm(event)"></form></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -170,7 +170,9 @@ async function loadMyAds(){
   ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions"><button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
+   const canPromote=(r._table==='listings'||r._table==='businesses')&&String(r.status||'').toLowerCase()==='approved';
+   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
 }
@@ -300,6 +302,13 @@ async function accountAction(){if(currentUser){const section=$('myAdsSection');i
 async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.signOut();if(error)throw error;currentUser=null;updateAccountUI();toast('تم تسجيل الخروج بنجاح.');window.scrollTo({top:0,behavior:'smooth'});}catch(e){toast('تعذّر تسجيل الخروج: '+(e.message||'خطأ غير معروف'))}}
 loadData();
 
+function openPromoContactForItem(table,id){
+ const modal=document.getElementById("promoContactModal");if(!modal)return;
+ const title=modal.querySelector("#promoContactTitle");if(title)title.textContent="📣 ترويج إعلانك";
+ const message=modal.querySelector(".promo-contact-text");
+ if(message)message.innerHTML='<p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ تواصل معنا لترويج إعلانك وتمييزه على دليل منبج.</p><p>اضغط الزر بالأسفل وراسلنا عبر إنستغرام دليل منبج لنتفق على تفاصيل الترويج.</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">تواصل معنا على إنستغرام ↗</a>';
+ modal.style.display="flex";document.body.style.overflow="hidden";const close=modal.querySelector(".close");if(close)close.focus();
+}
 function openPromoContact(){const modal=document.getElementById("promoContactModal");if(modal){modal.style.display="flex";document.body.style.overflow="hidden";const close=modal.querySelector(".close");if(close)close.focus();}}
 function closePromoContact(){const modal=document.getElementById("promoContactModal");if(modal){modal.style.display="none";document.body.style.overflow="";}}
 document.addEventListener("keydown",function(event){if(event.key==="Escape")closePromoContact();});
