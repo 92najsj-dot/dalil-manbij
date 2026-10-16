@@ -147,7 +147,6 @@ async function loadSiteBanners(){
   box.innerHTML=siteBanners.map(b=>'<a class="sitebanner" href="'+esc(b.target_url)+'" target="_blank" rel="noopener noreferrer" onclick="trackBannerClick(\''+esc(b.id)+'\')"><img src="'+esc(b.image_url)+'" alt="'+esc(b.title)+'" loading="lazy"><div class="bannertext"><h3>'+esc(b.title)+'</h3>'+(b.description?'<p>'+esc(b.description)+'</p>':'')+'<p>'+esc(b.advertiser_name||'إعلان ممول')+'</p></div></a>').join('');
  }catch(e){console.warn('site banners:',e.message)}
 }
-async function trackBannerClick(id){try{await db.from('site_banners').update({clicks:0}).eq('id',id)}catch(e){}}
 function resetBannerForm(){
  const f=$('bannerForm');if(!f)return;f.reset();f.elements.id.value='';f.elements.sort_order.value='100';f.elements.amount.value='0';f.elements.is_active.checked=true;f.elements.payment_status.value='pending';f.elements.starts_at.value=bannerDateLocal(new Date());const end=new Date(Date.now()+30*86400000);f.elements.ends_at.value=bannerDateLocal(end);$('bannerSaveBtn').textContent='＋ حفظ البانر';
 }
