@@ -221,13 +221,15 @@ async function loadAdminPending(){
  const box=$('adminItems');if(!box)return;
  box.innerHTML='<div class="empty">عم نحمل المحتوى…</div>';
  try{
-  const [itemsResult,blockedResult]=await Promise.all([
-   (adminShowAll?db.from(adminActiveTable).select('*'):db.from(adminActiveTable).select('*').eq('status','pending')).order('created_at',{ascending:false}),
-   db.from('blocked_users').select('user_id')
-  ]);
+  const itemsResult=await (adminShowAll?db.from(adminActiveTable).select('*'):db.from(adminActiveTable).select('*').eq('status','pending')).order('created_at',{ascending:false});
   if(itemsResult.error)throw itemsResult.error;
-  if(blockedResult.error)throw blockedResult.error;
-  blockedUserIds=new Set((blockedResult.data||[]).map(x=>x.user_id));
+  // حظر المستخدمين ميزة اختيارية؛ غياب جدولها لا يجب أن يعطّل مراجعة المحتوى أو إدارة الترويج.
+  try{
+   const blockedResult=await db.from('blocked_users').select('user_id');
+   if(!blockedResult.error)blockedUserIds=new Set((blockedResult.data||[]).map(x=>x.user_id));
+   else {blockedUserIds=new Set();console.warn('blocked_users unavailable; continuing without block controls:',blockedResult.error.message);}
+  }catch(blockErr){blockedUserIds=new Set();console.warn('blocked_users unavailable; continuing without block controls:',blockErr);}
+
   const counts=await Promise.all(['listings','businesses','wanted_requests'].map(async t=>{
    const {count,error:e}=await db.from(t).select('id',{count:'exact',head:true}).eq('status','pending');
    return e?0:(count||0);
