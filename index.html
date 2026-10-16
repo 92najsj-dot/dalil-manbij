@@ -46,7 +46,28 @@
 </section>
 </main><footer class="footer"><div class="footerin"><div><div style="font-size:23px;font-weight:900">دليل منبج 📍</div><div style="margin-top:8px;font-size:13px;color:#c5ded1">كل اللي بدك ياه، بتلاقيه قريب منك.</div></div><div style="font-size:13px;line-height:2">منبج وريفها<br>تواصل مباشرة مع صاحب الإعلان عند توفر وسيلة التواصل<br><a href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer" aria-label="حساب دليل منبج على إنستغرام" style="display:inline-block;margin-top:8px;padding:7px 12px;border:1px solid #8ab9a3;border-radius:10px;color:#fff;text-decoration:none;font-weight:700">📸 تابعنا على إنستغرام @dalil_manbij</a><br>© دليل منبج</div></div></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="modalbg" id="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modalhead"><h2 id="modalTitle">إضافة</h2><button class="close" onclick="closeModal()" aria-label="إغلاق">✕</button></div><form id="modalForm" onsubmit="submitForm(event)"></form></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+ function showMobileError(message){
+  try{
+   if(document.getElementById('mobileLoadError'))return;
+   var box=document.createElement('div');box.id='mobileLoadError';
+   box.style.cssText='position:fixed;inset:12px;z-index:2147483647;background:#fff;color:#173d30;border:2px solid #cbded2;border-radius:16px;padding:18px;font:16px/1.8 Tahoma,Arial,sans-serif;direction:rtl;overflow:auto;box-shadow:0 8px 30px #0003';
+   box.innerHTML='<h2 style="margin-top:0">دليل منبج ما قدر يحمّل الصفحة</h2><p>ظهر عطل أثناء تشغيل الموقع على هذا المتصفح.</p><p id="mobileLoadErrorDetail" style="font-size:13px;color:#555;overflow-wrap:anywhere"></p><button id="mobileLoadRetry" style="padding:10px 16px;border:0;border-radius:10px;background:#176b50;color:#fff;font-weight:bold">إعادة المحاولة</button><p style="font-size:12px;color:#666">إذا تكرر العطل، افتح الموقع بآخر إصدار من Chrome وجرب مرة أخرى.</p>';
+   (document.body||document.documentElement).appendChild(box);
+   var detail=document.getElementById('mobileLoadErrorDetail');if(detail)detail.textContent=String(message||'خطأ غير معروف').slice(0,400);
+   document.getElementById('mobileLoadRetry').onclick=function(){window.location.reload()};
+  }catch(_){}
+ }
+ window.__dalilShowMobileError=showMobileError;
+ window.addEventListener('error',function(e){
+  if(e&&e.target&&e.target.tagName==='SCRIPT'){showMobileError('تعذّر تحميل مكتبة JavaScript: '+(e.target.src||''));return}
+  if(e&&e.message)showMobileError('JavaScript: '+e.message+' ('+(e.lineno||'?')+':'+(e.colno||'?')+')');
+ },true);
+ window.addEventListener('unhandledrejection',function(e){showMobileError('مهمة غير مكتملة: '+(e.reason&&e.reason.message||e.reason||'خطأ غير معروف'))});
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2';s.onerror=function(){if(window.__dalilShowMobileError)window.__dalilShowMobileError('تعذّر تحميل مكتبة الاتصال من مزوّدي CDN. تحقق من اتصال الهاتف أو جرّب متصفحاً آخر.')};document.head.appendChild(s)})()"></script>
 <script>
 // Public browser key only. RLS must remain enabled in Supabase; never place service-role keys here.
 const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
@@ -61,15 +82,18 @@ function emojiFor(cat){const c=String(cat||'');return ({'محلات':'🏪','م�
 function conditionLabel(v){return ({new:'جديد',used:'مستعمل',service:'خدمة'})[v]||v||'—'}
 function areaOptions(){return AREAS.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
 function categoryOptions(){return categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}
+function withTimeout(promise,ms,message){
+ return Promise.race([promise,new Promise(function(_,reject){setTimeout(function(){reject(new Error(message||'انتهت مهلة الاتصال'))},ms)})]);
+}
 function setStatus(ok,msg){$('statusDot').className='dot'+(ok?' ok':'');$('connectionStatus').textContent=msg}
 function empty(msg){return `<div class="empty">${esc(msg)}</div>`}
 async function loadData(){
  try{
   if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم أعد فتح الملف.');
   db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await Promise.all([
+  const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await withTimeout(Promise.all([
    db.auth.getSession(),db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),db.from('businesses').select('id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,image_urls').eq('status','active').order('is_featured',{ascending:false}).order('name'),db.from('listings').select('id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('status','active').order('created_at',{ascending:false}),db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at').eq('status','active').order('created_at',{ascending:false})
-  ]);
+  ]),15000,'الاتصال بقاعدة البيانات أخذ وقتاً أطول من اللازم. جرّب تبديل الشبكة أو أعد المحاولة.');
   if(sessionErr)throw sessionErr;currentUser=(session ? session.user : undefined)||null;updateAccountUI();
   if(catsErr)console.warn('categories:',catsErr.message);categories=cats||[];
   if(bizErr)console.warn('businesses:',bizErr.message);businesses=biz||[];
