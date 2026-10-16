@@ -120,9 +120,9 @@ async function loadMyAds(){
  box.innerHTML=empty('عم نحمل إعلاناتك وطلباتك…');
  try{
   const results=await Promise.all([
-   db.from('listings').select('id,title,status,created_at,image_urls').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
-   db.from('businesses').select('id,name,status,created_at,image_urls').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),
-   db.from('wanted_requests').select('id,title,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false})
+   db.from('listings').select('id,title,status,rejection_reason,created_at,image_urls').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   db.from('businesses').select('id,name,status,rejection_reason,created_at,image_urls').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),
+   db.from('wanted_requests').select('id,title,status,rejection_reason,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false})
   ]);
   for(const r of results){if(r.error)throw r.error}
   const groups=[
@@ -132,19 +132,19 @@ async function loadMyAds(){
   ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
-   const canDelete=r._table!=='businesses'||r.status==='pending';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+(canDelete?'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف</button>':'<small class="muted">حذف المحل المنشور غير متاح حالياً.</small>')+'</div></article>';
+   const canDelete=true;
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div>'+(r.status==='rejected'&&r.rejection_reason?'<div class="adminmeta" style="margin-top:7px;color:#a52b2b">سبب الرفض: '+esc(r.rejection_reason)+'</div>':'')+'</div><div class="adminactions">'+(canDelete?'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف</button>':'<small class="muted">حذف المحل المنشور غير متاح حالياً.</small>')+'</div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
 }
 async function deleteMyItem(table,id){
  if(!currentUser||!db||['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
- if(table==='businesses'){const own=await db.from('businesses').select('id,status,image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(own.error){toast('تعذّر التحقق من المحل: '+own.error.message);return}if(!own.data||own.data.status!=='pending'){toast('يمكن حذف المحل من هذه الواجهة فقط وهو قيد المراجعة.');return}}
+ if(table==='businesses'){const own=await db.from('businesses').select('id,status,image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(own.error){toast('تعذّر التحقق من المحل: '+own.error.message);return}if(!own.data){toast('لم نعثر على هذا المحل ضمن حسابك.');return}}
  if(!window.confirm('متأكد بدك تحذف هذا المحتوى؟ ما في تراجع بعد الحذف.'))return;
  try{
   let query=db.from(table).delete().eq('id',id);
   query=query.eq(table==='businesses'?'owner_id':'user_id',currentUser.id);
-  if(table==='businesses')query=query.eq('status','pending');
+  
   const {data,error}=await query.select('id,image_urls');
   if(error)throw error;
   if(!data||!data.length){toast('ما تم الحذف. قد لا تملك الصلاحية أو أن المحتوى تغيّرت حالته.');return}
@@ -209,13 +209,17 @@ async function deleteAdminItem(table,id){
 async function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
  if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
+ let rejectionReason=null;
+ if(status==='rejected'){rejectionReason=window.prompt('اكتب سبب الرفض ليظهر لصاحب الإعلان (اختياري):','');if(rejectionReason===null)return;rejectionReason=rejectionReason.trim().slice(0,1000)||null;}
  if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟'))return;
  try{
-  const {data,error}=await db.from(table).update({status}).eq('id',id).eq('status','pending').select('id,status');
+  const updatePayload={status};
+  if(table==='listings'||table==='businesses'||table==='wanted_requests')updatePayload.rejection_reason=status==='rejected'?rejectionReason:null;
+  const {data,error}=await db.from(table).update(updatePayload).eq('id',id).eq('status','pending').select('id,status');
   if(error)throw error;
   if(!(data ? data.length : undefined)){toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.');return}
-  toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى.');
-  await loadAdminPending();
+  toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى، وسيظهر السبب لصاحب الإعلان إن كُتب.');
+  await loadAdminPending();await loadMyAds();
  }catch(e){console.error(e);toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف'))}
 }
 
