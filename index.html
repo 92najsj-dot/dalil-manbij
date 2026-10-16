@@ -175,7 +175,7 @@ async function loadMyAds(){
   ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
-   const canPromote=(r._table==='listings'||r._table==='businesses')&&String(r.status||'').toLowerCase()==='approved';
+   const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved','published'].includes(String(r.status||'').toLowerCase());
    const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
    return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
@@ -310,10 +310,11 @@ async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.sig
 loadData();
 
 function openPromoContactForItem(table,id){
+ if(!currentUser||!db||!['listings','businesses'].includes(table))return;
  const modal=document.getElementById("promoContactModal");if(!modal)return;
  const title=modal.querySelector("#promoContactTitle");if(title)title.textContent="📣 ترويج إعلانك";
  const message=modal.querySelector(".promo-contact-text");
- if(message)message.innerHTML='<p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ تواصل معنا لترويج إعلانك وتمييزه على دليل منبج.</p><p>اختار الطريقة المناسبة وتواصل معنا لنتفق على تفاصيل الترويج:</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">تواصل معنا على إنستغرام ↗</a><br><a class="promo-contact-link" style="background:#1877f2" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">تواصل معنا على فيسبوك ↗</a>';
+ if(message&&!message.querySelector(".promo-packages"))message.innerHTML='<p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ اختَر الباقة المناسبة وتواصل معنا لنتفق على السعر والتفعيل.</p><div class="promo-packages"><article class="promo-package"><h3>🥉 البرونزية</h3><strong>3 أيام</strong><p>ظهور ضمن قسم الإعلانات المميزة.</p></article><article class="promo-package"><h3>🥈 الفضية</h3><strong>7 أيام</strong><p>ظهور مميز مع شارة على الإعلان ضمن قسمه الأصلي.</p></article><article class="promo-package"><h3>🥇 الذهبية</h3><strong>15 يوماً</strong><p>ظهور مميز وشارة، وبنر رئيسي إذا توفرت صورة.</p></article><article class="promo-package featured"><h3>💎 الماسية</h3><strong>30 يوماً</strong><p>جميع أماكن الظهور المتاحة وأولوية أعلى.</p></article></div><p class="promo-package-note">السعر يُتفق عليه مباشرة، والبنر يحتاج صورة مناسبة.</p><p>للتواصل وتفعيل الباقة:</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">تواصل معنا على إنستغرام ↗</a><br><a class="promo-contact-link" style="background:#1877f2" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">تواصل معنا على فيسبوك ↗</a>';
  modal.style.display="flex";document.body.style.overflow="hidden";const close=modal.querySelector(".close");if(close)close.focus();
 }
 function openPaidPromotionContact(){
