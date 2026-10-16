@@ -24,7 +24,7 @@
 
 </style></head>
 <body>
-<header class="top"><nav class="nav"><div class="logo">دليل منبج <span>📍</span></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">الطلبات</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">حسابي</button><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></nav></header>
+<header class="top"><nav class="nav"><div class="logo">دليل منبج <span>📍</span></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">الطلبات</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><button class="btn reject" id="logoutBtn" style="display:none" onclick="logoutAccount()">تسجيل الخروج</button><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></nav></header>
 <main class="wrap" id="home">
 <section class="hero"><div><div class="eyebrow">من أهل منبج وريفها ولأهلها</div><h1>كل اللي بدك ياه،<br>بتلاقيه قريب منك.</h1><p>دليل المحلات والخدمات، وسوق محلي للبيع والشراء، وطلباتك اليومية من مكان واحد.</p><div class="searchbox"><input id="searchInput" placeholder="شو عم تدور عليه؟ محل، خدمة، أو منتج…" oninput="renderAll()"><select id="areaFilter" onchange="renderAll()"><option value="الكل">كل منبج وريفها</option><option>منبج</option><option>أبو قلقل</option><option>الخفسة</option><option>مسكنة</option><option>العريمة</option><option>ريف منبج الشرقي</option><option>ريف منبج الغربي</option><option>القرى والبلدات الأخرى</option></select><button class="btn primary" onclick="document.getElementById('businesses').scrollIntoView({behavior:'smooth'})">ابحث 🔎</button></div><div class="statusline"><span id="statusDot" class="dot"></span><span id="connectionStatus">جاري الاتصال بقاعدة البيانات…</span></div></div><div class="heroart"><span>🛍️</span><div class="bubble b1">📍 منبج وريفها</div><div class="bubble b2">🤝 السوق المحلي أقرب</div></div></section>
 <div class="notice">📍 <strong>دليل منبج:</strong> محلات، مطاعم، عيادات، صيدليات، عقارات، سيارات، وخدمات محلية. لا نعرض إعلانات وهمية؛ المحتوى الظاهر يأتي من قاعدة البيانات.</div>
@@ -33,7 +33,7 @@
 <section id="requests"><div class="sectionhead"><div><h2>🔎 اطلب اللي تحتاجه</h2><div class="muted" style="margin-top:5px">أضف طلبك ليظهر بعد تفعيله</div></div><button class="btn primary" onclick="openModal('request')">＋ أضف طلبك</button></div><div class="requestbox"><div><h2>ما لقيت اللي بدك ياه؟</h2><p>اكتب المنتج أو الخدمة اللي عم تدور عليها وحدد ميزانيتك ومنطقتك. الطلبات تُحفظ في قاعدة البيانات بعد تسجيل الدخول.</p><div style="background:var(--mint);padding:15px;border-radius:13px;font-size:13px;line-height:1.8">💡 مثال: بدي غسالة مستعملة، ميزانيتي 500,000 ليرة سورية، منبج.</div></div><div id="requestList" style="display:grid;gap:10px"><div class="empty">عم نحمل الطلبات…</div></div></div></section>
 <section id="services"><div class="sectionhead"><h2>🧰 خدمات تحتاجها كل يوم</h2><span class="muted">التصنيفات الكاملة ضمن دليل المحلات</span></div><div class="services"><div class="service"><span class="emoji">📱</span><div><strong>تصليح موبايلات</strong><small>اعثر على مزودي الخدمة المسجلين</small></div></div><div class="service"><span class="emoji">💡</span><div><strong>كهربائي</strong><small>أعطال وتمديدات</small></div></div><div class="service"><span class="emoji">🚿</span><div><strong>سبّاك</strong><small>مياه وتسريبات</small></div></div><div class="service"><span class="emoji">🚚</span><div><strong>نقل وتوصيل</strong><small>خدمات النقل المحلية</small></div></div></div></section>
 <section id="myAdsSection"><div class="sectionhead"><div><h2>📋 إعلاناتي وطلباتي</h2><div class="muted" style="margin-top:5px">تابع حالة المحتوى الذي أرسلته واحذف ما لم تعد تحتاجه.</div></div><button class="btn outline" onclick="loadMyAds()">↻ تحديث</button></div><div id="myAdsPanel"><div class="empty">سجّل الدخول لعرض إعلاناتك وطلباتك.</div></div></section>
-<section><div class="sectionhead"><h2>👤 حسابك على دليل منبج</h2></div><div class="requestbox"><div><h3 style="margin-top:0">إعلاناتك وخدماتك من مكان واحد</h3><p>أنشئ حساباً لإضافة إعلان أو طلب أو تسجيل محلك. الإعلانات الجديدة قد تحتاج مراجعة قبل ظهورها للزوار.</p></div><div class="accountrow"><button class="btn primary" onclick="openModal('auth')">إنشاء حساب / دخول</button><button class="btn outline" onclick="accountAction()">تسجيل الخروج</button></div></div></section>
+<section><div class="sectionhead"><h2>👤 حسابك على دليل منبج</h2></div><div class="requestbox"><div><h3 style="margin-top:0">إعلاناتك وخدماتك من مكان واحد</h3><p>أنشئ حساباً لإضافة إعلان أو طلب أو تسجيل محلك. الإعلانات الجديدة قد تحتاج مراجعة قبل ظهورها للزوار.</p></div><div class="accountrow"><button class="btn primary" id="accountLoginBtn" onclick="openModal('auth')">إنشاء حساب / دخول</button><button class="btn outline" id="accountMyAdsBtn" style="display:none" onclick="accountAction()">حسابي وإعلاناتي</button><button class="btn reject" id="accountLogoutBtn" style="display:none" onclick="logoutAccount()">تسجيل الخروج</button></div></div></section>
 
 <section id="adminPanel" aria-live="polite">
  <div class="adminhead"><div><h2 style="margin:0">🛡️ لوحة الإدارة <span class="admincount" id="adminPendingCount">0 بانتظار المراجعة</span></h2><div class="muted" style="margin-top:6px">راجع المحتوى قبل نشره للعموم.</div></div><button class="btn outline" type="button" onclick="loadAdminPending()">↻ تحديث</button></div>
@@ -42,6 +42,7 @@
   <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
   <button type="button" class="admintab" data-admin-tab="wanted_requests" onclick="selectAdminTab('wanted_requests')">طلبات الناس</button>
  </div>
+ <div class="adminhead" style="margin:8px 0 14px"><div class="muted" id="adminViewHint">يعرض المحتوى الذي ينتظر المراجعة.</div><button type="button" class="btn outline" id="adminViewBtn" onclick="toggleAdminView()">عرض كل المحتوى</button></div>
  <div id="adminItems"><div class="empty">عم نحمل الطلبات المعلّقة…</div></div>
 </section>
 </main><footer class="footer"><div class="footerin"><div><div style="font-size:23px;font-weight:900">دليل منبج 📍</div><div style="margin-top:8px;font-size:13px;color:#c5ded1">كل اللي بدك ياه، بتلاقيه قريب منك.</div></div><div style="font-size:13px;line-height:2">منبج وريفها<br>تواصل مباشرة مع صاحب الإعلان عند توفر وسيلة التواصل<br><a href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer" aria-label="حساب دليل منبج على إنستغرام" style="display:inline-block;margin-top:8px;padding:7px 12px;border:1px solid #8ab9a3;border-radius:10px;color:#fff;text-decoration:none;font-weight:700">📸 تابعنا على إنستغرام @dalil_manbij</a><br><a href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer" aria-label="صفحة دليل منبج على فيسبوك" style="display:inline-block;margin-top:8px;padding:7px 12px;border:1px solid #8ab9a3;border-radius:10px;color:#fff;text-decoration:none;font-weight:700">📘 تابعنا على فيسبوك</a><br>© دليل منبج</div></div></footer>
@@ -72,7 +73,7 @@ async function loadData(){
   const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await Promise.all([
    db.auth.getSession(),db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),db.from('businesses').select('id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,image_urls').eq('status','active').order('is_featured',{ascending:false}).order('name'),db.from('listings').select('id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('status','active').order('created_at',{ascending:false}),db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at').eq('status','active').order('created_at',{ascending:false})
   ]);
-  if(sessionErr)throw sessionErr;currentUser=(session ? session.user : undefined)||null;updateAccountUI();
+  if(sessionErr)throw sessionErr;currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser)setTimeout(()=>enforceBlockedUser(currentUser),0);
   if(catsErr)console.warn('categories:',catsErr.message);categories=cats||[];
   if(bizErr)console.warn('businesses:',bizErr.message);businesses=biz||[];
   if(adsErr)console.warn('listings:',adsErr.message);listings=ads||[];
@@ -81,7 +82,7 @@ async function loadData(){
   const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
   if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
-  db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
+  db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser&&event!=='SIGNED_OUT')setTimeout(()=>enforceBlockedUser(currentUser),0);if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
   if(recoveryLinkAtLoad){const {data:{session:recoverySession}}=await db.auth.getSession();if(recoverySession&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}}
  }catch(e){console.error(e);setStatus(false,'تعذر الاتصال بقاعدة البيانات');$('businessGrid').innerHTML=empty('ما قدرنا نحمل دليل المحلات. تحقق من الإنترنت وإعدادات Supabase ثم أعد المحاولة.');$('listingGrid').innerHTML=empty('ما قدرنا نحمل الإعلانات حالياً.');$('requestList').innerHTML=empty('ما قدرنا نحمل الطلبات حالياً.');toast('تعذر الاتصال: '+(e.message||'خطأ غير معروف'))}
 }
@@ -98,11 +99,18 @@ function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الك�
 function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||x.category===activeCat)&&(condition==='الكل'||x.item_condition===condition)&&matchesArea(x)&&matchesQuery(x));$('listingGrid').innerHTML=arr.length?arr.map(x=>`<article class="card">${photoMarkup(x.image_urls,emojiFor(x.category))}<div class="cardbody"><h3>${esc(x.title)}</h3><div class="price">${Number(x.price||0).toLocaleString('en-US')} ل.س</div><div class="meta">📍 ${esc(x.area||'منبج')} · ${esc(x.category||'أخرى')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل</a>`:''}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
 function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<div class="service"><span class="emoji">🔎</span><div><strong>${esc(r.title)}</strong><small>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'} · ${esc(r.area||'منبج')}</small></div></div>`).join(''):empty('لا توجد طلبات مفعّلة حالياً. أضف طلبك بعد تسجيل الدخول.')}
 function updateAccountUI(){
- $('accountBtn').textContent=currentUser?'حسابي ✓':'حسابي';
+ const loggedIn=!!currentUser;
+ $('accountBtn').textContent=loggedIn?'حسابي':'تسجيل الدخول';
+ $('accountBtn').title=loggedIn?'عرض إعلاناتي وطلباتي':'تسجيل الدخول إلى حسابك';
+ const logout=$('logoutBtn');if(logout)logout.style.display=loggedIn?'inline-flex':'none';
+ const loginSection=$('accountLoginBtn');if(loginSection)loginSection.style.display=loggedIn?'none':'inline-flex';
+ const myAdsBtn=$('accountMyAdsBtn');if(myAdsBtn)myAdsBtn.style.display=loggedIn?'inline-flex':'none';
+ const sectionLogout=$('accountLogoutBtn');if(sectionLogout)sectionLogout.style.display=loggedIn?'inline-flex':'none';
  const isAdmin=(currentUser && currentUser.app_metadata && currentUser.app_metadata.role)==='admin';
  const panel=$('adminPanel');
  if(panel)panel.style.display=isAdmin?'block':'none';
- if(isAdmin)loadAdminPending();if(currentUser&&db)loadMyAds();
+ if(isAdmin)loadAdminPending();
+ if(currentUser&&db)loadMyAds();
 }
 function closeModal(){$('modalbg').style.display='none';$('modalForm').reset();delete $('modalForm').dataset.mode}
 function openPasswordUpdateModal(){const f=$('modalForm');$('modalTitle').textContent='تعيين كلمة مرور جديدة';f.dataset.mode='recovery';f.innerHTML='<label>كلمة المرور الجديدة<input class="field" name="newPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="8 أحرف على الأقل"></label><label>تأكيد كلمة المرور<input class="field" name="confirmPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="أعد كتابة كلمة المرور"></label><button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>';$('modalbg').style.display='flex'}
@@ -138,19 +146,16 @@ async function loadMyAds(){
   ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
-   const canDelete=r._table!=='businesses'||r.status==='pending';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+(canDelete?'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف</button>':'<small class="muted">حذف المحل المنشور غير متاح حالياً.</small>')+'</div></article>';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions"><button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
 }
 async function deleteMyItem(table,id){
  if(!currentUser||!db||['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
- if(table==='businesses'){const own=await db.from('businesses').select('id,status,image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(own.error){toast('تعذّر التحقق من المحل: '+own.error.message);return}if(!own.data||own.data.status!=='pending'){toast('يمكن حذف المحل من هذه الواجهة فقط وهو قيد المراجعة.');return}}
  if(!window.confirm('متأكد بدك تحذف هذا المحتوى؟ ما في تراجع بعد الحذف.'))return;
  try{
   let query=db.from(table).delete().eq('id',id);
   query=query.eq(table==='businesses'?'owner_id':'user_id',currentUser.id);
-  if(table==='businesses')query=query.eq('status','pending');
   const {data,error}=await query.select('id,image_urls');
   if(error)throw error;
   if(!data||!data.length){toast('ما تم الحذف. قد لا تملك الصلاحية أو أن المحتوى تغيّرت حالته.');return}
@@ -169,6 +174,14 @@ function selectAdminTab(table){
  document.querySelectorAll('.admintab').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===table));
  loadAdminPending();
 }
+let adminShowAll=false;
+let blockedUserIds=new Set();
+function toggleAdminView(){
+ adminShowAll=!adminShowAll;
+ const b=$('adminViewBtn');if(b)b.textContent=adminShowAll?'عرض المعلّق فقط':'عرض كل المحتوى';
+ const h=$('adminViewHint');if(h)h.textContent=adminShowAll?'يعرض كل المحتوى، بما فيه الإعلانات المنشورة والمرفوضة.':'يعرض المحتوى الذي ينتظر المراجعة.';
+ loadAdminPending();
+}
 function adminEscape(value){
  return String((value == null ? '' : value)).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
@@ -177,40 +190,74 @@ function adminDescription(row,table){
  return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null].filter(Boolean).join(' · ');
 }
 async function loadAdminPending(){
- if(!db||(currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin')return;
+ if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
  const box=$('adminItems');if(!box)return;
- box.innerHTML='<div class="empty">عم نحمل الطلبات المعلّقة…</div>';
+ box.innerHTML='<div class="empty">عم نحمل المحتوى…</div>';
  try{
-  const {data,error}=await db.from(adminActiveTable).select('*').eq('status','pending').order('created_at',{ascending:false});
-  if(error)throw error;
+  const [itemsResult,blockedResult]=await Promise.all([
+   (adminShowAll?db.from(adminActiveTable).select('*'):db.from(adminActiveTable).select('*').eq('status','pending')).order('created_at',{ascending:false}),
+   db.from('blocked_users').select('user_id')
+  ]);
+  if(itemsResult.error)throw itemsResult.error;
+  if(blockedResult.error)throw blockedResult.error;
+  blockedUserIds=new Set((blockedResult.data||[]).map(x=>x.user_id));
   const counts=await Promise.all(['listings','businesses','wanted_requests'].map(async t=>{
    const {count,error:e}=await db.from(t).select('id',{count:'exact',head:true}).eq('status','pending');
    return e?0:(count||0);
   }));
   const countNode=$('adminPendingCount');
   if(countNode)countNode.textContent=counts.reduce((a,b)=>a+b,0)+' بانتظار المراجعة';
-  if(!(data ? data.length : undefined)){box.innerHTML='<div class="empty">ما في '+adminEscape(adminTableLabels[adminActiveTable])+' بانتظار المراجعة حالياً.</div>';return}
+  const data=itemsResult.data||[];
+  if(!data.length){box.innerHTML='<div class="empty">'+(adminShowAll?'لا يوجد محتوى في هذا القسم.':'ما في '+adminEscape(adminTableLabels[adminActiveTable])+' بانتظار المراجعة حالياً.')+'</div>';return}
   box.innerHTML=data.map(row=>{
    const title=row.title||row.name||'بدون عنوان';
    const desc=adminDescription(row,adminActiveTable);
    const created=row.created_at?new Date(row.created_at).toLocaleString('ar-SY'):'';
-   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'</div></div><div class="adminactions"><button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button><button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
+   const ownerId=row.owner_id||row.user_id||null;
+   const blocked=ownerId&&blockedUserIds.has(ownerId);
+   const ownerAction=ownerId?(blocked
+    ?'<button type="button" class="btn outline" onclick="unblockUser(\''+adminEscape(ownerId)+'\')">إلغاء حظر صاحب الإعلان</button>'
+    :'<button type="button" class="btn reject" onclick="blockUser(\''+adminEscape(ownerId)+'\',\''+adminEscape(title)+'\')">حظر صاحب الإعلان</button>'):'';
+   const reviewActions=adminShowAll
+    ?(row.status==='pending'?'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>':'')
+    :'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+ownerAction+'<button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
   }).join('');
- }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الطلبات. سجّل الخروج ثم الدخول مجدداً لتحديث صلاحيات الإدارة.</div>';}
+ }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الإدارة. تأكد من تطبيق ترحيل قاعدة البيانات الجديد ثم أعد المحاولة.</div>';}
 }
-async function deleteAdminItem(table,id){
- if(!currentUser||!db||(currentUser.app_metadata&&currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
- if(['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
- if(!window.confirm('حذف نهائي؟ سيتم حذف المحتوى من قاعدة البيانات ولا يمكن التراجع.'))return;
+async function blockUser(userId,title){
+ if(!currentUser||!db||currentUser.app_metadata?.role!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if(!userId||userId===currentUser.id){toast('ما فيك تحظر حساب الإدارة الحالي.');return}
+ const reason=window.prompt('سبب حظر صاحب الإعلان: '+(title||''),'مخالفة قواعد دليل منبج');
+ if(reason===null)return;
  try{
-  const {data,error}=await db.from(table).delete().eq('id',id).select('id,image_urls');
+  const {error}=await db.from('blocked_users').insert({user_id:userId,blocked_by:currentUser.id,reason:reason.trim()||'مخالفة قواعد الموقع'});
   if(error)throw error;
-  if(!data||!data.length){toast('لم يتم الحذف؛ تحقق من الصلاحيات أو حالة المحتوى.');return}
-  const urls=data[0].image_urls||[];
-  const paths=urls.map(u=>{try{return new URL(u).pathname.split('/storage/v1/object/public/manbij-images/')[1]}catch(_){return null}}).filter(Boolean);
-  if(paths.length){const rm=await db.storage.from('manbij-images').remove(paths);if(rm.error)console.warn('Image cleanup failed:',rm.error.message)}
-  toast('تم حذف المحتوى.');await loadAdminPending();await loadData();
- }catch(e){console.error(e);toast('تعذّر الحذف: '+(e.message||'خطأ غير معروف'))}
+  toast('تم حظر المستخدم. سيتم منعه من النشر وتسجيل الدخول بعد تحديث الجلسة.');
+  await loadAdminPending();
+ }catch(e){console.error(e);toast('تعذّر حظر المستخدم: '+(e.message||'خطأ غير معروف'))}
+}
+async function unblockUser(userId){
+ if(!currentUser||!db||currentUser.app_metadata?.role!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if(!window.confirm('إلغاء حظر هذا المستخدم؟'))return;
+ try{
+  const {error}=await db.from('blocked_users').delete().eq('user_id',userId);
+  if(error)throw error;
+  toast('تم إلغاء الحظر.');
+  await loadAdminPending();
+ }catch(e){console.error(e);toast('تعذّر إلغاء الحظر: '+(e.message||'خطأ غير معروف'))}
+}
+async function enforceBlockedUser(user){
+ if(!db||!user)return;
+ try{
+  const {data,error}=await db.rpc('is_current_user_blocked');
+  if(error)throw error;
+  if(data){
+   toast('هذا الحساب محظور من استخدام دليل منبج. تواصل مع الإدارة إذا كنت تعتقد أن هذا خطأ.');
+   await db.auth.signOut();
+   currentUser=null;updateAccountUI();
+  }
+ }catch(e){console.error('blocked-user check:',e)}
 }
 async function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
@@ -225,6 +272,7 @@ async function reviewAdminItem(table,id,status){
  }catch(e){console.error(e);toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف'))}
 }
 
-async function accountAction(){if(currentUser){if(!db)return;const {error}=await db.auth.signOut();if(error){toast(error.message);return}currentUser=null;updateAccountUI();toast('تم تسجيل الخروج.');return}openModal('auth')}
+async function accountAction(){if(currentUser){const section=$('myAdsSection');if(section)section.scrollIntoView({behavior:'smooth',block:'start'});loadMyAds();return}openModal('auth')}
+async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.signOut();if(error)throw error;currentUser=null;updateAccountUI();toast('تم تسجيل الخروج بنجاح.');window.scrollTo({top:0,behavior:'smooth'});}catch(e){toast('تعذّر تسجيل الخروج: '+(e.message||'خطأ غير معروف'))}}
 loadData();
 </script></body></html>
