@@ -262,9 +262,9 @@ const statsSectionLabels={home:'الرئيسية',businesses:'المحلات و�
 function siteVisitorId(){
  try{let id=localStorage.getItem('dalil_manbij_visitor_id');if(!id){id=crypto.randomUUID();localStorage.setItem('dalil_manbij_visitor_id',id)}return id}catch(e){return crypto.randomUUID()}
 }
-async function recordSiteVisit(section){
+async function recordSiteVisit(section,eventType='page_view'){
  if(!db)return;
- try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home'});if(error)console.warn('site analytics:',error.message)}catch(e){console.warn('site analytics:',e)}
+ try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home',p_event_type:eventType});if(error)console.warn('site analytics:',error.message)}catch(e){console.warn('site analytics:',e)}
 }
 function initSiteAnalytics(){
  recordSiteVisit('home');
@@ -284,7 +284,7 @@ function initSiteAnalytics(){
    else if(/حسابي|حسابك|تسجيل الدخول/.test(text))section='account';
    else if(/ترويج|إعلان مميّز/.test(text))section='promotions';
   }
-  if(section)recordSiteVisit(section);
+  if(section)recordSiteVisit(section,'section_click');
  },{passive:true});
 }
 async function loadAdminStatistics(){
