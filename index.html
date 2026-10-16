@@ -19,6 +19,7 @@
 .adminmeta{font-size:12px;color:var(--muted);line-height:1.8;overflow-wrap:anywhere}
 .adminactions{display:flex;gap:8px;flex-wrap:wrap}
 .admincount{display:inline-block;background:#fff0d8;color:#80510c;border-radius:20px;padding:3px 9px;font-size:12px;margin-right:6px}
+.bannersection{margin:18px 0 30px}.bannergallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.sitebanner{display:block;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 4px 18px #123d300d;color:inherit;text-decoration:none}.sitebanner img{display:block;width:100%;aspect-ratio:16/6;object-fit:cover;background:var(--mint)}.sitebanner .bannertext{padding:12px 14px}.sitebanner h3{margin:0 0 5px;font-size:17px}.sitebanner p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}.adminbannerbox{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:16px;background:#f8fbf8}.bannerform{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 20px}.bannerform label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}.bannerform label .field{width:100%}.bannerform .two{grid-column:1/-1}.bannercheck{flex-direction:row!important;align-items:center;gap:10px!important}.bannercheck input{width:18px;height:18px}.banneradminitem{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0}.banneradminitem img{width:110px;height:72px;object-fit:cover;border-radius:8px}.banneradminitem h4{margin:0 0 5px}.banneradminitem .adminactions{margin-top:8px}.bannerstatus{font-size:12px;color:var(--muted)}@media(max-width:560px){.bannerform{grid-template-columns:1fr}.bannerform .two{grid-column:1}.banneradminitem{grid-template-columns:80px 1fr}.banneradminitem img{width:80px;height:65px}}
 .btn.success{background:#e3f5e9;color:#176b50;border:1px solid #b8e3c6}
 .btn.reject{background:#fff0f0;color:#a52b2b;border:1px solid #f0caca}
 
@@ -28,6 +29,7 @@
 <main class="wrap" id="home">
 <section class="hero"><div><div class="eyebrow">من أهل منبج وريفها ولأهلها</div><h1>كل اللي بدك ياه،<br>بتلاقيه قريب منك.</h1><p>دليل المحلات والخدمات، وسوق محلي للبيع والشراء، وطلباتك اليومية من مكان واحد.</p><div class="searchbox"><input id="searchInput" placeholder="شو عم تدور عليه؟ محل، خدمة، أو منتج…" oninput="renderAll()"><select id="areaFilter" onchange="renderAll()"><option value="الكل">كل منبج وريفها</option><option>منبج</option><option>أبو قلقل</option><option>الخفسة</option><option>مسكنة</option><option>العريمة</option><option>ريف منبج الشرقي</option><option>ريف منبج الغربي</option><option>القرى والبلدات الأخرى</option></select><button class="btn primary" onclick="document.getElementById('businesses').scrollIntoView({behavior:'smooth'})">ابحث 🔎</button></div><div class="statusline"><span id="statusDot" class="dot"></span><span id="connectionStatus">جاري الاتصال بقاعدة البيانات…</span></div></div><div class="heroart"><span>🛍️</span><div class="bubble b1">📍 منبج وريفها</div><div class="bubble b2">🤝 السوق المحلي أقرب</div></div></section>
 <div class="notice">📍 <strong>دليل منبج:</strong> محلات، مطاعم، عيادات، صيدليات، عقارات، سيارات، وخدمات محلية. لا نعرض إعلانات وهمية؛ المحتوى الظاهر يأتي من قاعدة البيانات.</div>
+<section id="bannerSection" class="bannersection" style="display:none" aria-label="الإعلانات الممولة"><div class="sectionhead"><h2>📣 إعلانات شركائنا</h2><span class="muted">ادعموا مشاريع منبج</span></div><div id="publicBanners" class="bannergallery"></div></section>
 <section id="businesses"><div class="sectionhead"><div><h2>🏪 دليل المحلات والخدمات</h2><div class="muted" style="margin-top:5px">اكتشف الأماكن المسجلة في منبج وريفها</div></div><button class="btn primary" onclick="openModal('business')">＋ أضف محلك</button></div><div class="categories" id="categories"><button class="cat active" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button></div><div class="grid" id="businessGrid" style="margin-top:14px"><div class="empty"><span class="spinner"></span> عم نحمل دليل المحلات…</div></div></section>
 <section id="listings"><div class="sectionhead"><div><h2>🛍️ إعلانات البيع والشراء</h2><div class="muted" style="margin-top:5px">الإعلانات المنشورة والمفعّلة فقط</div></div><button class="btn outline" onclick="openModal('listing')">＋ بيع غرضك</button></div><div class="filters"><button class="pill active" onclick="setCondition('الكل',this)">كل الحالات</button><button class="pill" onclick="setCondition('used',this)">مستعمل</button><button class="pill" onclick="setCondition('new',this)">جديد</button><button class="pill" onclick="setCondition('service',this)">خدمة</button></div><div class="grid" id="listingGrid" style="margin-top:14px"><div class="empty"><span class="spinner"></span> عم نحمل الإعلانات…</div></div></section>
 <section id="requests"><div class="sectionhead"><div><h2>🔎 اطلب اللي تحتاجه</h2><div class="muted" style="margin-top:5px">أضف طلبك ليظهر بعد تفعيله</div></div><button class="btn primary" onclick="openModal('request')">＋ أضف طلبك</button></div><div class="requestbox"><div><h2>ما لقيت اللي بدك ياه؟</h2><p>اكتب المنتج أو الخدمة اللي عم تدور عليها وحدد ميزانيتك ومنطقتك. الطلبات تُحفظ في قاعدة البيانات بعد تسجيل الدخول.</p><div style="background:var(--mint);padding:15px;border-radius:13px;font-size:13px;line-height:1.8">💡 مثال: بدي غسالة مستعملة، ميزانيتي 500,000 ليرة سورية، منبج.</div></div><div id="requestList" style="display:grid;gap:10px"><div class="empty">عم نحمل الطلبات…</div></div></div></section>
@@ -36,6 +38,28 @@
 
 <section id="adminPanel" aria-live="polite">
  <div class="adminhead"><div><h2 style="margin:0">🛡️ لوحة الإدارة <span class="admincount" id="adminPendingCount">0 بانتظار المراجعة</span></h2><div class="muted" style="margin-top:6px">راجع المحتوى قبل نشره للعموم.</div></div><button class="btn outline" type="button" onclick="loadAdminPending()">↻ تحديث</button></div>
+ <div class="admintabs">
+  <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
+  <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
+  <button type="button" class="admintab" data-admin-tab="wanted_requests" onclick="selectAdminTab('wanted_requests')">طلبات الناس</button>
+ </div>
+ <div class="adminbannerbox">
+  <div class="sectionhead"><h3 style="margin:0">🖼️ إدارة البانرات</h3><span class="muted" id="bannerAdminCount">0 بانر</span></div>
+  <form id="bannerForm" class="bannerform" onsubmit="saveBanner(event)">
+   <input type="hidden" name="id">
+   <label>عنوان البانر<input class="field" name="title" required maxlength="160" placeholder="مثلاً: عروض محل الأمان"></label>
+   <label>وصف مختصر<input class="field" name="description" maxlength="500" placeholder="اختياري"></label>
+   <label>رابط صورة البانر<input class="field" name="image_url" type="url" required placeholder="https://... رابط الصورة"></label>
+   <label>الرابط عند الضغط<input class="field" name="target_url" type="url" required placeholder="https://... رابط المحل أو واتساب"></label>
+   <label>اسم المعلن<input class="field" name="advertiser_name" maxlength="160" placeholder="اسم المحل أو صاحب الإعلان"></label>
+   <div class="two"><label>بداية العرض<input class="field" name="starts_at" type="datetime-local" required></label><label>نهاية العرض<input class="field" name="ends_at" type="datetime-local" required></label></div>
+   <div class="two"><label>ترتيب العرض<input class="field" name="sort_order" type="number" min="0" step="1" value="100"></label><label>قيمة الإعلان<input class="field" name="amount" type="number" min="0" step="0.01" value="0"></label></div>
+   <div class="two"><label>حالة الدفع<select class="field" name="payment_status"><option value="pending">بانتظار الدفع</option><option value="paid">مدفوع</option><option value="waived">مجاني</option><option value="refunded">مسترد</option></select></label><label class="bannercheck"><input type="checkbox" name="is_active" checked> تفعيل البانر</label></div>
+   <div class="two"><button class="btn primary" type="submit" id="bannerSaveBtn">＋ حفظ البانر</button><button class="btn outline" type="button" onclick="resetBannerForm()">إلغاء التعديل / تفريغ</button></div>
+   <small>ضع رابط صورة مباشر يبدأ بـ https://. البانرات الفعالة تظهر للزوار ضمن فترة العرض فقط.</small>
+  </form>
+  <div id="adminBanners"><div class="empty">عم نحمل البانرات…</div></div>
+ </div>
  <div class="admintabs">
   <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
   <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
@@ -51,7 +75,7 @@
 const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
 const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
 const AREAS=['منبج','أبو قلقل','الخفسة','مسكنة','العريمة','ريف منبج الشرقي','ريف منبج الغربي','القرى والبلدات الأخرى'];
-let db=null,currentUser=null,activeCat='الكل',condition='الكل',businesses=[],categories=[],listings=[],requests=[];
+let db=null,currentUser=null,activeCat='الكل',condition='الكل',businesses=[],categories=[],listings=[],requests=[],siteBanners=[];
 const $=id=>document.getElementById(id);
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',4200)}
@@ -74,7 +98,7 @@ async function loadData(){
   if(bizErr)console.warn('businesses:',bizErr.message);businesses=biz||[];
   if(adsErr)console.warn('listings:',adsErr.message);listings=ads||[];
   if(reqErr)console.warn('requests:',reqErr.message);requests=reqs||[];
-  renderCategories();renderAll();renderRequests();
+  renderCategories();renderAll();renderRequests();await loadSiteBanners();
   const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
   if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
@@ -95,7 +119,7 @@ function updateAccountUI(){
  const isAdmin=currentUser?.app_metadata?.role==='admin';
  const panel=$('adminPanel');
  if(panel)panel.style.display=isAdmin?'block':'none';
- if(isAdmin)loadAdminPending();
+ if(isAdmin){loadAdminPending();loadAdminBanners();}
 }
 function closeModal(){$('modalbg').style.display='none';$('modalForm').reset()}
 function openModal(type){const f=$('modalForm');$('modalbg').style.display='flex';let html='';if(type!=='auth'&&!currentUser){$('modalTitle').textContent='تسجيل الدخول مطلوب';f.innerHTML='<p>حتى نحمي بياناتك ونربط الإعلان بحسابك، سجّل الدخول أو أنشئ حساباً أولاً.</p><button type="button" class="btn primary" onclick="openModal(\'auth\')">تسجيل الدخول / إنشاء حساب</button>';return}
@@ -108,6 +132,61 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
  if(!currentUser){toast('سجّل الدخول أولاً.');return}
  let table,payload;if(f.querySelector('[name="item_condition"]')){table='listings';payload={user_id:currentUser.id,title:d.title,description:d.description||null,price:Number(d.price),category:d.category,area:d.area,item_condition:d.item_condition,contact_phone:d.contact_phone||null,status:'pending'}}else if(f.querySelector('[name="category_id"]')){table='businesses';payload={owner_id:currentUser.id,category_id:d.category_id,name:d.name,description:d.description||null,phone:d.phone||null,whatsapp:d.whatsapp||null,address:d.address||null,area:d.area,village:d.village||null,map_url:d.map_url||null,status:'pending'}}else{table='wanted_requests';payload={user_id:currentUser.id,title:d.title,description:d.description||null,budget:d.budget===''?null:Number(d.budget),category:d.category||'أخرى',area:d.area,status:'pending'}}
  const {error}=await db.from(table).insert(payload);if(error)throw error;toast('وصلنا طلبك بنجاح، وسيظهر بعد مراجعة الإدارة.');closeModal();}catch(err){console.error(err);let msg=err.message||'خطأ غير معروف';if(/row-level security|permission denied|not allowed/i.test(msg))msg='قاعدة البيانات رفضت العملية بسبب سياسة الصلاحيات. نحتاج مراجعة سياسة الجدول في Supabase.';toast('ما تمت العملية: '+msg)}}
+
+
+function bannerDateLocal(v){const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())}
+async function loadSiteBanners(){
+ if(!db)return;
+ try{
+  const {data,error}=await db.from('site_banners').select('id,title,description,image_url,target_url,advertiser_name,starts_at,ends_at,sort_order,is_active').eq('is_active',true).lte('starts_at',new Date().toISOString()).gt('ends_at',new Date().toISOString()).order('sort_order',{ascending:true});
+  if(error)throw error;
+  siteBanners=data||[];
+  const section=$('bannerSection'),box=$('publicBanners');
+  if(!section||!box)return;
+  section.style.display=siteBanners.length?'block':'none';
+  box.innerHTML=siteBanners.map(b=>'<a class="sitebanner" href="'+esc(b.target_url)+'" target="_blank" rel="noopener noreferrer" onclick="trackBannerClick(\''+esc(b.id)+'\')"><img src="'+esc(b.image_url)+'" alt="'+esc(b.title)+'" loading="lazy"><div class="bannertext"><h3>'+esc(b.title)+'</h3>'+(b.description?'<p>'+esc(b.description)+'</p>':'')+'<p>'+esc(b.advertiser_name||'إعلان ممول')+'</p></div></a>').join('');
+ }catch(e){console.warn('site banners:',e.message)}
+}
+async function trackBannerClick(id){try{await db.from('site_banners').update({clicks:0}).eq('id',id)}catch(e){}}
+function resetBannerForm(){
+ const f=$('bannerForm');if(!f)return;f.reset();f.elements.id.value='';f.elements.sort_order.value='100';f.elements.amount.value='0';f.elements.is_active.checked=true;f.elements.payment_status.value='pending';f.elements.starts_at.value=bannerDateLocal(new Date());const end=new Date(Date.now()+30*86400000);f.elements.ends_at.value=bannerDateLocal(end);$('bannerSaveBtn').textContent='＋ حفظ البانر';
+}
+async function loadAdminBanners(){
+ if(!db||currentUser?.app_metadata?.role!=='admin')return;
+ const box=$('adminBanners');if(!box)return;box.innerHTML='<div class="empty">عم نحمل البانرات…</div>';
+ try{
+  const {data,error}=await db.from('site_banners').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:false});
+  if(error)throw error;
+  const rows=data||[];$('bannerAdminCount').textContent=rows.length+' بانر';
+  box.innerHTML=rows.length?rows.map(b=>'<article class="banneradminitem"><img src="'+esc(b.image_url)+'" alt=""><div><h4>'+esc(b.title)+'</h4><div class="bannerstatus">'+(b.is_active?'🟢 مفعّل':'⚪ متوقف')+' · '+(b.payment_status==='paid'?'مدفوع':b.payment_status==='waived'?'مجاني':b.payment_status==='refunded'?'مسترد':'بانتظار الدفع')+' · حتى '+esc(new Date(b.ends_at).toLocaleDateString('ar-SY'))+'</div><div class="adminmeta">'+esc(b.advertiser_name||'بدون اسم معلن')+' · '+Number(b.amount||0).toLocaleString('ar-SY')+'</div><div class="adminactions"><button class="btn outline" type="button" onclick="editBanner(\''+esc(b.id)+'\')">تعديل</button><button class="btn '+(b.is_active?'reject':'success')+'" type="button" onclick="toggleBanner(\''+esc(b.id)+'\','+(!b.is_active)+')">'+(b.is_active?'إيقاف':'تفعيل')+'</button><button class="btn reject" type="button" onclick="deleteBanner(\''+esc(b.id)+'\')">حذف</button></div></div></article>').join(''):empty('ما في بانرات حالياً. استخدم النموذج أعلاه لإضافة أول بانر.');
+ }catch(e){console.error(e);box.innerHTML=empty('تعذر تحميل البانرات. تأكد أن حسابك لديه صلاحية المدير.')}
+}
+async function saveBanner(e){
+ e.preventDefault();if(currentUser?.app_metadata?.role!=='admin'){toast('هذه العملية للمدير فقط.');return}
+ const f=e.currentTarget,d=Object.fromEntries(new FormData(f).entries()),id=d.id;
+ if(new Date(d.ends_at)<=new Date(d.starts_at)){toast('تاريخ نهاية البانر يجب أن يكون بعد تاريخ البداية.');return}
+ const payload={title:d.title.trim(),description:d.description.trim(),image_url:d.image_url.trim(),target_url:d.target_url.trim(),advertiser_name:d.advertiser_name.trim(),starts_at:new Date(d.starts_at).toISOString(),ends_at:new Date(d.ends_at).toISOString(),sort_order:Number(d.sort_order||100),amount:Number(d.amount||0),payment_status:d.payment_status,is_active:f.elements.is_active.checked,created_by:currentUser.id};
+ try{
+  const result=id?await db.from('site_banners').update(payload).eq('id',id).select('id'):await db.from('site_banners').insert(payload).select('id');
+  if(result.error)throw result.error;
+  toast(id?'تم تحديث البانر.':'تمت إضافة البانر بنجاح.');
+  resetBannerForm();await loadAdminBanners();await loadSiteBanners();
+ }catch(err){console.error(err);toast('ما انحفظ البانر: '+(err.message||'تحقق من صلاحيات المدير والحقول.'))}
+}
+async function editBanner(id){
+ if(currentUser?.app_metadata?.role!=='admin')return;
+ const {data,error}=await db.from('site_banners').select('*').eq('id',id).single();if(error){toast('تعذر فتح البانر للتعديل.');return}
+ const f=$('bannerForm');for(const k of ['id','title','description','image_url','target_url','advertiser_name','sort_order','amount','payment_status'])if(f.elements[k])f.elements[k].value=data[k]??'';
+ f.elements.starts_at.value=bannerDateLocal(data.starts_at);f.elements.ends_at.value=bannerDateLocal(data.ends_at);f.elements.is_active.checked=!!data.is_active;$('bannerSaveBtn').textContent='💾 حفظ التعديلات';f.scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function toggleBanner(id,active){
+ if(currentUser?.app_metadata?.role!=='admin')return;
+ const {error}=await db.from('site_banners').update({is_active:active}).eq('id',id);if(error){toast('تعذر تغيير حالة البانر: '+error.message);return}toast(active?'تم تفعيل البانر.':'تم إيقاف البانر.');await loadAdminBanners();await loadSiteBanners();
+}
+async function deleteBanner(id){
+ if(currentUser?.app_metadata?.role!=='admin'||!confirm('متأكد من حذف هذا البانر نهائياً؟'))return;
+ const {error}=await db.from('site_banners').delete().eq('id',id);if(error){toast('تعذر حذف البانر: '+error.message);return}toast('تم حذف البانر.');await loadAdminBanners();await loadSiteBanners();
+}
 
 let adminActiveTable='listings';
 const adminTableLabels={listings:'إعلانات البيع',businesses:'المحلات والخدمات',wanted_requests:'طلبات الناس'};
