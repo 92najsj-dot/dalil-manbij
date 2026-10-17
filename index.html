@@ -486,11 +486,22 @@ function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.s
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;showDalilInstallButton(true)});
 window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
 async function installDalilApp(){
- if(dalilInstallPrompt){dalilInstallPrompt.prompt();const choice=await dalilInstallPrompt.userChoice;dalilInstallPrompt=null;if(choice&&choice.outcome==='accepted')showDalilInstallButton(false);return}
+ const button=document.getElementById('installAppBtn');
+ try{
+  if(dalilInstallPrompt){
+   const promptEvent=dalilInstallPrompt;
+   dalilInstallPrompt=null;
+   await promptEvent.prompt();
+   const choice=await promptEvent.userChoice;
+   if(choice&&choice.outcome==='accepted')showDalilInstallButton(false);
+   return;
+  }
+ }catch(error){console.warn('PWA install prompt failed:',error);dalilInstallPrompt=null}
  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
  const isAndroid=/android/i.test(navigator.userAgent);
- const message=isIOS?'لتثبيت الموقع على iPhone: اضغط مشاركة في المتصفح ثم «إضافة إلى الشاشة الرئيسية».':isAndroid?'إذا لم تظهر نافذة التثبيت: افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».':'من قائمة المتصفح اختر «تثبيت دليل منبج» أو «إنشاء اختصار».';
- if(typeof toast==='function')toast(message);else alert(message);
+ const message=isIOS?'لتثبيت دليل منبج: اضغط زر المشاركة في المتصفح ثم «إضافة إلى الشاشة الرئيسية».':isAndroid?'التثبيت المباشر غير متاح من هذا الزر حالياً. اضغط ⋮ في Chrome ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».':'افتح قائمة المتصفح واختر «تثبيت دليل منبج» أو «إنشاء اختصار».';
+ // Use a native alert as a reliable fallback so the button never appears unresponsive.
+ window.alert(message);
 }
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Service worker registration failed:',err)))}
 
