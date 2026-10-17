@@ -58,10 +58,51 @@ body.admin-page #adminPanel .adminhead{scroll-margin-top:190px}
 body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page #adminViolationsSection,body.admin-page #blockedUsersList,body.admin-page #adminStatsStatus,body.admin-page #promotionForm,body.admin-page #promotionAdminList,body.admin-page #adminAuditList{scroll-margin-top:190px}
 @media(max-width:850px){.admin-menu-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-dashboard-menu{padding:10px}}
 @media(max-width:480px){.admin-dashboard-top .btn{padding:8px 10px;font-size:12px}.admin-dashboard-brand{font-size:15px}.admin-dashboard-brand span{font-size:11px}.admin-menu-group summary{font-size:12px;padding:10px 8px}.admin-menu-links a{font-size:11px;padding:9px 7px}.admin-menu-hint{font-size:10px}}
+
+/* تحسين احترافي للوحة الإدارة */
+.admin-dashboard-menu{padding:14px max(14px,calc((100vw - 1160px)/2)) 13px;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border:0;border-bottom:1px solid #dce8df;border-radius:0 0 22px 22px;box-shadow:0 10px 32px rgba(18,61,48,.10)}
+.admin-dashboard-top{margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid #edf2ee}
+.admin-dashboard-brand{gap:10px;font-size:inherit}
+.admin-brand-pin{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#176b50,#23936b);box-shadow:0 5px 12px #176b5025;font-size:22px}
+.admin-brand-copy{display:flex;flex-direction:column;gap:3px}
+.admin-brand-copy strong{font-size:18px;color:#123d30}
+.admin-brand-copy small{font-size:11px;font-weight:600;color:#718078}
+.admin-dashboard-brand .admin-brand-badge{font-size:9px;letter-spacing:1px;background:#e8f5ed;color:#176b50;border:1px solid #cfe5d6;border-radius:7px;padding:5px 7px}
+.admin-dashboard-actions{display:flex;align-items:center;gap:10px}
+.admin-live-status{display:inline-flex;align-items:center;gap:7px;border:1px solid #d9e9de;border-radius:999px;padding:8px 11px;color:#246348;background:#f5fbf7;font-size:11px;font-weight:800}
+.admin-live-status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2b9b64;box-shadow:0 0 0 3px #dff3e6}
+.admin-menu-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 11px}
+.admin-menu-intro strong{font-size:14px;color:#173f31}
+.admin-menu-intro p{margin:4px 0 0;font-size:11px;color:#78857d;line-height:1.7}
+.admin-menu-intro>span{font-size:10px;color:#7b887f;background:#f5f8f5;border:1px solid #e6ede7;border-radius:9px;padding:7px 9px;white-space:nowrap}
+.admin-menu-groups{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.admin-menu-group{border:1px solid #dfe9e2;border-radius:15px;background:linear-gradient(180deg,#fff,#fbfdfb);box-shadow:0 2px 7px rgba(18,61,48,.025);transition:border-color .18s,box-shadow .18s,transform .18s}
+.admin-menu-group:hover{border-color:#b7d8c5;box-shadow:0 5px 16px rgba(18,61,48,.07)}
+.admin-menu-group[open]{border-color:#a9d2b9;box-shadow:0 6px 18px rgba(23,107,80,.08);background:#fafffb}
+.admin-menu-group summary{min-height:48px;align-items:center;padding:12px;font-size:12px;color:#244b3a;gap:8px}
+.admin-menu-group summary:after{content:'＋';display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:7px;background:#eaf5ed;color:#176b50}
+.admin-menu-group[open] summary:after{content:'−';background:#176b50;color:white}
+.admin-menu-links{gap:6px;padding:0 9px 10px}
+.admin-menu-links a{display:flex;align-items:center;gap:7px;min-height:37px;padding:9px 10px;border:1px solid #e8eee9;border-radius:10px;color:#405349;font-size:11px;line-height:1.6;background:#fff;transition:all .15s}
+.admin-menu-links a:before{content:'↙';color:#83a391;font-size:11px}
+.admin-menu-links a:hover,.admin-menu-links a:focus-visible{background:#eaf6ee;border-color:#b6d9c3;color:#14583f;transform:translateX(-2px);outline:none}
+.admin-menu-links a.active{background:#176b50;border-color:#176b50;color:#fff;box-shadow:0 3px 9px #176b5026}
+.admin-menu-links a.active:before{color:#c5efd4}
+.admin-menu-hint{display:flex;align-items:center;gap:6px;margin:10px 2px 0;font-size:10px}
+.admin-menu-hint:before{content:'ℹ';display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#e8f5ed;color:#176b50;font-weight:900}
+body.admin-page #adminPanel{border-radius:20px;box-shadow:0 10px 35px rgba(18,61,48,.06);border-color:#e0e9e2;padding:clamp(14px,2.5vw,24px)}
+body.admin-page #adminPanel .adminhead{scroll-margin-top:230px}
+body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page #adminViolationsSection,body.admin-page #blockedUsersList,body.admin-page #adminStatsStatus,body.admin-page #promotionForm,body.admin-page #promotionAdminList,body.admin-page #adminAuditList{scroll-margin-top:230px}
+@media(max-width:850px){.admin-menu-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.admin-dashboard-menu{padding:11px 12px}.admin-menu-group summary{font-size:12px}}
+@media(max-width:480px){.admin-dashboard-top{align-items:flex-start}.admin-brand-pin{width:38px;height:38px;border-radius:12px;font-size:19px}.admin-brand-copy strong{font-size:15px}.admin-brand-copy small{font-size:10px}.admin-dashboard-brand .admin-brand-badge{display:none}.admin-dashboard-actions{gap:6px;flex-direction:column;align-items:flex-end}.admin-live-status{padding:6px 8px;font-size:10px}.admin-dashboard-actions .btn{padding:7px 9px;font-size:11px}.admin-menu-intro>span{display:none}.admin-menu-groups{grid-template-columns:1fr 1fr;gap:7px}.admin-menu-group{border-radius:12px}.admin-menu-group summary{padding:10px 8px;font-size:11px;min-height:48px}.admin-menu-links{padding:0 6px 7px;gap:5px}.admin-menu-links a{font-size:10px;padding:8px 7px;min-height:34px}.admin-menu-hint{font-size:10px}}
 </style></head>
 <body class="admin-page">
 <div id="adminDashboardMenu" class="admin-dashboard-menu" style="display:none">
-  <div class="admin-dashboard-top"><a class="admin-dashboard-brand" href="index.html">📍 دليل منبج <span>لوحة الإدارة</span></a><a class="btn outline" href="index.html">↩ العودة للموقع</a></div>
+  <div class="admin-dashboard-top">
+    <a class="admin-dashboard-brand" href="index.html"><span class="admin-brand-pin">📍</span><span class="admin-brand-copy"><strong>دليل منبج</strong><small>مركز التحكم والإدارة</small></span><span class="admin-brand-badge">ADMIN</span></a>
+    <div class="admin-dashboard-actions"><span class="admin-live-status"><i></i> لوحة الإدارة</span><a class="btn outline" href="index.html">↩ العودة للموقع</a></div>
+  </div>
+  <div class="admin-menu-intro"><div><strong>إدارة الموقع</strong><p>كل أدوات المتابعة والتحكم مرتبة ضمن أقسام واضحة.</p></div><span>اختر القسم المطلوب ↓</span></div>
   <div class="admin-menu-groups" aria-label="أقسام الإدارة">
     <details class="admin-menu-group" open><summary>📦 إدارة المحتوى</summary><div class="admin-menu-links">
       <a href="#adminPanel">🏠 ملخص الإدارة</a><a href="#adminItems">🛍️ مراجعة الإعلانات والمحلات والطلبات</a><a href="#adminViolationsSection">🚫 الإعلانات المخالفة</a><a href="#adminReportsSection">🚩 بلاغات المستخدمين</a>
