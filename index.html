@@ -25,7 +25,34 @@
  .brand-lockup{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.15}.brand-lockup .logo{font-weight:900}.brand-tagline{font-size:12px;font-weight:700;color:#2d8065;padding-right:3px;letter-spacing:0} @media(max-width:600px){.brand-tagline{font-size:11px}}.featured-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;background:linear-gradient(135deg,#fff8df,#f5e4a8);color:#765516;border:1px solid #e5c96b;box-shadow:0 3px 10px rgba(125,92,20,.10);font-weight:800;white-space:nowrap}.featured-nav-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(125,92,20,.16)}.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.featured-nav-btn{background:linear-gradient(135deg,#fff8df,#f3df9b);border-color:#dfbd52;color:#765516}.nav-actions .primary{white-space:nowrap}@media(max-width:650px){.nav-actions{order:2;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:9px}.nav-actions .btn{width:100%;min-height:48px;padding:11px 8px;font-size:13px}.navlinks{order:3}.brand-lockup{margin-left:auto}}@media(max-width:600px){.featured-nav-btn{padding:10px 12px;font-size:13px}}
 .publish-date{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.4}.profile-name{font-size:11px;color:var(--muted);margin-top:7px;cursor:pointer;display:inline-flex;gap:4px;align-items:center;border:0;background:transparent;padding:0}.profile-name:hover{text-decoration:underline;color:var(--primary)}.profile-page{max-height:85vh;overflow:auto}.profile-ad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.profile-ad-grid .card{min-width:0}
 
-.account-dashboard{max-width:720px;margin:0 auto}.account-menu{display:grid;gap:8px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px}.account-menu-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:right;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;color:var(--text);font-size:14px;font-weight:700;min-height:42px}.account-menu-btn:hover{background:var(--mint);border-color:#b7d8c6}.account-menu-btn.account-logout{width:100%;justify-self:stretch;min-height:42px;padding:11px 13px;font-size:14px;color:#a52b2b;background:#fff3f3;border-color:#f0d0d0}.account-count{font-size:11px;background:var(--mint);border-radius:20px;padding:3px 8px}.favorite-btn{padding:7px 10px!important;font-size:12px!important;min-height:32px}.favorite-btn.saved{background:#fff0f2!important;border-color:#f0c9d0!important;color:#a52b45!important}@media(max-width:600px){.account-menu{padding:9px;gap:7px}.account-menu-btn{padding:10px 11px;font-size:13px}.account-menu-btn.account-logout{width:100%;margin-top:4px;min-height:42px;font-size:13px}}
+
+/* قائمة حسابي بنفس تجربة لوحة الإدارة: أقسام قابلة للطي وانتقال مباشر */
+.account-dashboard{max-width:820px;margin:0 auto}
+.account-dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:16px 18px;background:linear-gradient(135deg,#f0f8f2,#fff);border:1px solid #dfeae2;border-radius:18px}
+.account-dashboard-title{display:flex;align-items:center;gap:11px}
+.account-dashboard-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#176b50,#23936b);color:white;font-size:21px;box-shadow:0 5px 12px #176b5025}
+.account-dashboard-title strong{display:block;font-size:16px;color:#123d30}
+.account-dashboard-title small{display:block;margin-top:4px;font-size:11px;color:#718078}
+.account-dashboard-status{display:inline-flex;align-items:center;gap:7px;border:1px solid #d9e9de;border-radius:999px;padding:8px 11px;color:#246348;background:#f5fbf7;font-size:11px;font-weight:800}
+.account-dashboard-status i{width:7px;height:7px;border-radius:50%;background:#2b9b64;box-shadow:0 0 0 3px #dff3e6}
+.account-menu{display:grid;gap:9px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 5px 18px rgba(18,61,48,.04)}
+.account-menu-group{border:1px solid #dfe9e2;border-radius:14px;background:linear-gradient(180deg,#fff,#fbfdfb);overflow:hidden;transition:border-color .18s,box-shadow .18s}
+.account-menu-group[open]{border-color:#a9d2b9;box-shadow:0 5px 15px rgba(23,107,80,.06)}
+.account-menu-group summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:12px 14px;color:#244b3a;font-size:14px;font-weight:800;user-select:none}
+.account-menu-group summary::-webkit-details-marker{display:none}
+.account-menu-label{display:flex;align-items:center;gap:10px}
+.account-menu-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#eaf5ed;font-size:16px}
+.account-menu-plus{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#eaf5ed;color:#176b50;font-size:18px;font-weight:900}
+.account-menu-group[open] .account-menu-plus{background:#176b50;color:#fff}
+.account-menu-links{display:grid;gap:7px;padding:0 10px 10px}
+.account-menu-links .account-menu-btn{min-height:44px;padding:10px 12px;border:1px solid #e7eee8;border-radius:10px;background:#fff;color:#405349;text-decoration:none;font-size:13px;font-weight:700}
+.account-menu-links .account-menu-btn:hover,.account-menu-links .account-menu-btn:focus-visible{background:var(--mint);border-color:#b7d8c6;outline:none}
+.account-menu-links .account-menu-btn.account-logout{width:100%;justify-self:stretch;min-height:42px;padding:10px 12px;font-size:13px;color:#a52b2b;background:#fff3f3;border-color:#f0d0d0}
+.account-menu-note{margin:10px 2px 0;color:var(--muted);font-size:11px;line-height:1.7}
+.account-dashboard .requestbox{border-radius:16px}
+.account-menu .account-login-single{display:flex}
+@media(max-width:600px){.account-dashboard-head{padding:12px;align-items:flex-start}.account-dashboard-icon{width:38px;height:38px;font-size:18px}.account-dashboard-title strong{font-size:14px}.account-dashboard-title small{font-size:10px}.account-dashboard-status{font-size:10px;padding:7px 8px}.account-menu{padding:8px;gap:7px}.account-menu-group summary{min-height:48px;padding:10px;font-size:12px}.account-menu-icon{width:29px;height:29px}.account-menu-links{grid-template-columns:1fr;gap:6px;padding:0 7px 8px}.account-menu-links .account-menu-btn{min-height:42px;font-size:12px;padding:10px}.account-menu-note{font-size:10px}}
+.account-menu{display:grid;gap:8px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px}.account-menu-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:right;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;color:var(--text);font-size:14px;font-weight:700;min-height:42px}.account-menu-btn:hover{background:var(--mint);border-color:#b7d8c6}.account-menu-btn.account-logout{width:100%;justify-self:stretch;min-height:42px;padding:11px 13px;font-size:14px;color:#a52b2b;background:#fff3f3;border-color:#f0d0d0}.account-count{font-size:11px;background:var(--mint);border-radius:20px;padding:3px 8px}.favorite-btn{padding:7px 10px!important;font-size:12px!important;min-height:32px}.favorite-btn.saved{background:#fff0f2!important;border-color:#f0c9d0!important;color:#a52b45!important}@media(max-width:600px){.account-menu{padding:9px;gap:7px}.account-menu-btn{padding:10px 11px;font-size:13px}.account-menu-btn.account-logout{width:100%;margin-top:4px;min-height:42px;font-size:13px}}
 </style></head>
 <body>
 <header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><a class="btn outline" id="adminNavBtn" href="./admin.html" aria-label="فتح لوحة الإدارة المستقلة" style="display:none;text-decoration:none">🛡️ الإدارة ↗</a><div class="nav-actions"><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
@@ -39,15 +66,32 @@
 <section id="myAdsSection"><div class="sectionhead"><div><h2>📋 إعلاناتي وطلباتي</h2><div class="muted" style="margin-top:5px">تابع حالة المحتوى الذي أرسلته واحذف ما لم تعد تحتاجه.</div></div><button class="btn outline" onclick="loadMyAds()">↻ تحديث</button></div><div id="myAdsPanel"><div class="empty">سجّل الدخول لعرض إعلاناتك وطلباتك.</div></div></section>
 <section id="accountSection"><div class="sectionhead"><div><h2>👤 حسابي</h2><div class="muted">إدارة حسابك وإعلاناتك ومحفوظاتك من مكان واحد.</div></div></div>
 <div class="account-dashboard">
+ <div class="account-dashboard-head">
+  <div class="account-dashboard-title"><span class="account-dashboard-icon">👤</span><div><strong>مركز حسابي</strong><small>إدارة بياناتك وإعلاناتك ومحفوظاتك بسهولة</small></div></div>
+  <span class="account-dashboard-status" id="accountStatusBadge"><i></i> حسابك الشخصي</span>
+ </div>
  <div class="account-menu" id="accountMenu">
-  <button class="account-menu-btn" id="accountLoginBtn" onclick="openModal('auth')">🔐 تسجيل الدخول / إنشاء حساب</button>
-  <button class="account-menu-btn" id="accountProfileBtn" onclick="document.getElementById('displayNameSettings').scrollIntoView({behavior:'smooth',block:'center'})" style="display:none">👤 بياناتي وتعديل الاسم</button>
-  <button class="account-menu-btn" id="accountMyAdsBtn" onclick="document.getElementById('myAdsSection').scrollIntoView({behavior:'smooth',block:'start'});loadMyAds()" style="display:none">📢 إعلاناتي وطلباتي</button>
-  <button class="account-menu-btn" id="accountFavoritesBtn" onclick="openFavorites()" style="display:none">⭐ المحفوظات <span id="favoriteCount" class="account-count">0</span></button>
-  <button class="account-menu-btn account-logout" id="accountLogoutBtn" onclick="logoutAccount()" style="display:none">🚪 تسجيل الخروج</button>
+  <button class="account-menu-btn account-login-single" id="accountLoginBtn" onclick="openModal('auth')">🔐 تسجيل الدخول / إنشاء حساب <span>↙</span></button>
+  <details class="account-menu-group" id="accountGroupProfile" style="display:none">
+   <summary><span class="account-menu-label"><span class="account-menu-icon">👤</span> بياناتي الشخصية</span><span class="account-menu-plus">＋</span></summary>
+   <div class="account-menu-links"><button class="account-menu-btn" id="accountProfileBtn" onclick="document.getElementById('displayNameSettings').scrollIntoView({behavior:'smooth',block:'center'})" style="display:none">✏️ تعديل الاسم الظاهر</button></div>
+  </details>
+  <details class="account-menu-group" id="accountGroupAds" style="display:none">
+   <summary><span class="account-menu-label"><span class="account-menu-icon">📢</span> إعلاناتي وطلباتي</span><span class="account-menu-plus">＋</span></summary>
+   <div class="account-menu-links"><button class="account-menu-btn" id="accountMyAdsBtn" onclick="document.getElementById('myAdsSection').scrollIntoView({behavior:'smooth',block:'start'});loadMyAds()" style="display:none">📋 عرض إعلاناتي وطلباتي</button></div>
+  </details>
+  <details class="account-menu-group" id="accountGroupFavorites" style="display:none">
+   <summary><span class="account-menu-label"><span class="account-menu-icon">⭐</span> المحفوظات</span><span class="account-menu-plus">＋</span></summary>
+   <div class="account-menu-links"><button class="account-menu-btn" id="accountFavoritesBtn" onclick="openFavorites()" style="display:none">⭐ إعلاناتي المحفوظة <span id="favoriteCount" class="account-count">0</span></button></div>
+  </details>
+  <details class="account-menu-group" id="accountGroupSecurity" style="display:none">
+   <summary><span class="account-menu-label"><span class="account-menu-icon">🔐</span> الأمان وتسجيل الخروج</span><span class="account-menu-plus">＋</span></summary>
+   <div class="account-menu-links"><button class="account-menu-btn account-logout" id="accountLogoutBtn" onclick="logoutAccount()" style="display:none">🚪 تسجيل الخروج</button></div>
+  </details>
+  <div class="account-menu-note" id="accountMenuNote">سجّل الدخول للوصول إلى بياناتك وإعلاناتك ومحفوظاتك.</div>
  </div>
  <div id="displayNameSettings" class="requestbox" style="display:none;margin:12px 0"><div style="flex:1"><h3 style="margin-top:0">الاسم الظاهر للناس</h3><p class="muted">عدّل الاسم الذي يظهر على إعلاناتك المنشورة.</p><form onsubmit="saveDisplayName(event)" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="displayNameInput" class="field" maxlength="40" minlength="2" placeholder="مثلاً: أحمد المنبجي" style="flex:1;min-width:180px;margin:0"><button class="btn primary" type="submit">حفظ الاسم</button><button class="btn outline" type="button" onclick="clearDisplayName()">حذف الاسم</button></form><small id="displayNameStatus" class="muted">الاسم اختياري ويمكن تعديله بأي وقت.</small></div></div>
-</div></section>
+</div></section></section>
 
 <section id="favoritesSection" style="display:none"><div class="sectionhead"><div><h2>⭐ المحفوظات</h2><div class="muted">إعلانات احتفظت بها لتعود إليها لاحقاً.</div></div><button class="btn outline" onclick="loadFavorites()">↻ تحديث</button></div><div id="favoritesGrid" class="profile-ad-grid"><div class="empty">سجّل الدخول لعرض المحفوظات.</div></div></section>
 <section id="adminPanel" aria-live="polite">
@@ -152,8 +196,10 @@ function updateAccountUI(){
  const loggedIn=!!currentUser;const adminNav=$('adminNavBtn');if(adminNav)adminNav.style.display=isAdminUser()?'inline-flex':'none';const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display=loggedIn?'block':'none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
  const accountBtn=$('accountBtn');if(accountBtn){accountBtn.textContent=loggedIn?'حسابي':'تسجيل الدخول';accountBtn.title=loggedIn?'إدارة حسابك ومحفوظاتك':'تسجيل الدخول إلى حسابك'}
  const loginSection=$('accountLoginBtn');if(loginSection)loginSection.style.display=loggedIn?'none':'flex';
- ['accountProfileBtn','accountMyAdsBtn','accountFavoritesBtn','accountLogoutBtn'].forEach(id=>{const el=$(id);if(el)el.style.display=loggedIn?(id==='accountLogoutBtn'?'inline-flex':'flex'):'none'});
- const oldSectionLogout=$('accountLogoutBtnOld');if(oldSectionLogout)oldSectionLogout.style.display='none';
+ const accountGroups=[['accountGroupProfile','accountProfileBtn'],['accountGroupAds','accountMyAdsBtn'],['accountGroupFavorites','accountFavoritesBtn'],['accountGroupSecurity','accountLogoutBtn']];
+ accountGroups.forEach(([groupId,buttonId])=>{const group=$(groupId),button=$(buttonId);if(group)group.style.display=loggedIn?'block':'none';if(button)button.style.display=loggedIn?'flex':'none';});
+ const note=$('accountMenuNote');if(note)note.textContent=loggedIn?'اختَر قسماً لعرض خياراته، وتُفتح مجموعة واحدة كل مرة.':'سجّل الدخول للوصول إلى بياناتك وإعلاناتك ومحفوظاتك.';
+ const badge=$('accountStatusBadge');if(badge)badge.innerHTML='<i></i> '+(loggedIn?'أنت مسجّل الدخول':'حسابك الشخصي');
  // تبقى لوحة الإدارة في الصفحة المستقلة admin.html فقط.
  if(currentUser&&db){loadMyAds();loadFavoriteKeys().catch(e=>console.warn('favorites:',e))}else{favoriteKeys=new Set();const count=$('favoriteCount');if(count)count.textContent='0';renderAll()}
 }function closeModal(){$('modalbg').style.display='none';$('modalForm').reset();delete $('modalForm').dataset.mode}
@@ -427,4 +473,10 @@ async function clearDisplayName(){if(!$('displayNameInput'))return;$('displayNam
 async function openPublicProfile(userId){if(!db||!userId)return;const modal=$('publicProfileModal');const body=$('publicProfileBody');modal.style.display='flex';body.innerHTML=empty('عم نحمل إعلانات المستخدم المنشورة…');try{const p=publicProfiles[userId];if(!p||!p.display_name){body.innerHTML=empty('هذا المستخدم لم يضف اسماً ظاهراً.');return}const [a,b]=await Promise.all([db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',userId).eq('status','active').order('created_at',{ascending:false}),db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,address,area,village,category_id,status,image_urls,created_at').eq('owner_id',userId).eq('status','active').order('name')]);if(a.error)throw a.error;if(b.error)throw b.error;const ads=(a.data||[]).map(x=>({...x,_title:x.title,_kind:'إعلان',_area:x.area,_table:'listing'})).concat((b.data||[]).map(x=>({...x,_title:x.name,_kind:'محل أو خدمة',_area:[x.area,x.village].filter(Boolean).join(' · '),_table:'business'})));body.innerHTML='<div class="sectionhead"><div><h2 style="margin:0">👤 '+esc(p.display_name)+'</h2><div class="muted">الإعلانات المنشورة لهذا المستخدم: '+ads.length+'</div></div></div><div class="profile-ad-grid">'+(ads.length?ads.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._table==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._title)+'</h3>'+(x._table==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="meta">📍 '+esc(x._area||'منبج وريفها')+' · '+esc(x._kind)+'</div>'+publicationDateMarkup(x.created_at)+(x.description?'<div class="meta">'+esc(x.description.slice(0,140))+'</div>':'')+'</div></article>').join(''):empty('لا توجد إعلانات منشورة لهذا المستخدم حالياً.'))+'</div>'}catch(err){console.error('public profile:',err);body.innerHTML=empty('تعذّر تحميل إعلانات هذا المستخدم حالياً.')}}
 function closePublicProfile(){$('publicProfileModal').style.display='none'}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()});
-</script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker registration failed:",err)));}</script></body></html>
+</script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker registration failed:",err)));}
+(function(){
+ const menu=document.getElementById('accountMenu');if(!menu)return;
+ const groups=Array.from(menu.querySelectorAll('.account-menu-group'));
+ groups.forEach(group=>group.addEventListener('toggle',()=>{if(group.open)groups.forEach(other=>{if(other!==group)other.removeAttribute('open')})}));
+})();
+</script></body></html>
