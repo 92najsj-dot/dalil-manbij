@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#176b50"><title>فحص الموقع | دليل منبج</title>
+<style>
+:root{--g:#176b50;--d:#123d30;--bg:#f5f8f5;--line:#dfe9e2;--muted:#62736a;--red:#a52b2b;--amber:#85520a}*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:#1d2b25}header{background:var(--d);color:white;padding:20px}header div,main{max-width:1000px;margin:auto}h1{margin:0 0 8px;font-size:24px}header p{margin:0;line-height:1.8;color:#d9eee2}main{padding:20px}.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.btn{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.primary{background:var(--g);color:white}.outline{background:white;border:1px solid var(--line);color:var(--d)}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:16px;margin:12px 0}.muted{color:var(--muted);font-size:13px;line-height:1.8}.item{border-top:1px solid var(--line);padding:13px 0}.item:first-child{border-top:0}.badge{display:inline-block;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:bold}.ok{background:#e1f5e8;color:#176b50}.warn{background:#fff0d8;color:var(--amber)}.bad{background:#fff0f0;color:var(--red)}.title{font-weight:800}.detail{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.8;margin-top:5px}.hidden{display:none}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.stat{background:white;border:1px solid var(--line);border-radius:12px;padding:14px}.stat strong{font-size:22px;display:block;margin-top:6px}.status{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;line-height:1.8}@media(max-width:600px){main{padding:12px}h1{font-size:20px}}
+</style></head>
+<body>
+<header><div><h1>🔧 فحص الموقع وتشخيص الأخطاء</h1><p>أداة تشخيص آمنة لدليل منبج: تفحص توفر الملفات واتصال قاعدة البيانات والصلاحيات. لا تحذف أو تعدّل بيانات تلقائيًا.</p></div></header>
+<main>
+<div id="auth" class="status">جارٍ التحقق من جلسة الإدارة…</div><div id="authActions" class="row"><a class="btn primary" href="index.html">🔐 الذهاب للموقع وتسجيل الدخول</a><a class="btn outline" href="admin.html">لوحة الإدارة</a></div>
+<div id="app" class="hidden">
+<div class="row"><button class="btn primary" id="run">▶ بدء الفحص</button><a class="btn outline" href="admin.html">↩ العودة إلى لوحة الإدارة</a></div>
+<div class="muted">الفحص للقراءة فقط. بعض فحوصات المتصفح تعتمد على عنوان النشر الذي فتحت منه هذه الصفحة. الإصلاحات تُعرض كتوصيات ولا تُنفّذ تلقائيًا.</div>
+<div id="summary" class="grid"></div>
+<section class="card"><h2>نتائج الفحص</h2><div id="results" class="muted">اضغط «بدء الفحص».</div></section>
+<section class="card"><h2>مراجعة إعلانات تنتظر القرار</h2><p class="muted">يعرض أعدادًا فقط دون كشف معلومات الاتصال أو محتوى المستخدمين. لا يتخذ قرارات نشر تلقائية.</p><div id="pending" class="muted">لم يبدأ الفحص.</div></section>
+<section class="card"><h2>ماذا أصلح؟</h2><div id="fixes" class="muted">ستظهر توصيات بناءً على نتائج الفحص.</div></section>
+</div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
+const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let checks=[];
+function add(level,title,detail){checks.push({level,title,detail});}
+function paint(){ $('results').innerHTML=checks.map(c=>'<div class="item"><span class="badge '+(c.level==='ok'?'ok':c.level==='bad'?'bad':'warn')+'">'+(c.level==='ok'?'سليم':c.level==='bad'?'خطأ':'تنبيه')+'</span> <span class="title">'+esc(c.title)+'</span><div class="detail">'+esc(c.detail)+'</div></div>').join('');$('summary').innerHTML=[['فحوصات',checks.length],['مشكلات',checks.filter(x=>x.level==='bad').length],['تنبيهات',checks.filter(x=>x.level==='warn').length],['سليم',checks.filter(x=>x.level==='ok').length]].map(x=>'<div class="stat">'+esc(x[0])+'<strong>'+x[1]+'</strong></div>').join('');}
+async function checkResource(path,kind){try{const res=await fetch(new URL(path,location.href),{cache:'no-store'});if(!res.ok){add('bad',kind,'الطلب رجع HTTP '+res.status+' للرابط '+path);return null;}return await res.text();}catch(e){add('warn',kind,'تعذر فحص '+path+' من المتصفح: '+e.message);return null;}}
+async function runChecks(){
+ checks=[];$('results').textContent='جارٍ الفحص…';$('pending').textContent='جارٍ فحص أعداد المحتوى…';$('fixes').textContent='';
+ // Page and required PWA resources
+ add(location.protocol==='https:'?'ok':'bad','HTTPS','عنوان الصفحة: '+location.origin);
+ const manifestText=await checkResource('manifest.webmanifest','ملف manifest.webmanifest');
+ if(manifestText){try{const m=JSON.parse(manifestText);if(!m.name||!m.start_url||!m.display||!Array.isArray(m.icons)||!m.icons.length)add('bad','إعدادات manifest','الملف موجود لكن تنقصه حقول أساسية (name/start_url/display/icons).');else add('ok','إعدادات manifest','تمت قراءة JSON. الاسم: '+m.name+'؛ عدد الأيقونات: '+m.icons.length+'.');for(const icon of (m.icons||[])){try{const ir=await fetch(new URL(icon.src,location.href),{cache:'no-store'});add(ir.ok?'ok':'bad','أيقونة '+icon.src,'HTTP '+ir.status+'؛ sizes='+String(icon.sizes||'غير محدد'));}catch(e){add('warn','أيقونة '+icon.src,e.message)}}}catch(e){add('bad','صيغة manifest','الملف لا يحتوي JSON صالحًا: '+e.message)}}else{add('bad','ملف manifest','لم يمكن قراءة manifest.webmanifest من نفس عنوان النشر. تأكد من وجوده بجانب index.html في جذر النشر.');}
+ const homeText=await checkResource('index.html','الصفحة الرئيسية');
+ if(homeText!==null){add(homeText.includes('rel="manifest"')?'ok':'bad','ربط manifest بالصفحة الرئيسية',homeText.includes('rel="manifest"')?'index.html يشير إلى manifest.webmanifest.':'لا يوجد رابط manifest في index.html؛ أضف link rel="manifest".');add(homeText.includes('serviceWorker.register')?'ok':'warn','تسجيل Service Worker',homeText.includes('serviceWorker.register')?'يوجد كود يحاول تسجيل sw.js.':'لم نعثر على كود تسجيل Service Worker في index.html.');}
+ const sw=await checkResource('sw.js','ملف Service Worker');
+ if(sw!==null){try{if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration();add(reg?'ok':'warn','حالة Service Worker',reg?'التسجيل موجود؛ الحالة: '+(reg.active?'نشط':reg.installing?'قيد التثبيت':reg.waiting?'بانتظار التفعيل':'غير نشط')+'.':'الملف موجود لكن لا يوجد تسجيل على هذا الأصل بعد. افتح الصفحة الرئيسية وانتظر ثم أعد الفحص.');}else add('warn','دعم Service Worker','هذا المتصفح لا يوفّر Service Worker.');}catch(e){add('warn','حالة Service Worker','تعذر قراءة حالة التسجيل: '+e.message)}}
+ // Read-only table checks with count only
+ const tables=['listings','businesses','wanted_requests','reports','blocked_terms','admin_audit_log'];
+ const counts=[];
+ for(const table of tables){try{const r=await db.from(table).select('id',{count:'exact',head:true});if(r.error){add('warn','قاعدة البيانات: '+table,'القراءة مرفوضة أو فشلت: '+r.error.message);counts.push([table,'غير متاح']);}else{add('ok','قاعدة البيانات: '+table,'الاتصال ناجح؛ عدد الصفوف: '+(r.count??'غير معروف'));counts.push([table,r.count??'—']);}}catch(e){add('warn','قاعدة البيانات: '+table,e.message);counts.push([table,'خطأ']);}}
+ $('pending').innerHTML=counts.filter(x=>['listings','businesses','wanted_requests'].includes(x[0])).map(x=>'<div class="item"><span class="title">'+esc(x[0])+'</span>: '+esc(x[1])+' سجل إجمالي (ليس بالضرورة معلّقًا).</div>').join('');
+ const fixes=[];for(const c of checks){if(c.level==='bad'||c.level==='warn')fixes.push('<div class="item"><span class="title">'+esc(c.title)+'</span><div class="detail">'+esc(c.level==='bad'?'الإجراء المقترح:':'تحقق من:')+' '+esc(c.detail)+'</div></div>');}
+ $('fixes').innerHTML=fixes.length?fixes.join(''):'لم تظهر مشكلات في الفحوصات المحدودة. هذا لا يغني عن اختبار يدوي شامل.';
+ paint();
+}
+(async()=>{try{const {data:{session},error}=await db.auth.getSession();if(error)throw error;if(!session){$('auth').textContent='لم نعثر على جلسة دخول في هذه المعاينة. اضغط الزر أدناه للعودة إلى الموقع وتسجيل الدخول، ثم ارجع إلى صفحة الفحص.';$('authActions').classList.remove('hidden');return;}if(session.user?.app_metadata?.role!=='admin'){$('auth').textContent='أنت مسجّل الدخول، لكن الحساب لا يحمل صلاحية المدير المطلوبة. جرّب حساب الإدارة الصحيح.';$('authActions').classList.remove('hidden');return;}$('auth').textContent='تم التحقق من صلاحية المدير. الفحص للقراءة فقط.';$('authActions').classList.add('hidden');$('app').classList.remove('hidden');$('run').addEventListener('click',runChecks);}catch(e){$('auth').textContent='تعذر التحقق من صلاحيات الإدارة: '+e.message;}})();
+</script></body></html>
