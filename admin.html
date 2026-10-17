@@ -383,6 +383,7 @@ async function reviewAdminItem(table,id,status){
   const {data,error}=await db.from(table).update({status}).eq('id',id).eq('status','pending').select('id,status');
   if(error)throw error;
   if(!(data ? data.length : undefined)){toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.');return}
+  await logAdminAction(status==='active'?'approve':'reject',table,id,{status});
   toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى.');
   await loadAdminPending();
  }catch(e){console.error(e);toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف'))}
