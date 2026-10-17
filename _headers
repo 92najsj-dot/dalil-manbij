@@ -8,3 +8,11 @@
 
 /*.svg
   Content-Type: image/svg+xml
+
+/icon-192.png
+  Content-Type: image/png
+  Cache-Control: no-cache
+
+/icon-512.png
+  Content-Type: image/png
+  Cache-Control: no-cache
