@@ -446,6 +446,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()
 </script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div>
 <script>
 (function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(err){console.warn('PWA service worker registration failed',err);});
+    });
+  }
   const banner=document.getElementById('pwaInstallBanner');
   const installButton=document.getElementById('pwaInstallButton');
   const closeButton=document.getElementById('pwaInstallClose');
@@ -454,20 +459,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
   const dismissedAt=Number(localStorage.getItem('dalilPwaBannerDismissedAt')||0);
   const dismissedRecently=dismissedAt&&Date.now()-dismissedAt<7*24*60*60*1000;
-  if(!isAndroid||isStandalone||dismissedRecently)return;
+  const alreadyInstalled=localStorage.getItem('dalilPwaInstalled')==='1';
+  if(!isAndroid||isStandalone||dismissedRecently||alreadyInstalled)return;
   let deferredPrompt=null;
   banner.style.display='block';
   window.addEventListener('beforeinstallprompt',function(event){
     event.preventDefault();
     deferredPrompt=event;
-    installButton.textContent='تثبيت التطبيق';
   });
   window.addEventListener('appinstalled',function(){
     banner.style.display='none';
     deferredPrompt=null;
     localStorage.setItem('dalilPwaInstalled','1');
   });
-  if(localStorage.getItem('dalilPwaInstalled')==='1')return;
   installButton.addEventListener('click',async function(){
     if(deferredPrompt){
       deferredPrompt.prompt();
@@ -481,11 +485,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()
     banner.style.display='none';
     localStorage.setItem('dalilPwaBannerDismissedAt',String(Date.now()));
   });
-  if('serviceWorker' in navigator){
-    window.addEventListener('load',function(){
-      navigator.serviceWorker.register('./sw.js').catch(function(err){console.warn('PWA service worker registration failed',err);});
-    });
-  }
 })();
 </script>
 </body></html>
