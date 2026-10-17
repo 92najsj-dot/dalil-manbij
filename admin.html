@@ -59,6 +59,16 @@ body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page
 @media(max-width:850px){.admin-menu-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-dashboard-menu{padding:10px}}
 @media(max-width:480px){.admin-dashboard-top .btn{padding:8px 10px;font-size:12px}.admin-dashboard-brand{font-size:15px}.admin-dashboard-brand span{font-size:11px}.admin-menu-group summary{font-size:12px;padding:10px 8px}.admin-menu-links a{font-size:11px;padding:9px 7px}.admin-menu-hint{font-size:10px}}
 
+
+/* تنقّل إداري سلس: القائمة لا تغطي محتوى الأقسام */
+.admin-dashboard-menu{position:relative!important;top:auto!important;z-index:2!important;border-radius:0 0 18px 18px!important;box-shadow:0 4px 16px rgba(18,61,48,.06)!important}
+.admin-menu-groups{align-items:start}
+.admin-menu-group[open]{background:#fff}
+.admin-menu-group summary{user-select:none}
+.admin-menu-links a{scroll-margin-top:18px}
+body.admin-page main.wrap{scroll-padding-top:12px}
+body.admin-page #adminPanel,body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page #adminViolationsSection,body.admin-page #blockedUsersList,body.admin-page #adminStatsStatus,body.admin-page #promotionForm,body.admin-page #promotionAdminList,body.admin-page #adminAuditList,body.admin-page #adminStatsUsers{scroll-margin-top:18px!important}
+@media(max-width:600px){.admin-dashboard-menu{padding:12px!important}.admin-menu-intro{align-items:flex-start}.admin-menu-groups{grid-template-columns:1fr!important;gap:7px!important}.admin-menu-group summary{min-height:44px;font-size:13px;padding:11px 12px}.admin-menu-links{grid-template-columns:1fr 1fr;gap:6px}.admin-menu-links a{font-size:11px;min-height:40px;align-items:center}.admin-menu-hint{line-height:1.7}}
 /* تحسين احترافي للوحة الإدارة */
 .admin-dashboard-menu{padding:14px max(14px,calc((100vw - 1160px)/2)) 13px;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border:0;border-bottom:1px solid #dce8df;border-radius:0 0 22px 22px;box-shadow:0 10px 32px rgba(18,61,48,.10)}
 .admin-dashboard-top{margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid #edf2ee}
@@ -587,4 +597,30 @@ async function clearDisplayName(){if(!$('displayNameInput'))return;$('displayNam
 async function openPublicProfile(userId){if(!db||!userId)return;const modal=$('publicProfileModal');const body=$('publicProfileBody');modal.style.display='flex';body.innerHTML=empty('عم نحمل إعلانات المستخدم المنشورة…');try{const p=publicProfiles[userId];if(!p||!p.display_name){body.innerHTML=empty('هذا المستخدم لم يضف اسماً ظاهراً.');return}const [a,b]=await Promise.all([db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',userId).eq('status','active').order('created_at',{ascending:false}),db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,address,area,village,category_id,status,image_urls,created_at').eq('owner_id',userId).eq('status','active').order('name')]);if(a.error)throw a.error;if(b.error)throw b.error;const ads=(a.data||[]).map(x=>({...x,_title:x.title,_kind:'إعلان',_area:x.area,_table:'listing'})).concat((b.data||[]).map(x=>({...x,_title:x.name,_kind:'محل أو خدمة',_area:[x.area,x.village].filter(Boolean).join(' · '),_table:'business'})));body.innerHTML='<div class="sectionhead"><div><h2 style="margin:0">👤 '+esc(p.display_name)+'</h2><div class="muted">الإعلانات المنشورة لهذا المستخدم: '+ads.length+'</div></div></div><div class="profile-ad-grid">'+(ads.length?ads.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._table==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._title)+'</h3>'+(x._table==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="meta">📍 '+esc(x._area||'منبج وريفها')+' · '+esc(x._kind)+'</div>'+publicationDateMarkup(x.created_at)+(x.description?'<div class="meta">'+esc(x.description.slice(0,140))+'</div>':'')+'</div></article>').join(''):empty('لا توجد إعلانات منشورة لهذا المستخدم حالياً.'))+'</div>'}catch(err){console.error('public profile:',err);body.innerHTML=empty('تعذّر تحميل إعلانات هذا المستخدم حالياً.')}}
 function closePublicProfile(){$('publicProfileModal').style.display='none'}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()});
+
+/* عند اختيار قسم: أغلق القائمة واذهب مباشرة للمحتوى */
+(function(){
+ const menu=document.getElementById('adminDashboardMenu');
+ if(!menu)return;
+ const groups=Array.from(menu.querySelectorAll('.admin-menu-group'));
+ groups.forEach(group=>group.removeAttribute('open'));
+ menu.querySelectorAll('.admin-menu-links a[href^="#"]').forEach(link=>{
+   link.addEventListener('click',function(event){
+     const target=document.querySelector(this.getAttribute('href'));
+     if(!target)return;
+     event.preventDefault();
+     groups.forEach(group=>group.removeAttribute('open'));
+     menu.querySelectorAll('.admin-menu-links a').forEach(a=>a.classList.remove('active'));
+     this.classList.add('active');
+     history.replaceState(null,'',this.getAttribute('href'));
+     target.scrollIntoView({behavior:'smooth',block:'start'});
+   });
+ });
+ groups.forEach(group=>{
+   group.addEventListener('toggle',function(){
+     if(!group.open)return;
+     groups.forEach(other=>{if(other!==group)other.removeAttribute('open')});
+   });
+ });
+})();
 </script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div></body></html>
