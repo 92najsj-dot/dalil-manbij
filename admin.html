@@ -31,8 +31,53 @@ body.admin-page main.wrap{padding-top:18px}
 body.admin-page #adminPanel{margin-top:0}
 body.admin-page .admin-access-notice{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:22px;margin:18px 0;text-align:center}
 body.admin-page .admin-access-notice h2{margin-top:0}
+
+/* لوحة إدارة مستقلة مع قائمة أقسام قابلة للطي */
+body.admin-page{background:var(--bg)}
+body.admin-page>.top,body.admin-page>.promo-cta,body.admin-page>.footer{display:none!important}
+body.admin-page main.wrap>section:not(#adminAccessNotice):not(#adminPanel),
+body.admin-page main.wrap>.hero,body.admin-page main.wrap>.notice{display:none!important}
+body.admin-page main.wrap{padding-top:12px}
+.admin-dashboard-menu{position:sticky;top:0;z-index:1000;background:#fff;border:1px solid var(--line);border-radius:0 0 18px 18px;box-shadow:0 8px 24px #123d3012;padding:12px max(14px,calc((100vw - 1160px)/2))}
+.admin-dashboard-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.admin-dashboard-brand{display:flex;align-items:center;gap:10px;color:var(--dark);font-size:18px;font-weight:900;text-decoration:none}
+.admin-dashboard-brand span{font-size:13px;background:var(--mint);border-radius:9px;padding:6px 9px}
+.admin-menu-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.admin-menu-group{border:1px solid var(--line);border-radius:12px;background:#fbfdfb;min-width:0;overflow:hidden}
+.admin-menu-group summary{cursor:pointer;padding:11px 12px;font-weight:800;font-size:13px;list-style:none;display:flex;justify-content:space-between;gap:6px}
+.admin-menu-group summary::-webkit-details-marker{display:none}
+.admin-menu-group summary:after{content:'＋';color:var(--green);font-weight:900}
+.admin-menu-group[open] summary:after{content:'−'}
+.admin-menu-links{display:grid;gap:5px;padding:0 8px 9px}
+.admin-menu-links a{display:block;text-decoration:none;color:var(--text);background:#fff;border:1px solid #e7eee8;border-radius:9px;padding:9px 10px;font-size:12px;font-weight:700}
+.admin-menu-links a:hover{background:var(--mint);border-color:#b7d8c6}
+.admin-menu-hint{margin:8px 2px 0;color:var(--muted);font-size:11px}
+body.admin-page #adminAccessNotice{margin-top:20px}
+body.admin-page #adminPanel{margin-top:16px}
+body.admin-page #adminPanel .adminhead{scroll-margin-top:190px}
+body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page #adminViolationsSection,body.admin-page #blockedUsersList,body.admin-page #adminStatsStatus,body.admin-page #promotionForm,body.admin-page #promotionAdminList,body.admin-page #adminAuditList{scroll-margin-top:190px}
+@media(max-width:850px){.admin-menu-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-dashboard-menu{padding:10px}}
+@media(max-width:480px){.admin-dashboard-top .btn{padding:8px 10px;font-size:12px}.admin-dashboard-brand{font-size:15px}.admin-dashboard-brand span{font-size:11px}.admin-menu-group summary{font-size:12px;padding:10px 8px}.admin-menu-links a{font-size:11px;padding:9px 7px}.admin-menu-hint{font-size:10px}}
 </style></head>
 <body class="admin-page">
+<div id="adminDashboardMenu" class="admin-dashboard-menu" style="display:none">
+  <div class="admin-dashboard-top"><a class="admin-dashboard-brand" href="index.html">📍 دليل منبج <span>لوحة الإدارة</span></a><a class="btn outline" href="index.html">↩ العودة للموقع</a></div>
+  <div class="admin-menu-groups" aria-label="أقسام الإدارة">
+    <details class="admin-menu-group" open><summary>📦 إدارة المحتوى</summary><div class="admin-menu-links">
+      <a href="#adminPanel">🏠 ملخص الإدارة</a><a href="#adminItems">🛍️ مراجعة الإعلانات والمحلات والطلبات</a><a href="#adminViolationsSection">🚫 الإعلانات المخالفة</a><a href="#adminReportsSection">🚩 بلاغات المستخدمين</a>
+    </div></details>
+    <details class="admin-menu-group"><summary>👥 المستخدمون والحماية</summary><div class="admin-menu-links">
+      <a href="#blockedUsersList">🔒 حظر النشر ورفع الحظر</a><a href="#adminStatsUsers">👤 الحسابات المسجلة</a>
+    </div></details>
+    <details class="admin-menu-group"><summary>📈 الإحصائيات والترويج</summary><div class="admin-menu-links">
+      <a href="#adminStatsStatus">📊 إحصائيات الموقع</a><a href="#promotionForm">⭐ ترويج الإعلانات والباقات</a><a href="#promotionAdminList">🖼️ الحملات والبانرات</a>
+    </div></details>
+    <details class="admin-menu-group"><summary>🛠️ أدوات الإدارة</summary><div class="admin-menu-links">
+      <a href="#adminAuditList">📋 سجل عمليات الإدارة</a><a href="ai-moderator.html">🔍 فحص الموقع</a><a href="index.html">🌐 عرض الموقع</a>
+    </div></details>
+  </div>
+  <p class="admin-menu-hint">اختَر قسماً لفتح مكانه مباشرة. القائمة قابلة للطي لتناسب شاشة الموبايل.</p>
+</div>
 <header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><a class="btn outline" href="index.html" style="text-decoration:none">↩️ العودة للموقع</a><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><button class="btn reject" id="logoutBtn" style="display:none" onclick="logoutAccount()">تسجيل الخروج</button><div class="nav-actions"><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
 <main class="wrap" id="home">
 <section class="hero"><div><div class="eyebrow">من أهل منبج وريفها ولأهلها</div><h1>كل اللي بدك ياه،<br>بتلاقيه قريب منك.</h1><p>دليل المحلات والخدمات، وسوق محلي للبيع والشراء، وطلباتك اليومية من مكان واحد.</p><div class="searchbox"><input id="searchInput" placeholder="شو عم تدور عليه؟ محل، خدمة، أو منتج…" oninput="renderAll()"><select id="areaFilter" onchange="renderAll()"><option value="الكل">كل منبج وريفها</option><option>منبج</option><option>أبو قلقل</option><option>الخفسة</option><option>مسكنة</option><option>العريمة</option><option>ريف منبج الشرقي</option><option>ريف منبج الغربي</option><option>القرى والبلدات الأخرى</option></select><button class="btn primary" onclick="document.getElementById('businesses').scrollIntoView({behavior:'smooth'})">ابحث 🔎</button></div><div class="statusline"><span id="statusDot" class="dot"></span><span id="connectionStatus">جاري الاتصال بقاعدة البيانات…</span></div></div><div class="heroart"><span>🛍️</span><div class="bubble b1">📍 منبج وريفها</div><div class="bubble b2">🤝 السوق المحلي أقرب</div></div></section>
@@ -169,7 +214,7 @@ function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الك�
 function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||x.category===activeCat)&&(condition==='الكل'||x.item_condition===condition)&&matchesArea(x)&&matchesQuery(x));$('listingGrid').innerHTML=arr.length?arr.map(x=>`<article class="card">${photoMarkup(x.image_urls,emojiFor(x.category))}<div class="cardbody"><h3>${esc(x.title)}</h3><div class="price">${Number(x.price||0).toLocaleString('en-US')} ل.س</div><div class="meta">📍 ${esc(x.area||'منبج')} · ${esc(x.category||'أخرى')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}${profileNameMarkup(x.user_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل</a>`:''}${isAdminUser()?`<button class="btn featured-nav-btn" type="button" style="padding:7px 10px;font-size:12px" onclick="startPromotion(&quot;listing&quot;,&quot;${esc(x.id)}&quot;)">⭐ ترويج</button>`:''}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
 function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<article class="service" style="align-items:flex-start"><span class="emoji">📣</span><div style="min-width:0;flex:1"><strong>${esc(r.title)}</strong><small style="line-height:1.8">${esc(r.category||'أخرى')} · 📍 ${esc(r.area||'منبج وريفها')}<br>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'}${r.created_at?' · '+esc(new Date(r.created_at).toLocaleDateString('ar-SY')):''}</small>${r.description?`<div class="meta" style="margin-top:6px">${esc(r.description.slice(0,180))}</div>`:'' }<div class="cardfoot" style="justify-content:flex-start">${r.contact_phone?`<a class="btn primary" style="padding:8px 11px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(r.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت طلبك على دليل منبج: '+r.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:'<span class="muted">ما في وسيلة تواصل مضافة</span>'}</div></div></article>`).join(''):empty('ما في طلبات منشورة حالياً. سجّل الدخول وانشر طلبك، ورح يظهر بعد موافقة الإدارة.')}
 function updateAccountUI(){
- const loggedIn=!!currentUser;const accessNotice=$('adminAccessNotice');if(accessNotice)accessNotice.style.display=(!currentUser||!isAdminUser())?'block':'none';const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display=loggedIn?'block':'none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
+ const loggedIn=!!currentUser;const accessNotice=$('adminAccessNotice');if(accessNotice)accessNotice.style.display=(!currentUser||!isAdminUser())?'block':'none';const adminMenu=$('adminDashboardMenu');if(adminMenu)adminMenu.style.display=isAdminUser()?'block':'none';const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display=loggedIn?'block':'none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
  $('accountBtn').textContent=loggedIn?'حسابي':'تسجيل الدخول';
  $('accountBtn').title=loggedIn?'عرض إعلاناتي وطلباتي':'تسجيل الدخول إلى حسابك';
  const logout=$('logoutBtn');if(logout)logout.style.display=loggedIn?'inline-flex':'none';
