@@ -1,4 +1,4 @@
-const CACHE_NAME = "dalil-manbij-shell-v1";
+const CACHE_NAME = "dalil-manbij-shell-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.svg", "./icon-512.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).catch(() => undefined));
