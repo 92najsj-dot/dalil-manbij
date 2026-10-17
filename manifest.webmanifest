@@ -1,0 +1,28 @@
+{
+  "id": "./",
+  "name": "دليل منبج",
+  "short_name": "دليل منبج",
+  "description": "دليل المحلات والخدمات والإعلانات في منبج وريفها",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f8f5",
+  "theme_color": "#176b50",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
