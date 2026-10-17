@@ -46,6 +46,7 @@ body.admin-page .admin-access-notice h2{margin-top:0}
 
 <section id="adminAccessNotice" class="admin-access-notice" style="display:none"><h2>🛡️ لوحة إدارة دليل منبج</h2><p>هذه الصفحة مخصصة لإدارة الموقع. سجّل الدخول بحساب الإدارة المصرّح له للمتابعة.</p><button class="btn primary" type="button" onclick="openModal('auth')">تسجيل الدخول</button><a class="btn outline" href="index.html" style="margin-inline-start:8px">العودة للموقع</a></section><section id="adminPanel" aria-live="polite">
  <div class="adminhead"><div><h2 style="margin:0">🛡️ لوحة الإدارة <span class="admincount" id="adminPendingCount">0 بانتظار المراجعة</span></h2><div class="muted" style="margin-top:6px">راجع المحتوى قبل نشره للعموم.</div></div><button class="btn outline" type="button" onclick="loadAdminPending()">↻ تحديث</button></div>
+ <div style="margin:14px 0"><a class="btn outline" href="ai-moderator.html" style="display:inline-block;text-decoration:none">🔧 فحص الموقع وتشخيص الأخطاء</a></div>
  <div class="admintabs">
   <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
   <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
