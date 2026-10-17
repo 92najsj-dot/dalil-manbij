@@ -56,9 +56,22 @@
 
 /* عارض صور الإعلانات */
 .listing-photo{position:relative;cursor:zoom-in;overflow:hidden;background:#eef3ef}.listing-photo img{transition:transform .25s}.listing-photo:hover img{transform:scale(1.025)}.photo-count,.photo-open-hint{position:absolute;bottom:9px;right:9px;background:rgba(18,45,35,.82);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;backdrop-filter:blur(5px)}.photo-open-hint{font-size:10px;opacity:.9}.image-gallery-overlay{position:fixed;inset:0;z-index:10000;background:rgba(7,14,11,.94);display:none;align-items:center;justify-content:center;padding:18px;touch-action:pan-y}.image-gallery-overlay.open{display:flex}.image-gallery-dialog{position:relative;width:min(100%,900px);display:flex;flex-direction:column;align-items:center;gap:12px}.image-gallery-main{width:100%;height:min(72vh,720px);display:flex;align-items:center;justify-content:center;position:relative}.image-gallery-main img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;user-select:none}.gallery-control{display:grid;place-items:center;width:44px;height:44px;border:1px solid #ffffff55;border-radius:50%;background:#ffffff18;color:#fff;font-size:25px;cursor:pointer}.gallery-close{position:absolute;top:-8px;left:0}.gallery-prev{position:absolute;right:0;top:50%;transform:translateY(-50%)}.gallery-next{position:absolute;left:0;top:50%;transform:translateY(-50%)}.image-gallery-counter{color:#fff;font-size:13px;font-weight:800;direction:rtl}.image-gallery-thumbs{display:flex;gap:8px;max-width:100%;overflow-x:auto;padding:3px 2px 8px;direction:ltr}.image-gallery-thumb{width:62px;height:58px;flex:0 0 auto;border:2px solid transparent;border-radius:8px;overflow:hidden;background:#ffffff15;padding:0;cursor:pointer}.image-gallery-thumb.active{border-color:#70d4a4}.image-gallery-thumb img{width:100%;height:100%;object-fit:cover}.gallery-single .gallery-prev,.gallery-single .gallery-next,.gallery-single .image-gallery-thumbs{display:none}@media(max-width:600px){.image-gallery-overlay{padding:12px}.image-gallery-main{height:66vh}.gallery-control{width:38px;height:38px;font-size:22px}.gallery-close{top:-2px}.photo-count{font-size:10px;padding:4px 7px}}
+
+/* بطاقة تثبيت التطبيق */
+.install-app-card{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid #cce4d5;border-radius:16px;background:linear-gradient(135deg,#f0fbf4,#fff);box-shadow:0 4px 14px rgba(23,107,80,.08);margin:10px 0 0}
+.install-app-icon{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#176b50,#23936b);color:#fff;font-size:25px;box-shadow:0 4px 10px #176b5025}
+.install-app-copy{flex:1;min-width:0}.install-app-copy strong{display:block;color:#174b38;font-size:13px;margin-bottom:4px}.install-app-copy span{display:block;color:#64766b;font-size:11px;line-height:1.6}
+.install-app-cta{border:0;border-radius:10px;background:#176b50;color:#fff;font-weight:800;font-size:12px;padding:10px 12px;white-space:nowrap}
+.install-modal-bg{display:none;position:fixed;inset:0;z-index:20000;background:rgba(8,25,17,.62);align-items:center;justify-content:center;padding:20px}
+.install-modal-bg.open{display:flex}.install-modal{width:min(390px,100%);background:#fff;border-radius:23px;padding:24px 20px;text-align:center;box-shadow:0 20px 70px #0003;animation:installPop .18s ease-out}
+.install-modal-icon{width:72px;height:72px;margin:0 auto 14px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(145deg,#e2f6e9,#f4fbf6);font-size:38px;border:1px solid #cbe7d4}
+.install-modal h2{font-size:21px;color:#174b38;margin:0 0 9px}.install-modal p{font-size:14px;color:#65746b;line-height:1.9;margin:0 0 20px}
+.install-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.install-modal-actions button{min-height:46px;border-radius:12px;font:inherit;font-weight:800}.install-confirm{border:0;background:#176b50;color:#fff}.install-cancel{border:1px solid #dce7df;background:#fff;color:#42554a}
+@keyframes installPop{from{transform:translateY(8px) scale(.98);opacity:.6}to{transform:translateY(0) scale(1);opacity:1}}
+@media(max-width:650px){.install-app-card{gap:9px;padding:10px}.install-app-icon{width:40px;height:40px;flex-basis:40px;font-size:22px}.install-app-copy strong{font-size:12px}.install-app-copy span{font-size:10px}.install-app-cta{padding:10px;font-size:11px}}
 </style></head>
 <body>
-<header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><a class="btn outline" id="adminNavBtn" href="./admin.html" aria-label="فتح لوحة الإدارة المستقلة" style="display:none;text-decoration:none">🛡️ الإدارة ↗</a><div class="nav-actions"><button class="btn outline" id="installAppBtn" type="button" style="display:inline-flex;align-items:center;gap:6px" onclick="installDalilApp()">📲 تثبيت التطبيق</button><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
+<header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><a class="btn outline" id="adminNavBtn" href="./admin.html" aria-label="فتح لوحة الإدارة المستقلة" style="display:none;text-decoration:none">🛡️ الإدارة ↗</a><div class="nav-actions"><button class="btn outline" id="installAppBtn" type="button" style="display:inline-flex;align-items:center;gap:6px" onclick="openDalilInstallModal()">📲 تثبيت التطبيق</button><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
 <main class="wrap" id="home">
 <section class="hero"><div><div class="eyebrow">من أهل منبج وريفها ولأهلها</div><h1>كل اللي بدك ياه،<br>بتلاقيه قريب منك.</h1><p>دليل المحلات والخدمات، وسوق محلي للبيع والشراء، وطلباتك اليومية من مكان واحد.</p><div class="searchbox"><input id="searchInput" placeholder="شو عم تدور عليه؟ محل، خدمة، أو منتج…" oninput="renderAll()"><select id="areaFilter" onchange="renderAll()"><option value="الكل">كل منبج وريفها</option><option>منبج</option><option>أبو قلقل</option><option>الخفسة</option><option>مسكنة</option><option>العريمة</option><option>ريف منبج الشرقي</option><option>ريف منبج الغربي</option><option>القرى والبلدات الأخرى</option></select><button class="btn primary" onclick="document.getElementById('businesses').scrollIntoView({behavior:'smooth'})">ابحث 🔎</button></div><div class="statusline"><span id="statusDot" class="dot"></span><span id="connectionStatus">جاري الاتصال بقاعدة البيانات…</span></div></div><div class="heroart"><span>🛍️</span><div class="bubble b1">📍 منبج وريفها</div><div class="bubble b2">🤝 السوق المحلي أقرب</div></div></section>
 <div class="notice">📍 <strong>دليل منبج:</strong> محلات، مطاعم، عيادات، صيدليات، عقارات، سيارات، وخدمات محلية. لا نعرض إعلانات وهمية؛ المحتوى الظاهر يأتي من قاعدة البيانات.</div><section id="homepageBanners" class="promo-section" style="display:none"><div class="sectionhead"><h2>📣 إعلان مميّز</h2><span class="muted">إعلانات مموّلة</span></div><div id="bannerGrid" class="banner-grid"></div></section><section id="featuredPromotions" class="promo-section" style="display:none"><div class="sectionhead"><div><h2>⭐ إعلانات مميّزة</h2><div class="muted">عروض ومحلات مميّزة من منبج وريفها</div></div><button type="button" class="btn primary" onclick="openPaidPromotionContact()">＋ أضف إعلان مميّز مدفوع</button></div><div id="promotionGrid" class="grid"></div></section>
@@ -479,30 +492,32 @@ async function openPublicProfile(userId){if(!db||!userId)return;const modal=$('p
 function closePublicProfile(){$('publicProfileModal').style.display='none'}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()});
 </script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div><script>
-/* تثبيت دليل منبج كتطبيق PWA مع تعليمات بديلة عند عدم إتاحة نافذة التثبيت */
+/* تثبيت دليل منبج: نافذة تأكيد مخصصة ثم استدعاء نافذة التثبيت الأصلية للمتصفح */
 let dalilInstallPrompt=null;
 const dalilInstallButton=document.getElementById('installAppBtn');
 function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=show?'inline-flex':'none'}
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;showDalilInstallButton(true)});
-window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
-async function installDalilApp(){
- const button=document.getElementById('installAppBtn');
- try{
-  if(dalilInstallPrompt){
-   const promptEvent=dalilInstallPrompt;
-   dalilInstallPrompt=null;
+window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;closeDalilInstallModal();showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
+function openDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal){modal.classList.add('open');document.body.style.overflow='hidden'}}
+function closeDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal)modal.classList.remove('open');document.body.style.overflow=''}
+async function confirmDalilInstall(){
+ const modal=document.getElementById('dalilInstallModal');
+ if(dalilInstallPrompt){
+  const promptEvent=dalilInstallPrompt;dalilInstallPrompt=null;
+  try{
+   closeDalilInstallModal();
    await promptEvent.prompt();
    const choice=await promptEvent.userChoice;
    if(choice&&choice.outcome==='accepted')showDalilInstallButton(false);
    return;
-  }
- }catch(error){console.warn('PWA install prompt failed:',error);dalilInstallPrompt=null}
+  }catch(error){console.warn('Native install prompt failed:',error)}
+ }
  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
  const isAndroid=/android/i.test(navigator.userAgent);
- const message=isIOS?'لتثبيت دليل منبج: اضغط زر المشاركة في المتصفح ثم «إضافة إلى الشاشة الرئيسية».':isAndroid?'التثبيت المباشر غير متاح من هذا الزر حالياً. اضغط ⋮ في Chrome ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».':'افتح قائمة المتصفح واختر «تثبيت دليل منبج» أو «إنشاء اختصار».';
- // Use a native alert as a reliable fallback so the button never appears unresponsive.
- window.alert(message);
+ const msg=isIOS?'للتثبيت على iPhone: اضغط مشاركة في Safari ثم «إضافة إلى الشاشة الرئيسية».':isAndroid?'المتصفح لم يوفّر نافذة التثبيت المباشر. افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».':'افتح قائمة المتصفح واختر «تثبيت دليل منبج» أو «إنشاء اختصار».';
+ closeDalilInstallModal();window.alert(msg);
 }
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeDalilInstallModal()});
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Service worker registration failed:',err)))}
 
 (function(){
@@ -521,4 +536,16 @@ document.addEventListener('keydown',event=>{if(!$('imageGalleryOverlay')?.classL
 const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){galleryMain.addEventListener('touchstart',event=>{galleryTouchX=event.changedTouches[0].screenX},{passive:true});galleryMain.addEventListener('touchend',event=>{const dx=event.changedTouches[0].screenX-galleryTouchX;if(Math.abs(dx)>45)changeGalleryImage(dx<0?1:-1)},{passive:true})}
 </script>
 <div id="imageGalleryOverlay" class="image-gallery-overlay" role="dialog" aria-modal="true" aria-label="صور الإعلان" onclick="if(event.target===this)closeImageGallery()"><div class="image-gallery-dialog" id="imageGalleryDialog"><button type="button" class="gallery-control gallery-close" aria-label="إغلاق الصور" onclick="closeImageGallery()">×</button><div class="image-gallery-main" id="imageGalleryMain"><button type="button" class="gallery-control gallery-prev" aria-label="الصورة السابقة" onclick="changeGalleryImage(-1)">‹</button><img id="imageGalleryImage" alt="صورة الإعلان" src=""><button type="button" class="gallery-control gallery-next" aria-label="الصورة التالية" onclick="changeGalleryImage(1)">›</button></div><div class="image-gallery-counter" id="imageGalleryCounter">1 / 1</div><div class="image-gallery-thumbs" id="imageGalleryThumbs"></div></div></div>
+
+<div id="dalilInstallModal" class="install-modal-bg" role="dialog" aria-modal="true" aria-labelledby="dalilInstallTitle" onclick="if(event.target===this)closeDalilInstallModal()">
+ <div class="install-modal">
+  <div class="install-modal-icon">📍</div>
+  <h2 id="dalilInstallTitle">تثبيت دليل منبج؟</h2>
+  <p>خلّي دليل منبج بجيبك! ثبّت التطبيق لتوصل للمحلات والخدمات والإعلانات المحلية بسرعة من الشاشة الرئيسية.</p>
+  <div class="install-modal-actions">
+   <button type="button" class="install-cancel" onclick="closeDalilInstallModal()">مو هلأ</button>
+   <button type="button" class="install-confirm" onclick="confirmDalilInstall()">إي، ثبّت التطبيق</button>
+  </div>
+ </div>
+</div>
 </body></html>
