@@ -9,7 +9,7 @@
 <body>
 <header><div><h1>🔧 فحص الموقع وتشخيص الأخطاء</h1><p>أداة تشخيص آمنة لدليل منبج: تفحص توفر الملفات واتصال قاعدة البيانات والصلاحيات. لا تحذف أو تعدّل بيانات تلقائيًا.</p></div></header>
 <main>
-<div id="auth" class="status">جارٍ التحقق من جلسة الإدارة…</div>
+<div id="auth" class="status">جارٍ التحقق من جلسة الإدارة…</div><div id="authActions" class="row"><a class="btn primary" href="index.html">🔐 الذهاب للموقع وتسجيل الدخول</a><a class="btn outline" href="admin.html">لوحة الإدارة</a></div>
 <div id="app" class="hidden">
 <div class="row"><button class="btn primary" id="run">▶ بدء الفحص</button><a class="btn outline" href="admin.html">↩ العودة إلى لوحة الإدارة</a></div>
 <div class="muted">الفحص للقراءة فقط. بعض فحوصات المتصفح تعتمد على عنوان النشر الذي فتحت منه هذه الصفحة. الإصلاحات تُعرض كتوصيات ولا تُنفّذ تلقائيًا.</div>
@@ -45,5 +45,5 @@ async function runChecks(){
  $('fixes').innerHTML=fixes.length?fixes.join(''):'لم تظهر مشكلات في الفحوصات المحدودة. هذا لا يغني عن اختبار يدوي شامل.';
  paint();
 }
-(async()=>{try{const {data:{session},error}=await db.auth.getSession();if(error)throw error;if(!session){$('auth').textContent='يلزم تسجيل الدخول أولًا بحساب مدير دليل منبج، ثم افتح هذه الصفحة مجددًا.';return;}if(session.user?.app_metadata?.role!=='admin'){$('auth').textContent='تم تسجيل الدخول، لكن هذا الحساب ليس مديرًا وفق app_metadata.role. لم يتم فتح أدوات الفحص.';return;}$('auth').textContent='تم التحقق من صلاحية المدير. الفحص للقراءة فقط.';$('app').classList.remove('hidden');$('run').addEventListener('click',runChecks);}catch(e){$('auth').textContent='تعذر التحقق من صلاحيات الإدارة: '+e.message;}})();
+(async()=>{try{const {data:{session},error}=await db.auth.getSession();if(error)throw error;if(!session){$('auth').textContent='لم نعثر على جلسة دخول في هذه المعاينة. اضغط الزر أدناه للعودة إلى الموقع وتسجيل الدخول، ثم ارجع إلى صفحة الفحص.';$('authActions').classList.remove('hidden');return;}if(session.user?.app_metadata?.role!=='admin'){$('auth').textContent='أنت مسجّل الدخول، لكن الحساب لا يحمل صلاحية المدير المطلوبة. جرّب حساب الإدارة الصحيح.';$('authActions').classList.remove('hidden');return;}$('auth').textContent='تم التحقق من صلاحية المدير. الفحص للقراءة فقط.';$('authActions').classList.add('hidden');$('app').classList.remove('hidden');$('run').addEventListener('click',runChecks);}catch(e){$('auth').textContent='تعذر التحقق من صلاحيات الإدارة: '+e.message;}})();
 </script></body></html>
