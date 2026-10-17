@@ -24,8 +24,39 @@
 
  .brand-lockup{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.15}.brand-lockup .logo{font-weight:900}.brand-tagline{font-size:12px;font-weight:700;color:#2d8065;padding-right:3px;letter-spacing:0} @media(max-width:600px){.brand-tagline{font-size:11px}}.featured-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;background:linear-gradient(135deg,#fff8df,#f5e4a8);color:#765516;border:1px solid #e5c96b;box-shadow:0 3px 10px rgba(125,92,20,.10);font-weight:800;white-space:nowrap}.featured-nav-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(125,92,20,.16)}.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}.featured-nav-btn{background:linear-gradient(135deg,#fff8df,#f3df9b);border-color:#dfbd52;color:#765516}.nav-actions .primary{white-space:nowrap}@media(max-width:650px){.nav-actions{order:2;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:9px}.nav-actions .btn{width:100%;min-height:48px;padding:11px 8px;font-size:13px}.navlinks{order:3}.brand-lockup{margin-left:auto}}@media(max-width:600px){.featured-nav-btn{padding:10px 12px;font-size:13px}}
 .publish-date{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.4}.profile-name{font-size:11px;color:var(--muted);margin-top:7px;cursor:pointer;display:inline-flex;gap:4px;align-items:center;border:0;background:transparent;padding:0}.profile-name:hover{text-decoration:underline;color:var(--primary)}.profile-page{max-height:85vh;overflow:auto}.profile-ad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.profile-ad-grid .card{min-width:0}
-</style></head>
+
+/* Android PWA install banner */
+.pwa-install-banner{display:none;position:relative;z-index:10;background:linear-gradient(110deg,#123d30,#218562);color:#fff;padding:10px 14px;box-shadow:0 3px 12px #123d3018}
+.pwa-install-inner{max-width:1180px;margin:auto;display:flex;align-items:center;gap:11px}
+.pwa-install-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#ffffff20;display:grid;place-items:center;font-size:24px}
+.pwa-install-copy{flex:1;min-width:0}
+.pwa-install-title{font-weight:900;font-size:14px;margin-bottom:3px}
+.pwa-install-desc{font-size:12px;line-height:1.5;color:#e0f3e8}
+.pwa-install-action{border:0;border-radius:10px;padding:9px 13px;background:#fff;color:#176b50;font-weight:900;white-space:nowrap}
+.pwa-install-close{border:0;background:transparent;color:#fff;font-size:22px;line-height:1;padding:5px}
+@media(max-width:480px){.pwa-install-banner{padding:9px}.pwa-install-inner{gap:8px}.pwa-install-icon{width:36px;height:36px;flex-basis:36px;font-size:20px}.pwa-install-title{font-size:12px}.pwa-install-desc{font-size:11px}.pwa-install-action{padding:8px 9px;font-size:12px}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="دليل منبج">
+<meta name="application-name" content="دليل منبج">
+<meta name="theme-color" content="#176b50">
+</head>
 <body>
+
+<div id="pwaInstallBanner" class="pwa-install-banner" role="region" aria-label="تثبيت تطبيق دليل منبج">
+  <div class="pwa-install-inner">
+    <div class="pwa-install-icon" aria-hidden="true">📲</div>
+    <div class="pwa-install-copy">
+      <div class="pwa-install-title">ثبّت تطبيق دليل منبج</div>
+      <div class="pwa-install-desc">كل محلات وإعلانات منبج بلمسة واحدة</div>
+    </div>
+    <button type="button" id="pwaInstallButton" class="pwa-install-action">تثبيت التطبيق</button>
+    <button type="button" id="pwaInstallClose" class="pwa-install-close" aria-label="إغلاق شريط التثبيت">×</button>
+  </div>
+</div>
+
 <header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><a class="btn outline" id="adminNavBtn" href="#adminPanel" onclick="document.getElementById('adminPanel')?.scrollIntoView({behavior:'smooth',block:'start'})" style="display:none;text-decoration:none">🛡️ الإدارة</a><button class="btn reject" id="logoutBtn" style="display:none" onclick="logoutAccount()">تسجيل الخروج</button><div class="nav-actions"><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
 <main class="wrap" id="home">
 <section class="hero"><div><div class="eyebrow">من أهل منبج وريفها ولأهلها</div><h1>كل اللي بدك ياه،<br>بتلاقيه قريب منك.</h1><p>دليل المحلات والخدمات، وسوق محلي للبيع والشراء، وطلباتك اليومية من مكان واحد.</p><div class="searchbox"><input id="searchInput" placeholder="شو عم تدور عليه؟ محل، خدمة، أو منتج…" oninput="renderAll()"><select id="areaFilter" onchange="renderAll()"><option value="الكل">كل منبج وريفها</option><option>منبج</option><option>أبو قلقل</option><option>الخفسة</option><option>مسكنة</option><option>العريمة</option><option>ريف منبج الشرقي</option><option>ريف منبج الغربي</option><option>القرى والبلدات الأخرى</option></select><button class="btn primary" onclick="document.getElementById('businesses').scrollIntoView({behavior:'smooth'})">ابحث 🔎</button></div><div class="statusline"><span id="statusDot" class="dot"></span><span id="connectionStatus">جاري الاتصال بقاعدة البيانات…</span></div></div><div class="heroart"><span>🛍️</span><div class="bubble b1">📍 منبج وريفها</div><div class="bubble b2">🤝 السوق المحلي أقرب</div></div></section>
@@ -412,4 +443,49 @@ async function clearDisplayName(){if(!$('displayNameInput'))return;$('displayNam
 async function openPublicProfile(userId){if(!db||!userId)return;const modal=$('publicProfileModal');const body=$('publicProfileBody');modal.style.display='flex';body.innerHTML=empty('عم نحمل إعلانات المستخدم المنشورة…');try{const p=publicProfiles[userId];if(!p||!p.display_name){body.innerHTML=empty('هذا المستخدم لم يضف اسماً ظاهراً.');return}const [a,b]=await Promise.all([db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',userId).eq('status','active').order('created_at',{ascending:false}),db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,address,area,village,category_id,status,image_urls,created_at').eq('owner_id',userId).eq('status','active').order('name')]);if(a.error)throw a.error;if(b.error)throw b.error;const ads=(a.data||[]).map(x=>({...x,_title:x.title,_kind:'إعلان',_area:x.area,_table:'listing'})).concat((b.data||[]).map(x=>({...x,_title:x.name,_kind:'محل أو خدمة',_area:[x.area,x.village].filter(Boolean).join(' · '),_table:'business'})));body.innerHTML='<div class="sectionhead"><div><h2 style="margin:0">👤 '+esc(p.display_name)+'</h2><div class="muted">الإعلانات المنشورة لهذا المستخدم: '+ads.length+'</div></div></div><div class="profile-ad-grid">'+(ads.length?ads.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._table==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._title)+'</h3>'+(x._table==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="meta">📍 '+esc(x._area||'منبج وريفها')+' · '+esc(x._kind)+'</div>'+publicationDateMarkup(x.created_at)+(x.description?'<div class="meta">'+esc(x.description.slice(0,140))+'</div>':'')+'</div></article>').join(''):empty('لا توجد إعلانات منشورة لهذا المستخدم حالياً.'))+'</div>'}catch(err){console.error('public profile:',err);body.innerHTML=empty('تعذّر تحميل إعلانات هذا المستخدم حالياً.')}}
 function closePublicProfile(){$('publicProfileModal').style.display='none'}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()});
-</script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div></body></html>
+</script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div>
+<script>
+(function(){
+  const banner=document.getElementById('pwaInstallBanner');
+  const installButton=document.getElementById('pwaInstallButton');
+  const closeButton=document.getElementById('pwaInstallClose');
+  if(!banner||!installButton||!closeButton)return;
+  const isAndroid=/Android/i.test(navigator.userAgent);
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const dismissedAt=Number(localStorage.getItem('dalilPwaBannerDismissedAt')||0);
+  const dismissedRecently=dismissedAt&&Date.now()-dismissedAt<7*24*60*60*1000;
+  if(!isAndroid||isStandalone||dismissedRecently)return;
+  let deferredPrompt=null;
+  banner.style.display='block';
+  window.addEventListener('beforeinstallprompt',function(event){
+    event.preventDefault();
+    deferredPrompt=event;
+    installButton.textContent='تثبيت التطبيق';
+  });
+  window.addEventListener('appinstalled',function(){
+    banner.style.display='none';
+    deferredPrompt=null;
+    localStorage.setItem('dalilPwaInstalled','1');
+  });
+  if(localStorage.getItem('dalilPwaInstalled')==='1')return;
+  installButton.addEventListener('click',async function(){
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt=null;
+      return;
+    }
+    alert('لتثبيت دليل منبج على أندرويد: افتح الموقع بمتصفح Chrome، ثم اضغط قائمة ⋮ واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار، حدّث الصفحة وحاول مرة أخرى.');
+  });
+  closeButton.addEventListener('click',function(){
+    banner.style.display='none';
+    localStorage.setItem('dalilPwaBannerDismissedAt',String(Date.now()));
+  });
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(err){console.warn('PWA service worker registration failed',err);});
+    });
+  }
+})();
+</script>
+</body></html>
