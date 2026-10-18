@@ -107,7 +107,7 @@ body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page
 @media(max-width:480px){.admin-dashboard-top{align-items:flex-start}.admin-brand-pin{width:38px;height:38px;border-radius:12px;font-size:19px}.admin-brand-copy strong{font-size:15px}.admin-brand-copy small{font-size:10px}.admin-dashboard-brand .admin-brand-badge{display:none}.admin-dashboard-actions{gap:6px;flex-direction:column;align-items:flex-end}.admin-live-status{padding:6px 8px;font-size:10px}.admin-dashboard-actions .btn{padding:7px 9px;font-size:11px}.admin-menu-intro>span{display:none}.admin-menu-groups{grid-template-columns:1fr 1fr;gap:7px}.admin-menu-group{border-radius:12px}.admin-menu-group summary{padding:10px 8px;font-size:11px;min-height:48px}.admin-menu-links{padding:0 6px 7px;gap:5px}.admin-menu-links a{font-size:10px;padding:8px 7px;min-height:34px}.admin-menu-hint{font-size:10px}}
 
 .admin-dashboard-actions{position:relative;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.admin-top-bell-wrap{display:inline-flex;align-items:center}.admin-top-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0!important;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--green);font-size:17px;line-height:1}.admin-top-bell:hover{background:var(--mint);border-color:#b8d8c5}.admin-top-bell .admin-bell-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#c62828;color:#fff;border:2px solid #fff;font-size:10px;font-weight:900;line-height:14px;text-align:center}.admin-dashboard-top{gap:12px}.admin-live-status{white-space:nowrap}@media(max-width:650px){.admin-dashboard-top{align-items:flex-start;gap:8px}.admin-dashboard-actions{gap:6px;flex-direction:row;align-items:center;justify-content:flex-end}.admin-top-bell{width:34px;height:34px;border-radius:10px;font-size:15px}.admin-dashboard-actions .btn{white-space:nowrap}#adminNotificationsPanel{width:100%;padding:11px!important}}
-</style></head>
+.verified-business-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#e7f7ed;border:1px solid #b8e0c5;color:#176b50;font-size:11px;font-weight:800;white-space:nowrap}</style></head>
 <body class="admin-page">
 <div id="adminDashboardMenu" class="admin-dashboard-menu" style="display:none">
   <div class="admin-dashboard-top">
@@ -407,7 +407,8 @@ async function loadAdminPending(){
    const reviewActions=adminShowAll
     ?(row.status==='pending'?'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>':'')
     :'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>';
-   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف المحتوى: '+adminEscape(row.id||'غير متوفر')+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+ownerAction+'<button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
+   const verifyAction=adminActiveTable==='businesses'&&row.status==='active'?'<button type="button" class="btn outline" onclick="toggleBusinessVerification(\''+adminEscape(row.id)+'\','+(!row.is_verified)+')">'+(row.is_verified?'🟢 إلغاء توثيق المحل':'✓ توثيق المحل')+'</button>':'';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+(adminActiveTable==='businesses'&&row.is_verified?' <span class="verified-business-badge">✓ محل موثوق</span>':'')+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف المحتوى: '+adminEscape(row.id||'غير متوفر')+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+verifyAction+ownerAction+'<button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
   }).join('');
  }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الإدارة. تأكد من تطبيق ترحيل قاعدة البيانات الجديد ثم أعد المحاولة.</div>';}
 }
@@ -518,7 +519,21 @@ async function enforceBlockedUser(user){
   if(!data)publicationBanNoticeShown=false;
  }catch(e){console.error('publication-ban check:',e)}
 }
-async function reviewAdminItem(table,id,status){
+async 
+async function toggleBusinessVerification(id,verify){
+ if(!db||!(currentUser&&currentUser.app_metadata&&currentUser.app_metadata.role==='admin')){toast('ما عندك صلاحية الإدارة.');return}
+ const action=verify?'توثيق هذا المحل؟ تأكدت الإدارة من بياناته؟':'إلغاء توثيق هذا المحل؟';
+ if(!window.confirm(action))return;
+ try{
+  const {data,error}=await db.from('businesses').update({is_verified:!!verify}).eq('id',id).eq('status','active').select('id,is_verified,verified_at').single();
+  if(error)throw error;
+  await logAdminAction(verify?'verify_business':'unverify_business','businesses',id,{is_verified:!!verify,verified_at:data.verified_at||null});
+  toast(verify?'تم توثيق المحل بنجاح.':'تم إلغاء توثيق المحل.');
+  await loadAdminPending();
+ }catch(e){console.error('business verification:',e);toast('تعذّر تغيير التوثيق: '+(e.message||'خطأ غير معروف'))}
+}
+
+function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
  if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
  let reason=null;
