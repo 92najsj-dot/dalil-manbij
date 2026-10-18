@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /ai-moderator.html
+
+Sitemap: https://dalil-manbij-new.pages.dev/sitemap.xml
