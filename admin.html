@@ -209,7 +209,7 @@ function areaOptions(){return AREAS.map(a=>`<option value="${esc(a)}">${esc(a)}<
 function categoryOptions(){return categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}
 function setStatus(ok,msg){$('statusDot').className='dot'+(ok?' ok':'');$('connectionStatus').textContent=msg}
 function empty(msg){return `<div class="empty">${esc(msg)}</div>`}
-async async function loadData(){
+async function loadData(){
  try{
   if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم أعد فتح الملف.');
   db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
