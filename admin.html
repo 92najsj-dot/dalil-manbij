@@ -533,7 +533,7 @@ async function toggleBusinessVerification(id,verify){
  }catch(e){console.error('business verification:',e);toast('تعذّر تغيير التوثيق: '+(e.message||'خطأ غير معروف'))}
 }
 
-function reviewAdminItem(table,id,status){
+async function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
  if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
  let reason=null;
