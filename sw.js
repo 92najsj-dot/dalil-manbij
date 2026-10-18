@@ -1,4 +1,4 @@
-const CACHE_NAME = "dalil-manbij-shell-v10";
+const CACHE_NAME = "dalil-manbij-shell-v11";
 const CORE_SHELL = [
   "./",
   "./index.html",
