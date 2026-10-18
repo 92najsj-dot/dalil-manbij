@@ -372,7 +372,7 @@ function clearAdminReadNotifications(){try{localStorage.removeItem(adminReadStor
 function updateAdminBellUnread(){const countNode=document.getElementById('adminPendingCount'),badge=document.getElementById('adminBellCount');if(!countNode||!badge)return;const value=String(countNode.textContent||'').trim();const unread=value!==adminReadSnapshot()&&parseInt(value,10)>0;badge.textContent=parseInt(value,10)>99?'99+':String(Math.max(0,parseInt(value,10)||0));badge.hidden=!unread}
 function toggleAdminNotifications(){const panel=document.getElementById('adminNotificationsPanel');const button=document.getElementById('adminNotificationsToggle');if(!panel||!button)return;const opening=panel.hidden;panel.hidden=!opening;button.setAttribute('aria-expanded',String(opening));}
 function closeAdminNotifications(){const panel=document.getElementById('adminNotificationsPanel');const button=document.getElementById('adminNotificationsToggle');if(panel)panel.hidden=true;if(button)button.setAttribute('aria-expanded','false');}
-async async function loadAdminPending(){
+async function loadAdminPending(){
  if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
  const box=$('adminItems');if(!box)return;
  box.innerHTML='<div class="empty">عم نحمل المحتوى…</div>';
