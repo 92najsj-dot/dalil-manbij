@@ -143,22 +143,47 @@ let db=null,currentUser=null,activeCat='الكل',condition='الكل',businesse
 const $=id=>document.getElementById(id);
 function esc(v){return String((v == null ? '' : v)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display='none',4200)}
-function phoneDigits(s){
- let digits=String(s||'').trim().replace(/[^0-9]/g,'');
- if(digits.startsWith('00'))digits=digits.slice(2);
- // أرقام الموبايل السورية المحلية مثل 0992990573 يجب تحويلها إلى 963992990573 لرابط واتساب.
- if(/^09[0-9]{8}$/.test(digits))digits='963'+digits.slice(1);
- // يدعم أيضاً رقم الموبايل السوري المكتوب دون الصفر أو رمز الدولة.
- else if(/^9[0-9]{8}$/.test(digits))digits='963'+digits;
- return digits;
+function asciiPhoneDigits(value){
+ return String(value||'').replace(/[٠-٩۰-۹]/g,ch=>{
+  const a='٠١٢٣٤٥٦٧٨٩',p='۰۱۲۳۴۵۶۷۸۹';
+  const ai=a.indexOf(ch),pi=p.indexOf(ch);
+  return String(ai>=0?ai:pi);
+ });
 }
-function phoneTel(s){
- const raw=String(s||'').trim();
- const digits=phoneDigits(raw);
- if(!digits)return '';
- // استخدم رمز الدولة لأرقام الموبايل السورية، واترك بقية الأرقام كما أدخلها المستخدم.
- if(/^9639[0-9]{8}$/.test(digits))return '+'+digits;
+function normalizeContactNumber(value){
+ const raw=asciiPhoneDigits(value).trim();
+ if(!raw)return {ok:true,empty:true,digits:''};
+ const hasInternationalPrefix=/^\\s*(?:\\+|00)/.test(raw);
+ let digits=raw.replace(/[^0-9]/g,'');
+ if(digits.startsWith('00'))digits=digits.slice(2);
+ if(hasInternationalPrefix){
+  if(digits.length<8||digits.length>15)return {ok:false,message:'رقم التواصل الدولي غير مكتمل. تأكد من رمز الدولة والرقم.'};
+  return {ok:true,empty:false,digits};
+ }
+ // حوّل رقم الموبايل السوري المحلي إلى صيغة دولية.
+ if(/^09[0-9]{8}$/.test(digits))digits='963'+digits.slice(1);
+ else if(/^9[0-9]{8}$/.test(digits))digits='963'+digits;
+ else return {ok:false,message:'اكتب الرقم مع رمز الدولة، مثل +905… لتركيا أو +963… لسوريا. أرقام الموبايل السورية التي تبدأ بـ 09 مقبولة أيضاً.'};
+ if(digits.length<8||digits.length>15)return {ok:false,message:'رقم التواصل غير مكتمل. تأكد من الرقم ثم أعد المحاولة.'};
+ return {ok:true,empty:false,digits};
+}
+function phoneDigits(value){
+ const normalized=normalizeContactNumber(value);
+ if(normalized.ok)return normalized.digits||'';
+ // للأرقام القديمة المنشورة: لا نضيف رمز دولة تخميناً إذا كانت الصيغة غير واضحة.
+ return asciiPhoneDigits(value).replace(/[^0-9]/g,'').replace(/^00/,'');
+}
+function phoneTel(value){
+ const raw=asciiPhoneDigits(value).trim();
+ if(!raw)return '';
+ const normalized=normalizeContactNumber(raw);
+ if(normalized.ok&&normalized.digits)return '+'+normalized.digits;
  return raw.replace(/[^0-9+*#,;]/g,'');
+}
+function normalizeSubmissionContact(value,label){
+ const normalized=normalizeContactNumber(value);
+ if(!normalized.ok)throw new Error(label+': '+normalized.message);
+ return normalized.empty?'':normalized.digits;
 }
 function emojiFor(cat){const c=String(cat||'');return ({'محلات':'🏪','مطاعم ومقاهي':'☕','أطباء ومراكز طبية':'🩺','صيدليات':'💊','عقارات ومقاولات':'🏠','سيارات ونقل':'🚗','تعليم وتدريب':'📚','زراعة وخدمات ريفية':'🌾','إلكترونيات':'📱','أثاث ومنزل':'🛋️','ملابس':'👕','خدمات':'🧰','أخرى':'🛍️'})[c]||'🏪'}
 function conditionLabel(v){return ({new:'جديد',used:'مستعمل',service:'خدمة'})[v]||v||'—'}
@@ -256,6 +281,10 @@ function openModal(type){const f=$('modalForm');$('modalbg').style.display='flex
 async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.');return}const f=e.currentTarget;const d=Object.fromEntries(new FormData(f).entries());const submitter=e.submitter;try{if(f.dataset.mode==='recovery'){if(!d.newPassword||d.newPassword.length<8){toast('كلمة المرور يجب أن تكون 8 أحرف على الأقل.');return}if(d.newPassword!==d.confirmPassword){toast('كلمتا المرور غير متطابقتين.');return}const {error}=await db.auth.updateUser({password:d.newPassword});if(error)throw error;history.replaceState(null,'',window.location.pathname+window.location.search);closeModal();toast('تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');return}if(d.email&&d.password){const mode=(submitter ? submitter.value : undefined)||'login';let result;if(mode==='signup'){const displayName=(d.display_name||'').trim();if(displayName.length===1){toast('إذا رغبت بإضافة اسم، اكتب حرفين على الأقل أو اترك الحقل فارغاً.');return}result=await db.auth.signUp({email:d.email,password:d.password,options:{data:{display_name:displayName}}});}else result=await db.auth.signInWithPassword({email:d.email,password:d.password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){toast('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب ثم سجّل الدخول.');closeModal();return}currentUser=result.data.user||(result.data.session ? result.data.session.user : undefined)||null;updateAccountUI();toast(mode==='signup'?'تم إنشاء الحساب وتسجيل الدخول.':'أهلاً بعودتك!');closeModal();await loadData();return}
  if(!currentUser){toast('سجّل الدخول أولاً.');return}
  try{const banCheck=await db.rpc('is_current_user_publication_blocked');if(banCheck.error)throw banCheck.error;if(banCheck.data){toast('حسابك محظور من النشر حالياً. يمكنك التصفح، لكن لا يمكنك إرسال محتوى جديد.');return}}catch(banCheckError){console.error('publication ban check:',banCheckError);toast('تعذّر التحقق من صلاحية النشر. حاول مجدداً بعد قليل.');return}
+ // تحقّق من أرقام التواصل قبل رفع الصور أو حفظ الإعلان، واحفظها بصيغة دولية موحّدة.
+ if(f.querySelector('[name="contact_phone"]'))d.contact_phone=normalizeSubmissionContact(d.contact_phone,'رقم واتساب');
+ if(f.querySelector('[name="whatsapp"]'))d.whatsapp=normalizeSubmissionContact(d.whatsapp,'رقم واتساب');
+ if(f.querySelector('[name="phone"]')&&String(d.phone||'').trim())d.phone=normalizeSubmissionContact(d.phone,'رقم الهاتف');
  let table,payload;let imageUrls=[];const photoInput=f.querySelector('[name="photos"]');const photoFiles=photoInput&&photoInput.files?Array.from(photoInput.files):[];if(photoFiles.length>4)throw new Error('يمكن رفع 4 صور كحد أقصى.');for(const file of photoFiles){if(file.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');if(['image/jpeg','image/png','image/webp','image/avif'].indexOf(file.type)===-1)throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const up=await db.storage.from('manbij-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw up.error;imageUrls.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}if(f.querySelector('[name="item_condition"]')){table='listings';payload={user_id:currentUser.id,title:d.title,description:d.description||null,price:Number(d.price),category:d.category,area:d.area,item_condition:d.item_condition,contact_phone:d.contact_phone||null,image_urls:imageUrls,status:'active'}}else if(f.querySelector('[name="category_id"]')){table='businesses';payload={owner_id:currentUser.id,category_id:d.category_id,name:d.name,description:d.description||null,phone:d.phone||null,whatsapp:d.whatsapp||null,address:d.address||null,area:d.area,village:d.village||null,map_url:d.map_url||null,image_urls:imageUrls,status:'pending'}}else{table='wanted_requests';payload={user_id:currentUser.id,title:d.title,description:d.description||null,budget:d.budget===''?null:Number(d.budget),category:d.category||'أخرى',area:d.area,contact_phone:d.contact_phone?d.contact_phone.trim():null,status:'active'}}
  const {data:created,error}=await db.from(table).insert(payload).select('status,rejection_reason').single();if(error)throw error;if(table==='businesses'){toast('وصل طلب المحل أو الخدمة، وسيظهر بعد مراجعة الإدارة.')}else if(created&&created.status==='active'){toast(table==='listings'?'🎉 تم نشر إعلانك بنجاح وأصبح ظاهراً للزوار!':'🎉 تم نشر طلبك بنجاح وأصبح ظاهراً للزوار!')}else{toast('وصل منشورك، لكنه ينتظر مراجعة الإدارة حفاظاً على أمان الموقع.')}closeModal();await loadData();await loadMyAds();}catch(err){console.error(err);let msg=err.message||'خطأ غير معروف';if(/DAILY_POST_LIMIT_REACHED/i.test(msg)||/10 منشورات فقط خلال اليوم/i.test(err.details||'')){msg='وصلت للحد اليومي للنشر: مسموح 10 منشورات إجمالاً باليوم بين إعلانات البيع والمحلات وطلبات الناس. جرّب بكرا.'}else if(/LOGIN_REQUIRED_TO_POST/i.test(msg)){msg='سجّل الدخول أولاً حتى تنشر.'}else if(/row-level security|permission denied|not allowed/i.test(msg)){msg='قاعدة البيانات رفضت العملية بسبب سياسة الصلاحيات. نحتاج مراجعة سياسة الجدول في Supabase.'}toast('ما تمت العملية: '+msg)}}
 
