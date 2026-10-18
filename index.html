@@ -495,8 +495,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()
 /* تثبيت دليل منبج: نافذة تأكيد مخصصة ثم استدعاء نافذة التثبيت الأصلية للمتصفح */
 let dalilInstallPrompt=null;
 const dalilInstallButton=document.getElementById('installAppBtn');
-function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=show?'inline-flex':'none'}
-window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;showDalilInstallButton(true)});
+function isDalilStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
+function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=(show&&!isDalilStandalone())?'flex':'none'}
+/* أخفِ زر التثبيت داخل النسخة المثبتة، وأبقِه ظاهراً في المتصفح فقط */
+showDalilInstallButton(!isDalilStandalone());
+window.addEventListener('pageshow',()=>{if(isDalilStandalone())showDalilInstallButton(false)});
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;if(!isDalilStandalone())showDalilInstallButton(true)});
 window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;closeDalilInstallModal();showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
 function openDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal){modal.classList.add('open');document.body.style.overflow='hidden'}}
 function closeDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal)modal.classList.remove('open');document.body.style.overflow=''}
