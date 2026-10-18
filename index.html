@@ -133,6 +133,36 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="modalbg" id="modalbg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modalhead"><h2 id="modalTitle">إضافة</h2><button class="close" onclick="closeModal()" aria-label="إغلاق">✕</button></div><form id="modalForm" onsubmit="submitForm(event)"></form></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* Fallback for networks where the primary CDN is unreachable. */
+window.__dalilSupabaseLoader = async function () {
+ if (window.supabase) return window.supabase;
+ const sources = [
+  'https://unpkg.com/@supabase/supabase-js@2',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+ ];
+ for (const src of sources) {
+  const loaded = await new Promise(resolve => {
+   const script = document.createElement('script');
+   let settled = false;
+   const finish = ok => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    resolve(ok && !!window.supabase);
+   };
+   const timer = setTimeout(() => finish(false), 7000);
+   script.src = src;
+   script.async = true;
+   script.onload = () => finish(true);
+   script.onerror = () => finish(false);
+   document.head.appendChild(script);
+  });
+  if (loaded) return window.supabase;
+ }
+ throw new Error('تعذر تحميل مكتبة الاتصال. تحقق من الإنترنت ثم أعد المحاولة.');
+};
+</script>
+<script>
 // Public browser key only. RLS must remain enabled in Supabase; never place service-role keys here.
 const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
 const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
@@ -201,7 +231,8 @@ function openFavorites(){if(!currentUser){openModal('auth');return}const section
 async function loadFavorites(){const box=$('favoritesGrid');if(!box)return;if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض المحفوظات.');return}box.innerHTML=empty('عم نحمل المحفوظات…');try{const {data,error}=await db.from('user_favorites').select('target_type,target_id,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});if(error)throw error;const rows=data||[];favoriteKeys=new Set(rows.map(x=>favoriteKey(x.target_type,x.target_id)));const count=$('favoriteCount');if(count)count.textContent=String(rows.length);if(!rows.length){box.innerHTML=empty('ما عندك إعلانات محفوظة حالياً. اضغط ♡ حفظ على أي إعلان حتى يظهر هون.');return}const idsByType={listing:rows.filter(x=>x.target_type==='listing').map(x=>x.target_id),business:rows.filter(x=>x.target_type==='business').map(x=>x.target_id)};const [ads,biz]=await Promise.all([idsByType.listing.length?db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',idsByType.listing).eq('status','active'):{data:[],error:null},idsByType.business.length?db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,area,village,address,category_id,status,image_urls,created_at').in('id',idsByType.business).eq('status','active'):{data:[],error:null}]);if(ads.error)throw ads.error;if(biz.error)throw biz.error;const items=[...(ads.data||[]).map(x=>({...x,_favType:'listing',_favTitle:x.title})),...(biz.data||[]).map(x=>({...x,_favType:'business',_favTitle:x.name}))];if(!items.length){box.innerHTML=empty('الإعلانات المحفوظة لم تعد متاحة أو تم حذفها.');return}box.innerHTML=items.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._favType==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._favTitle)+'</h3><div class="meta">📍 '+esc(x.area||'منبج وريفها')+'</div>'+(x._favType==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="cardfoot"><button class="btn outline favorite-btn saved" onclick="toggleFavorite(\''+x._favType+'\',\''+esc(x.id)+'\')">♥ إزالة من المحفوظات</button>'+(x._favType==='listing'&&x.contact_phone?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':'')+'</div></div></article>').join('')}catch(e){console.error(e);box.innerHTML=empty('تعذّر تحميل المحفوظات. تحقق من اتصال قاعدة البيانات وصلاحياتها.')}}
 async function loadData(){
  try{
-  if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم أعد فتح الملف.');
+  if(!window.supabase)await window.__dalilSupabaseLoader();
+  if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال. تحقق من الإنترنت ثم أعد المحاولة.');
   db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await Promise.all([
    db.auth.getSession(),db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,image_urls,created_at').eq('status','active').order('is_featured',{ascending:false}).order('name'),db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('status','active').order('created_at',{ascending:false}),db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at,contact_phone').eq('status','active').order('created_at',{ascending:false})
