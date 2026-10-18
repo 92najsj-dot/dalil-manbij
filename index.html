@@ -186,7 +186,8 @@ function normalizeContactNumber(value){
  const hasInternationalPrefix=/^\\s*(?:\\+|00)/.test(raw);
  let digits=raw.replace(/[^0-9]/g,'');
  if(digits.startsWith('00'))digits=digits.slice(2);
- if(hasInternationalPrefix){
+ // تقبل الأرقام الدولية المحفوظة دون علامة +، لأن الحفظ يزيل العلامات.
+ if(hasInternationalPrefix||(digits.length>=11&&digits.length<=15)){
   if(digits.length<8||digits.length>15)return {ok:false,message:'رقم التواصل الدولي غير مكتمل. تأكد من رمز الدولة والرقم.'};
   return {ok:true,empty:false,digits};
  }
