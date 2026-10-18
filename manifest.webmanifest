@@ -1,12 +1,12 @@
 {
-  "id": "./",
+  "id": "/",
   "name": "دليل منبج - كل منبج بمكان واحد",
   "short_name": "دليل منبج",
   "description": "دليل المحلات والخدمات وإعلانات البيع والشراء والطلبات في منبج وريفها.",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "display_override": [
     "standalone",
