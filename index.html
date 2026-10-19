@@ -294,7 +294,7 @@ async function loadPromotionAdmin(){if(!isAdminUser()||!db)return;const box=$('p
 async function loadAuditLog(){if(!isAdminUser()||!db)return;const box=$('adminAuditList');if(!box)return;try{const r=await db.from('admin_audit_log').select('*').order('created_at',{ascending:false}).limit(50);if(r.error)throw r.error;box.innerHTML=(r.data||[]).map(x=>'<div class="adminpromo-row"><strong>'+esc(x.action)+' · '+esc(x.entity_type)+'</strong><div class="adminmeta">'+promoDate(x.created_at)+' · '+esc(x.entity_id||'')+'<br>'+esc(JSON.stringify(x.details||{}))+'</div></div>').join('')||'<div class="empty">السجل فارغ.</div>'}catch(e){box.innerHTML='<div class="empty">طبّق ملف migration أولاً.</div>'}}
 
 function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الكل'||(categories.find(c=>c.id===x.category_id)||{}).name===activeCat)&&matchesArea(x)&&matchesQuery({...x,category:(categories.find(c=>c.id===x.category_id)||{}).name}));$('businessGrid').innerHTML=arr.length?arr.map(x=>{const cat=categories.find(c=>c.id===x.category_id);const contact=x.whatsapp;const waCheck=normalizeContactNumber(contact);const wa=waCheck.ok?waCheck.digits:'';return `<article class="card" id="business-${esc(x.id)}">${photoMarkup(x.image_urls,(cat ? cat.icon : undefined)||emojiFor((cat ? cat.name : undefined)))}<div class="cardbody"><h3>${esc(x.name)}</h3><div class="tag" style="align-self:flex-start">${esc((cat ? cat.name : undefined)||'محل')}</div><div class="meta">📍 ${esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,180))}</div>`:''}${profileNameMarkup(x.owner_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot">${wa?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${wa}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${x.map_url?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="${esc(x.map_url)}" target="_blank" rel="noopener noreferrer">الخريطة</a>`:''}${favoriteButtonMarkup("business",x.id)}</div></div></article>`}).join(''):empty('ما في محلات مفعّلة تطابق بحثك حالياً. فيك تضيف محلك ليظهر بعد المراجعة.')}
-function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||x.category===activeCat)&&(condition==='الكل'||x.item_condition===condition)&&matchesArea(x)&&matchesQuery(x));$('listingGrid').innerHTML=arr.length?arr.map(x=>`<article class="card" id="listing-${esc(x.id)}">${photoMarkup(x.image_urls,emojiFor(x.category))}<div class="cardbody"><h3>${esc(x.title)}</h3><div class="price">${Number(x.price||0).toLocaleString('en-US')} ل.س</div><div class="meta">📍 ${esc(x.area||'منبج')} · ${esc(x.category||'أخرى')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}${profileNameMarkup(x.user_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${favoriteButtonMarkup("listing",x.id)}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
+function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||x.category===activeCat)&&(condition==='الكل'||x.item_condition===condition)&&matchesArea(x)&&matchesQuery(x));$('listingGrid').innerHTML=arr.length?arr.map(x=>`<article class="card" id="listing-${esc(x.id)}">${photoMarkup(x.image_urls,emojiFor(x.category))}<div class="cardbody"><h3>${esc(x.title)}</h3><div class="price">${Number(x.price||0).toLocaleString('en-US')} ${x.currency==='USD'?'${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}${profileNameMarkup(x.user_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${favoriteButtonMarkup("listing",x.id)}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
 function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<article class="service" style="align-items:flex-start"><span class="emoji">📣</span><div style="min-width:0;flex:1"><strong>${esc(r.title)}</strong><small style="line-height:1.8">${esc(r.category||'أخرى')} · 📍 ${esc(r.area||'منبج وريفها')}<br>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'}${r.created_at?' · '+esc(new Date(r.created_at).toLocaleDateString('ar-SY')):''}</small>${r.description?`<div class="meta" style="margin-top:6px">${esc(r.description.slice(0,180))}</div>`:'' }<div class="cardfoot" style="justify-content:flex-start">${r.contact_phone?`<a class="btn primary" style="padding:8px 11px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(r.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت طلبك على دليل منبج: '+r.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:'<span class="muted">ما في وسيلة تواصل مضافة</span>'}</div></div></article>`).join(''):empty('ما في طلبات منشورة حالياً. سجّل الدخول وانشر طلبك، ورح يظهر بعد موافقة الإدارة.')}
 function toggleMyAdsSection(forceOpen){const box=$('myAdsSection');if(!box)return;const opening=typeof forceOpen==='boolean'?forceOpen:box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';if(opening){loadMyAds();box.scrollIntoView({behavior:'smooth',block:'start'})}}
 function toggleDisplayNameSettings(){const box=$('displayNameSettings');if(!box)return;const opening=box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';if(opening){box.scrollIntoView({behavior:'smooth',block:'center'});$('displayNameInput')?.focus({preventScroll:true})}}
@@ -315,7 +315,7 @@ async function startPasswordReset(){if(!db){toast('قاعدة البيانات �
 async function signInSocial(provider){if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة.');return}if(!['google','facebook'].includes(provider))return;try{const {error}=await db.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin+window.location.pathname}});if(error)throw error}catch(e){console.error('social sign-in:',e);toast('تعذر بدء تسجيل الدخول عبر '+(provider==='google'?'Google':'Facebook')+'. تأكد من تفعيل المزوّد وإعداد مفاتيح OAuth في Supabase.')}}
 function openModal(type){const f=$('modalForm');$('modalbg').style.display='flex';let html='';if(type!=='auth'&&!currentUser){$('modalTitle').textContent='تسجيل الدخول مطلوب';f.innerHTML='<p>حتى نحمي بياناتك ونربط الإعلان بحسابك، سجّل الدخول أو أنشئ حساباً أولاً.</p><button type="button" class="btn primary" onclick="openModal(\'auth\')">تسجيل الدخول / إنشاء حساب</button>';return}
  if(type==='auth'){$('modalTitle').textContent='حسابك على دليل منبج';html=`<button class="btn outline" type="button" onclick="signInSocial('google')" style="width:100%;margin-bottom:8px"><span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-inline-end:8px;font:bold 20px Arial,sans-serif;color:#4285f4">G</span> المتابعة باستخدام Google</button><button class="btn outline" type="button" onclick="signInSocial('facebook')" style="width:100%;margin-bottom:14px"><span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-inline-end:8px;background:#1877f2;border-radius:5px;color:white;font:bold 20px Arial,sans-serif">f</span> المتابعة باستخدام Facebook</button><div style="text-align:center;color:var(--muted);font-size:12px;margin:2px 0 10px">أو باستخدام البريد الإلكتروني</div><label>البريد الإلكتروني<input class="field" name="email" type="email" required autocomplete="email" placeholder="name@example.com"></label><label>كلمة المرور<input class="field" name="password" type="password" minlength="8" required autocomplete="current-password" placeholder="8 أحرف على الأقل"></label><label>الاسم الظاهر <small class="muted">(اختياري، يظهر على إعلاناتك)</small><input class="field" name="display_name" type="text" maxlength="40" minlength="2" autocomplete="nickname" placeholder="مثلاً: أحمد المنبجي"></label><div class="two"><button class="btn primary" type="submit" name="authmode" value="login">تسجيل الدخول</button><button class="btn outline" type="submit" name="authmode" value="signup">إنشاء حساب</button></div><button class="btn outline" type="button" onclick="startPasswordReset()" style="width:100%">نسيت كلمة المرور؟</button><small>بإنشاء الحساب، أنت توافق على استخدام المنصة بشكل قانوني وعدم نشر محتوى مضلل أو مؤذٍ.</small>`}
- if(type==='listing'){$('modalTitle').textContent='إضافة إعلان بيع أو خدمة';html=`<label>اسم الإعلان<input class="field" name="title" required minlength="3" maxlength="120" placeholder="مثلاً: موبايل سامسونغ"></label><label>الوصف<textarea class="field" name="description" rows="3" maxlength="3000" placeholder="الحالة والتفاصيل"></textarea></label><div class="two"><label>السعر بالليرة السورية<input class="field" name="price" type="number" min="0" step="1" required></label><label>القسم<select class="field" name="category" required>${categories.map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label></div><div class="two"><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>الحالة<select class="field" name="item_condition"><option value="used">مستعمل</option><option value="new">جديد</option><option value="service">خدمة</option></select></label></div><label>رقم واتساب مع رمز الدولة<input class="field" name="contact_phone" inputmode="tel" placeholder="مثلاً 9639xxxxxxxx"></label><label>صور الإعلان (حتى 4 صور)<input class="field" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label><small>كل صورة بحد أقصى 5 ميغابايت.</small><button class="btn primary" type="submit">إرسال للمراجعة</button><small>لن يظهر الإعلان للعامة إلا بعد تفعيله من إدارة الموقع.</small>`}
+ if(type==='listing'){$('modalTitle').textContent='إضافة إعلان بيع أو خدمة';html=`<label>اسم الإعلان<input class="field" name="title" required minlength="3" maxlength="120" placeholder="مثلاً: موبايل سامسونغ"></label><label>الوصف<textarea class="field" name="description" rows="3" maxlength="3000" placeholder="الحالة والتفاصيل"></textarea></label><div class="two"><label>السعر<input class="field" name="price" type="number" min="0" step="any" required></label><label>العملة<select class="field" name="currency" required><option value="SYP">ليرة سورية (ل.س)</option><option value="USD">دولار أمريكي ($)</option></select></label></div><label>القسم<select class="field" name="category" required>${categories.map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label></div><div class="two"><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>القرية / البلدة (اختياري)<input class="field" name="village" maxlength="160" placeholder="اسم القرية أو البلدة"></label></div><label>الحالة<select class="field" name="item_condition"><option value="used">مستعمل</option><option value="new">جديد</option><option value="service">خدمة</option></select></label></div><label>رقم واتساب مع رمز الدولة<input class="field" name="contact_phone" inputmode="tel" placeholder="مثلاً 9639xxxxxxxx"></label><label>صور الإعلان (حتى 4 صور)<input class="field" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label><small>كل صورة بحد أقصى 5 ميغابايت.</small><button class="btn primary" type="submit">إرسال للمراجعة</button><small>لن يظهر الإعلان للعامة إلا بعد تفعيله من إدارة الموقع.</small>`}
  if(type==='request'){$('modalTitle').textContent='نشر طلب في مطلوب في منبج';html=`<label>شو محتاج؟<input class="field" name="title" required minlength="3" maxlength="120" placeholder="مثلاً: مطلوب موبايل مستعمل أو عامل بناء"></label><label>تفاصيل إضافية<textarea class="field" name="description" rows="3" maxlength="3000" placeholder="اكتب المواصفات أو طبيعة العمل"></textarea></label><div class="two"><label>الميزانية بالليرة السورية (اختياري)<input class="field" name="budget" type="number" min="0" step="1"></label><label>القسم<select class="field" name="category"><option>أخرى</option>${categories.map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label></div><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>رقم واتساب للتواصل (اختياري)<input class="field" name="contact_phone" inputmode="tel" maxlength="30" placeholder="مثلاً 9639xxxxxxxx"></label><small>إذا أضفت رقم واتساب، سيظهر للزوار حتى يتمكنوا من التواصل معك. اتركه فارغاً إذا ما بدك تنشر رقمك.</small><button class="btn primary" type="submit">إرسال الطلب للمراجعة</button>`}
  if(type==='business'){$('modalTitle').textContent='إضافة محل أو خدمة';html=`<label>اسم المحل أو الخدمة<input class="field" name="name" required minlength="2" maxlength="160"></label><label>التصنيف<select class="field" name="category_id" required>${categoryOptions()}</select></label><label>وصف مختصر<textarea class="field" name="description" rows="3" maxlength="5000"></textarea></label><label>رقم واتساب مع رمز الدولة<input class="field" name="whatsapp" inputmode="tel" placeholder="مثلاً 9639xxxxxxxx"></label><small>سيظهر للزوار زر واتساب فقط للتواصل معك.</small><label>العنوان<input class="field" name="address" maxlength="500" placeholder="الحي أو الشارع"></label><div class="two"><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>القرية / الحي<input class="field" name="village" maxlength="160"></label></div><label>رابط الموقع على الخريطة (اختياري)<input class="field" name="map_url" type="url" placeholder="https://..."></label><label>صور المحل (حتى 4 صور)<input class="field" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label><small>كل صورة بحد أقصى 5 ميغابايت.</small><button class="btn primary" type="submit">إرسال للمراجعة</button><small>سيظهر المحل بعد موافقة الإدارة. لا تضف معلومات شخصية لا تريد نشرها.</small>`}
  f.innerHTML=html}
@@ -331,7 +331,394 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
   if(phoneNormalized.ok)d.phone=phoneNormalized.digits;
   else if(/^\\s*(?:\\+|00)/.test(asciiPhoneDigits(d.phone)))throw new Error('رقم الهاتف: '+phoneNormalized.message);
  }
- let table,payload;let imageUrls=[];const photoInput=f.querySelector('[name="photos"]');const photoFiles=photoInput&&photoInput.files?Array.from(photoInput.files):[];if(photoFiles.length>4)throw new Error('يمكن رفع 4 صور كحد أقصى.');for(const file of photoFiles){if(file.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');if(['image/jpeg','image/png','image/webp','image/avif'].indexOf(file.type)===-1)throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const up=await db.storage.from('manbij-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw up.error;imageUrls.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}if(f.querySelector('[name="item_condition"]')){table='listings';payload={user_id:currentUser.id,title:d.title,description:d.description||null,price:Number(d.price),category:d.category,area:d.area,item_condition:d.item_condition,contact_phone:d.contact_phone||null,image_urls:imageUrls,status:'active'}}else if(f.querySelector('[name="category_id"]')){table='businesses';payload={owner_id:currentUser.id,category_id:d.category_id,name:d.name,description:d.description||null,phone:d.phone||null,whatsapp:d.whatsapp||null,address:d.address||null,area:d.area,village:d.village||null,map_url:d.map_url||null,image_urls:imageUrls,status:'pending'}}else{table='wanted_requests';payload={user_id:currentUser.id,title:d.title,description:d.description||null,budget:d.budget===''?null:Number(d.budget),category:d.category||'أخرى',area:d.area,contact_phone:d.contact_phone?d.contact_phone.trim():null,status:'active'}}
+ let table,payload;let imageUrls=[];const photoInput=f.querySelector('[name="photos"]');const photoFiles=photoInput&&photoInput.files?Array.from(photoInput.files):[];if(photoFiles.length>4)throw new Error('يمكن رفع 4 صور كحد أقصى.');for(const file of photoFiles){if(file.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');if(['image/jpeg','image/png','image/webp','image/avif'].indexOf(file.type)===-1)throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const up=await db.storage.from('manbij-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw up.error;imageUrls.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}if(f.querySelector('[name="item_condition"]')){table='listings';payload={user_id:currentUser.id,title:d.title,description:d.description||null,price:Number(d.price),currency:d.currency||'SYP',category:d.category,area:d.area,village:(d.village||'').trim()||null,item_condition:d.item_condition,contact_phone:d.contact_phone||null,image_urls:imageUrls,status:'active'}}else if(f.querySelector('[name="category_id"]')){table='businesses';payload={owner_id:currentUser.id,category_id:d.category_id,name:d.name,description:d.description||null,phone:d.phone||null,whatsapp:d.whatsapp||null,address:d.address||null,area:d.area,village:d.village||null,map_url:d.map_url||null,image_urls:imageUrls,status:'pending'}}else{table='wanted_requests';payload={user_id:currentUser.id,title:d.title,description:d.description||null,budget:d.budget===''?null:Number(d.budget),category:d.category||'أخرى',area:d.area,contact_phone:d.contact_phone?d.contact_phone.trim():null,status:'active'}}
+ const {data:created,error}=await db.from(table).insert(payload).select('status,rejection_reason').single();if(error)throw error;if(table==='businesses'){toast('وصل طلب المحل أو الخدمة، وسيظهر بعد مراجعة الإدارة.')}else if(created&&created.status==='active'){toast(table==='listings'?'🎉 تم نشر إعلانك بنجاح وأصبح ظاهراً للزوار!':'🎉 تم نشر طلبك بنجاح وأصبح ظاهراً للزوار!')}else{toast('وصل منشورك، لكنه ينتظر مراجعة الإدارة حفاظاً على أمان الموقع.')}closeModal();await loadData();await loadMyAds();}catch(err){console.error(err);let msg=err.message||'خطأ غير معروف';if(/DAILY_POST_LIMIT_REACHED/i.test(msg)||/10 منشورات فقط خلال اليوم/i.test(err.details||'')){msg='وصلت للحد اليومي للنشر: مسموح 10 منشورات إجمالاً باليوم بين إعلانات البيع والمحلات وطلبات الناس. جرّب بكرا.'}else if(/LOGIN_REQUIRED_TO_POST/i.test(msg)){msg='سجّل الدخول أولاً حتى تنشر.'}else if(/row-level security|permission denied|not allowed/i.test(msg)){msg='قاعدة البيانات رفضت العملية بسبب سياسة الصلاحيات. نحتاج مراجعة سياسة الجدول في Supabase.'}toast('ما تمت العملية: '+msg)}}
+
+
+
+let ownerNotificationsCache=[];let ownerNotificationsBusy=false;let ownerDeletedIds=[];
+function ownerNotificationStorageKey(){return 'dalil-owner-notifications-read:'+String(currentUser&&currentUser.id||'guest')}
+function ownerDeletedStorageKey(){return 'dalil-owner-notifications-deleted:'+String(currentUser&&currentUser.id||'guest')}
+function ownerReadIds(){try{return JSON.parse(localStorage.getItem(ownerNotificationStorageKey())||'[]')}catch(e){return []}}
+function ownerDeleted(){try{return JSON.parse(localStorage.getItem(ownerDeletedStorageKey())||'[]')}catch(e){return []}}
+function toggleOwnerNotifications(){const p=$('ownerNotificationsPanel');if(!currentUser||!p)return;p.hidden=!p.hidden;if(!p.hidden)refreshOwnerNotifications()}
+function markOwnerNotificationRead(id){const ids=new Set(ownerReadIds());ids.add(id);try{localStorage.setItem(ownerNotificationStorageKey(),JSON.stringify(Array.from(ids)))}catch(e){}renderOwnerNotifications()}
+function markOwnerNotificationsRead(){const ids=new Set(ownerReadIds());ownerNotificationsCache.forEach(n=>ids.add(n.id));try{localStorage.setItem(ownerNotificationStorageKey(),JSON.stringify(Array.from(ids)))}catch(e){}renderOwnerNotifications()}
+function deleteReadOwnerNotifications(){const read=new Set(ownerReadIds()),deleted=new Set(ownerDeleted());ownerNotificationsCache.forEach(n=>{if(read.has(n.id))deleted.add(n.id)});try{localStorage.setItem(ownerDeletedStorageKey(),JSON.stringify(Array.from(deleted)))}catch(e){}renderOwnerNotifications()}
+async function refreshOwnerNotifications(){
+ if(ownerNotificationsBusy||!db||!currentUser)return;ownerNotificationsBusy=true;const box=$('ownerNotificationsList');if(box)box.innerHTML='<div class="muted">جارٍ تحديث إشعاراتك…</div>';
+ try{const userId=currentUser.id,now=Date.now();const [ads,biz,reqs]=await Promise.all([
+ db.from('listings').select('id,title,status,created_at,rejection_reason').eq('user_id',userId).order('created_at',{ascending:false}).limit(100),
+ db.from('businesses').select('id,name,status,created_at,rejection_reason').eq('owner_id',userId).order('created_at',{ascending:false}).limit(100),
+ db.from('wanted_requests').select('id,title,status,created_at,rejection_reason').eq('user_id',userId).order('created_at',{ascending:false}).limit(100)]);
+ if(ads.error)throw ads.error;if(biz.error)throw biz.error;if(reqs.error)throw reqs.error;const items=[];
+ function addRows(rows,kind,table){(rows||[]).forEach(x=>{const age=now-new Date(x.created_at).getTime();if(!Number.isFinite(age)||age>45*86400000)return;let title='',detail='';if(x.status==='pending'){title='⏳ '+kind+' بانتظار المراجعة';detail='وصل طلبك وهو بانتظار قرار الإدارة.'}else if(x.status==='rejected'){title='❌ لم تتم الموافقة على '+kind;detail=x.rejection_reason?'السبب: '+x.rejection_reason:'يمكنك مراجعة التفاصيل أو التواصل مع الإدارة.'}else if(x.status==='active'){title='✅ '+kind+' أصبح منشوراً';detail='أصبح '+kind+' متاحاً للزوار.'}else if(x.status==='sold'||x.status==='closed'){title='📌 تم تحديث حالة '+kind;detail='الحالة الحالية: '+x.status}else return;items.push({id:table+':'+x.id+':'+x.status,created_at:x.created_at,title,detail,url:x.status==='active'?(table==='businesses'?'#business-'+x.id:table==='listings'?'#listing-'+x.id:'#requests'):'#myAdsSection',status:x.status,table:table,itemId:x.id})})}
+ addRows(ads.data,'إعلانك','listings');addRows(biz.data,'محلك أو خدمتك','businesses');addRows(reqs.data,'طلبك','wanted_requests');
+ const ids=[...(ads.data||[]).map(x=>x.id),...(biz.data||[]).map(x=>x.id)];if(ids.length){const promo=await db.from('promotions').select('id,target_id,ends_at,created_at').in('target_id',ids).limit(100);if(!promo.error)(promo.data||[]).forEach(x=>{const end=new Date(x.ends_at).getTime();if(!Number.isFinite(end))return;if(end>now&&end-now<3*86400000)items.push({id:'promo:'+x.id+':ending',created_at:x.ends_at,title:'⏳ اقترب انتهاء الترويج',detail:'ينتهي الترويج خلال أقل من 3 أيام.',url:'./promotions.html'});else if(end<=now&&now-end<7*86400000)items.push({id:'promo:'+x.id+':ended',created_at:x.ends_at,title:'📢 انتهت مدة الترويج',detail:'انتهت مدة الترويج ويمكنك طلب تجديده.',url:'./promotions.html'})})}
+ ownerNotificationsCache=items.sort((x,y)=>new Date(y.created_at)-new Date(x.created_at));renderOwnerNotifications();
+ }catch(e){console.warn('owner notifications:',e);if(box)box.innerHTML='<div class="muted">تعذّر تحميل إشعارات الحساب. حاول التحديث لاحقاً.</div>'}finally{ownerNotificationsBusy=false}}
+function renderOwnerNotifications(){const box=$('ownerNotificationsList'),count=$('ownerNotificationsCount');if(!box)return;const read=new Set(ownerReadIds()),deleted=new Set(ownerDeleted());const visible=ownerNotificationsCache.filter(n=>!deleted.has(n.id));const unread=visible.filter(n=>!read.has(n.id));if(count){count.textContent=unread.length>99?'99+':String(unread.length);count.style.display=unread.length?'inline-block':'none'}box.innerHTML=visible.length?visible.map(n=>{const isRead=read.has(n.id),safeId=JSON.stringify(n.id).replace(/</g,'\\u003c'),href=String(n.url||'#accountSection');return '<div class="owner-notice '+(isRead?'is-read':'')+'"><div><div class="owner-notice-title">'+esc(n.title)+'</div><div class="owner-notice-detail">'+esc(n.detail)+'</div><div class="muted">'+esc(new Date(n.created_at).toLocaleString('ar'))+(isRead?' · مقروء':' · جديد')+'</div></div><div class="owner-notice-actions">'+(isRead?'':'<button type="button" onclick="markOwnerNotificationRead('+safeId+')">✓ تعليم كمقروء</button>')+'<a href="'+esc(href)+'" onclick="markOwnerNotificationRead('+safeId+');return ownerNotificationNavigate('+safeId+')">عرض ←</a></div></div>'}).join(''):'<div class="empty">لا توجد إشعارات جديدة أو محفوظة حالياً.</div>'}
+function ownerNotificationNavigate(id){const n=ownerNotificationsCache.find(x=>x.id===id);if(!n)return true;if(n.status==='rejected'){toast(n.detail||'تم رفض المحتوى.');return false}if(n.url&&n.url.charAt(0)==='#'){const target=document.querySelector(n.url);if(target){setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),100);return true}}return true}
+function updateOwnerNotificationsVisibility(){const b=$('ownerNotificationsButton');if(b)b.style.display=currentUser?'inline-flex':'none';if(!currentUser){const p=$('ownerNotificationsPanel');if(p)p.hidden=true;ownerNotificationsCache=[]}else setTimeout(()=>refreshOwnerNotifications(),250)}
+
+async function loadMyAds(){
+ const box=$('myAdsPanel');if(!box)return;
+ if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض إعلاناتك وطلباتك.');return}
+ box.innerHTML=empty('عم نحمل إعلاناتك وطلباتك…');
+ try{
+  const results=await Promise.all([
+   db.from('listings').select('id,title,status,created_at,image_urls').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   db.from('businesses').select('id,name,status,created_at,image_urls').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),
+   db.from('wanted_requests').select('id,title,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false})
+  ]);
+  for(const r of results){if(r.error)throw r.error}
+  const groups=[
+   ...(results[0].data||[]).map(r=>({...r,_table:'listings',_title:r.title,_kind:'إعلان بيع'})),
+   ...(results[1].data||[]).map(r=>({...r,_table:'businesses',_title:r.name,_kind:'محل أو خدمة'})),
+   ...(results[2].data||[]).map(r=>({...r,_table:'wanted_requests',_title:r.title,_kind:'طلب'}))
+  ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
+  box.innerHTML=groups.map(r=>{
+   const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved'].includes(String(r.status||'').toLowerCase());
+   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
+  }).join('');
+ }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
+}
+async function deleteMyItem(table,id){
+ if(!currentUser||!db||['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
+ if(!window.confirm('متأكد بدك تحذف هذا المحتوى؟ ما في تراجع بعد الحذف.'))return;
+ try{
+  let query=db.from(table).delete().eq('id',id);
+  query=query.eq(table==='businesses'?'owner_id':'user_id',currentUser.id);
+  const {data,error}=await query.select('id,image_urls');
+  if(error)throw error;
+  if(!data||!data.length){toast('ما تم الحذف. قد لا تملك الصلاحية أو أن المحتوى تغيّرت حالته.');return}
+  const urls=data[0].image_urls||[];
+  const paths=urls.map(u=>{try{return new URL(u).pathname.split('/storage/v1/object/public/manbij-images/')[1]}catch(_){return null}}).filter(Boolean);
+  if(paths.length){const removed=await db.storage.from('manbij-images').remove(paths);if(removed.error)console.warn('Could not remove some images:',removed.error.message)}
+  toast('تم حذف المحتوى.');await loadData();await loadMyAds();
+ }catch(e){console.error(e);toast('تعذّر الحذف: '+(e.message||'خطأ غير معروف'))}
+}
+
+let adminActiveTable='listings';
+const adminTableLabels={listings:'إعلانات البيع',businesses:'المحلات والخدمات',wanted_requests:'طلبات الناس'};
+function selectAdminTab(table){
+ if(!['listings','businesses','wanted_requests'].includes(table))return;
+ adminActiveTable=table;
+ document.querySelectorAll('.admintab').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===table));
+ loadAdminPending();
+}
+let adminShowAll=false;
+let blockedUsersMap=new Map();
+function toggleAdminView(){
+ adminShowAll=!adminShowAll;
+ const b=$('adminViewBtn');if(b)b.textContent=adminShowAll?'عرض المعلّق فقط':'عرض كل المحتوى';
+ const h=$('adminViewHint');if(h)h.textContent=adminShowAll?'يعرض كل المحتوى، بما فيه الإعلانات المنشورة والمرفوضة.':'يعرض المحتوى الذي ينتظر المراجعة.';
+ loadAdminPending();
+}
+function adminEscape(value){
+ return String((value == null ? '' : value)).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function adminDescription(row,table){
+ if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null,row.rejection_reason?'⚠ '+row.rejection_reason:null].filter(Boolean).join(' · ');
+ return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null,row.rejection_reason?'⚠ '+row.rejection_reason:null].filter(Boolean).join(' · ');
+}
+async function loadAdminPending(){
+ if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
+ const box=$('adminItems');if(!box)return;
+ box.innerHTML='<div class="empty">عم نحمل المحتوى…</div>';
+ try{
+  const itemsResult=await (adminShowAll?db.from(adminActiveTable).select('*'):db.from(adminActiveTable).select('*').eq('status','pending')).order('created_at',{ascending:false});
+  if(itemsResult.error)throw itemsResult.error;
+  // حظر المستخدمين ميزة اختيارية؛ غياب جدولها لا يجب أن يعطّل مراجعة المحتوى أو إدارة الترويج.
+  try{
+   const blockedResult=await db.from('blocked_users').select('user_id,reason,banned_at,expires_at').order('banned_at',{ascending:false});
+   if(!blockedResult.error)blockedUsersMap=new Map((blockedResult.data||[]).map(x=>[x.user_id,x]));
+   else {blockedUsersMap=new Map();console.warn('blocked_users unavailable; continuing without block controls:',blockedResult.error.message);}
+  }catch(blockErr){blockedUsersMap=new Map();console.warn('blocked_users unavailable; continuing without block controls:',blockErr);}
+
+  const counts=await Promise.all(['listings','businesses','wanted_requests'].map(async t=>{
+   const {count,error:e}=await db.from(t).select('id',{count:'exact',head:true}).eq('status','pending');
+   return e?0:(count||0);
+  }));
+  const countNode=$('adminPendingCount');
+  if(countNode)countNode.textContent=counts.reduce((a,b)=>a+b,0)+' بانتظار المراجعة';
+  renderBlockedUsers();
+  const data=itemsResult.data||[];
+  if(!data.length){box.innerHTML='<div class="empty">'+(adminShowAll?'لا يوجد محتوى في هذا القسم.':'ما في '+adminEscape(adminTableLabels[adminActiveTable])+' بانتظار المراجعة حالياً.')+'</div>';return}
+  box.innerHTML=data.map(row=>{
+   const title=row.title||row.name||'بدون عنوان';
+   const desc=adminDescription(row,adminActiveTable);
+   const created=row.created_at?new Date(row.created_at).toLocaleString('ar-SY'):'';
+   const ownerId=row.owner_id||row.user_id||null;
+   const blocked=ownerId&&blockedUsersMap.has(ownerId)&&(!blockedUsersMap.get(ownerId).expires_at||new Date(blockedUsersMap.get(ownerId).expires_at)>new Date());
+   const ownerAction=ownerId?(blocked
+    ?'<button type="button" class="btn outline" onclick="unblockUser(\''+adminEscape(ownerId)+'\')">رفع حظر النشر</button>'
+    :'<button type="button" class="btn reject" onclick="blockUser(\''+adminEscape(ownerId)+'\',\''+adminEscape(title)+'\')">حظر من النشر</button>'):'';
+   const reviewActions=adminShowAll
+    ?(row.status==='pending'?'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>':'')
+    :'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف المحتوى: '+adminEscape(row.id||'غير متوفر')+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+ownerAction+'<button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
+  }).join('');
+ }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الإدارة. تأكد من تطبيق ترحيل قاعدة البيانات الجديد ثم أعد المحاولة.</div>';}
+}
+const statsSectionLabels={home:'الرئيسية',businesses:'المحلات والخدمات',listings:'إعلانات البيع',requests:'طلبات الناس',search:'البحث',account:'الحساب',promotions:'الترويج',other:'أقسام أخرى'};
+function siteVisitorId(){
+ try{let id=localStorage.getItem('dalil_manbij_visitor_id');if(!id){id=crypto.randomUUID();localStorage.setItem('dalil_manbij_visitor_id',id)}return id}catch(e){return crypto.randomUUID()}
+}
+async function recordSiteVisit(section,eventType='page_view'){
+ if(!db)return;
+ try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home',p_event_type:eventType});if(error)console.warn('site analytics:',error.message)}catch(e){console.warn('site analytics:',e)}
+}
+function initSiteAnalytics(){
+ recordSiteVisit('home');
+ document.addEventListener('click',e=>{
+  const el=e.target.closest('a,button,[data-cat]');
+  if(!el)return;
+  let section=null;
+  const cat=el.getAttribute('data-cat');
+  if(cat)section='businesses';
+  else{
+   const text=(el.innerText||el.getAttribute('aria-label')||'').trim();
+   const href=el.getAttribute('href')||'';
+   if(/سيارات|عقارات|بيع|إعلانات البيع|إعلاناتي/.test(text)||href==='#listings')section='listings';
+   else if(/محلات|خدمات|دليل المحلات/.test(text)||href==='#businesses')section='businesses';
+   else if(/طلبات الناس|الطلبات/.test(text)||href==='#requests')section='requests';
+   else if(/بحث|ابحث/.test(text))section='search';
+   else if(/حسابي|حسابك|تسجيل الدخول/.test(text))section='account';
+   else if(/ترويج|إعلان مميّز/.test(text))section='promotions';
+  }
+  if(section)recordSiteVisit(section,'section_click');
+ },{passive:true});
+}
+async function loadAdminStatistics(){
+ if(!db||!isAdminUser()){toast('الإحصائيات متاحة للإدارة فقط.');return}
+ const status=$('adminStatsStatus'),cards=$('adminStatsCards');
+ if(status)status.textContent='عم نحدّث الإحصائيات…';
+ if(cards)cards.innerHTML=empty('عم نحمل الإحصائيات…');
+ try{
+  const {data,error}=await db.rpc('admin_site_statistics');
+  if(error)throw error;
+  const n=v=>Number(v||0).toLocaleString('ar-SY');
+  const card=(title,value,sub='')=>'<article class="card" style="padding:16px"><div class="muted">'+title+'</div><div style="font-size:26px;font-weight:800;margin:7px 0">'+n(value)+'</div><div class="adminmeta">'+sub+'</div></article>';
+  cards.innerHTML=[
+   card('👥 إجمالي الحسابات',data.users_total,'اليوم: '+n(data.users_today)+' · آخر 7 أيام: '+n(data.users_7_days)),
+   card('🌍 الزوار الفريدون المقدّرون',data.visitors_total,'اليوم: '+n(data.visitors_today)+' · آخر 7 أيام: '+n(data.visitors_7_days)),
+   card('👁️ إجمالي مشاهدات الصفحات',data.pageviews_total,'اليوم: '+n(data.pageviews_today)+' · آخر 7 أيام: '+n(data.pageviews_7_days)),
+   card('📆 نشاط آخر 30 يوماً',data.visitors_30_days,'زوار فريدون مقدّرون · مشاهدات الصفحات: '+n(data.pageviews_30_days)),
+   card('🚗 إعلانات البيع',data.listings_total,'منشور: '+n(data.listings_active)+' · بانتظار المراجعة: '+n(data.listings_pending)),
+   card('🏪 المحلات والخدمات',data.businesses_total,'فعّال: '+n(data.businesses_active)+' · بانتظار المراجعة: '+n(data.businesses_pending)),
+   card('🙋 طلبات الناس',data.requests_total,'منشور: '+n(data.requests_active)+' · بانتظار المراجعة: '+n(data.requests_pending)),
+   card('⭐ الترويج والواجهة',data.promotions_active,'عروض مروّجة فعّالة · بانرات فعّالة: '+n(data.banners_active))
+  ].join('');
+  const daily=$('adminStatsDaily');
+  if(daily){const rows=data.daily_visits||[];const max=Math.max(1,...rows.map(x=>Number(x.pageviews||0)));daily.innerHTML=rows.length?rows.map(x=>'<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(new Date(x.day+'T12:00:00').toLocaleDateString('ar-SY',{day:'numeric',month:'short'}))+'</span><strong>'+n(x.pageviews)+' مشاهدة · '+n(x.visitors)+' زائر</strong></div><div style="height:7px;background:#e8eee9;border-radius:8px;overflow:hidden"><div style="height:7px;width:'+Math.round(Number(x.pageviews||0)/max*100)+'%;background:var(--green);border-radius:8px"></div></div></div>').join(''):'لا توجد زيارات مسجلة بعد.'}
+  const sections=$('adminStatsSections');
+  if(sections){const rows=data.popular_sections||[];sections.innerHTML=rows.length?rows.map(x=>'<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)"><span>'+esc(statsSectionLabels[x.section]||x.section)+'</span><strong>'+n(x.views)+'</strong></div>').join(''):'لا توجد بيانات بعد.'}
+  const users=$('adminStatsUsers');
+  if(users){const rows=data.recent_users||[];users.innerHTML=rows.length?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;margin-top:10px"><thead><tr><th style="text-align:right;padding:8px">البريد الإلكتروني</th><th style="text-align:right;padding:8px">تاريخ التسجيل</th><th style="text-align:right;padding:8px">الحالة</th></tr></thead><tbody>'+rows.map(u=>'<tr><td style="padding:8px;border-top:1px solid var(--line)">'+esc(u.email||'بدون بريد')+'</td><td style="padding:8px;border-top:1px solid var(--line)">'+esc(u.created_at?new Date(u.created_at).toLocaleString('ar-SY'):'')+'</td><td style="padding:8px;border-top:1px solid var(--line)">'+(u.confirmed?'مفعّل':'بانتظار التفعيل')+'</td></tr>').join('')+'</tbody></table></div>':'لا توجد حسابات مسجلة.'}
+  if(status)status.textContent='آخر تحديث: '+new Date(data.generated_at||Date.now()).toLocaleString('ar-SY')+' · بيانات الزوار تُسجّل من وقت تفعيل الإحصائيات فقط.';
+ }catch(e){console.error('admin statistics:',e);if(status)status.textContent='تعذّر تحميل الإحصائيات: '+(e.message||'خطأ غير معروف');if(cards)cards.innerHTML=empty('تأكد من صلاحية الإدارة واتصال قاعدة البيانات ثم أعد المحاولة.')}
+}
+function renderBlockedUsers(){
+ const box=$('blockedUsersList');if(!box)return;
+ const rows=Array.from(blockedUsersMap.values()).sort((a,b)=>new Date(b.banned_at||0)-new Date(a.banned_at||0));
+ if(!rows.length){box.innerHTML='<div class="empty">ما في مستخدمين محظورين من النشر حالياً.</div>';return}
+ box.innerHTML=rows.map(r=>{
+  const active=!r.expires_at||new Date(r.expires_at)>new Date();
+  const until=r.expires_at?new Date(r.expires_at).toLocaleString('ar-SY'):'نهائي — حتى رفع الحظر';
+  const remaining=r.expires_at&&active?Math.max(1,Math.ceil((new Date(r.expires_at)-Date.now())/86400000))+' يوم متبقٍ':'';
+  return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+ (active?'🚫 حظر نشر فعّال':'⌛ انتهت مدة الحظر')+'</h3><div class="adminmeta">معرّف المستخدم: '+adminEscape(r.user_id)+'<br>السبب: '+adminEscape(r.reason||'غير محدد')+'<br>تاريخ الحظر: '+adminEscape(r.banned_at?new Date(r.banned_at).toLocaleString('ar-SY'):'')+'<br>ينتهي: '+adminEscape(until)+(remaining?'<br>'+remaining:'')+'</div></div><div class="adminactions">'+(active?'<button type="button" class="btn outline" onclick="unblockUser(\''+adminEscape(r.user_id)+'\')">🔓 رفع الحظر</button>':'<button type="button" class="btn outline" onclick="unblockUser(\''+adminEscape(r.user_id)+'\')">إزالة الحظر المنتهي</button>')+'</div></article>';
+ }).join('');
+}
+async function blockUser(userId,title){
+ if(!currentUser||!db||currentUser.app_metadata?.role!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if(!userId||userId===currentUser.id){toast('ما فيك تحظر حساب الإدارة الحالي.');return}
+ const durationRaw=window.prompt('مدة حظر النشر بالأيام:\n1 = يوم، 3 = ثلاثة أيام، 7 = أسبوع، 30 = شهر، 0 = حظر نهائي. فيك تكتب أي عدد أيام موجب.','7');
+ if(durationRaw===null)return;
+ const days=Number(durationRaw);
+ if(!Number.isInteger(days)||days<0||days>3650){toast('أدخل عدد أيام صحيحاً من 0 إلى 3650.');return}
+ const reason=window.prompt('سبب حظر النشر للمستخدم: '+(title||''),'مخالفة قواعد دليل منبج');
+ if(reason===null)return;
+ const cleanReason=reason.trim()||'مخالفة قواعد الموقع';
+ const expiresAt=days===0?null:new Date(Date.now()+days*86400000).toISOString();
+ try{
+  const {error}=await db.from('blocked_users').upsert({user_id:userId,blocked_by:currentUser.id,reason:cleanReason,banned_at:new Date().toISOString(),expires_at:expiresAt},{onConflict:'user_id'});
+  if(error)throw error;
+  toast(days===0?'تم حظر المستخدم من النشر نهائياً.':'تم حظر المستخدم من النشر لمدة '+days+' يوم.');
+  await loadAdminPending();
+ }catch(e){console.error(e);toast('تعذّر حظر المستخدم: '+(e.message||'خطأ غير معروف'))}
+}
+async function unblockUser(userId){
+ if(!currentUser||!db||currentUser.app_metadata?.role!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if(!window.confirm('رفع حظر النشر عن هذا المستخدم؟'))return;
+ try{
+  const {error}=await db.from('blocked_users').delete().eq('user_id',userId);
+  if(error)throw error;
+  toast('تم رفع حظر النشر.');
+  await loadAdminPending();
+ }catch(e){console.error(e);toast('تعذّر رفع الحظر: '+(e.message||'خطأ غير معروف'))}
+}
+let publicationBanNoticeShown=false;
+async function enforceBlockedUser(user){
+ if(!db||!user||user.app_metadata?.role==='admin')return;
+ try{
+  const {data,error}=await db.rpc('is_current_user_publication_blocked');
+  if(error)throw error;
+  if(data&&!publicationBanNoticeShown){publicationBanNoticeShown=true;toast('حسابك محظور مؤقتاً أو نهائياً من النشر. يمكنك متابعة التصفح، وللاستفسار تواصل مع الإدارة.');}
+  if(!data)publicationBanNoticeShown=false;
+ }catch(e){console.error('publication-ban check:',e)}
+}
+async function reviewAdminItem(table,id,status){
+ if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
+ if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
+ if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟'))return;
+ try{
+  const {data,error}=await db.from(table).update({status}).eq('id',id).eq('status','pending').select('id,status');
+  if(error)throw error;
+  if(!(data ? data.length : undefined)){toast('ما تغيّر العنصر. حدّث القائمة وحاول مجدداً.');return}
+  toast(status==='active'?'تمت الموافقة ونُشر المحتوى.':'تم رفض المحتوى.');
+  await loadAdminPending();
+ }catch(e){console.error(e);toast('تعذّر حفظ القرار: '+(e.message||'خطأ غير معروف'))}
+}
+
+let adminBellRefreshBusy=false;
+function toggleAdminBell(){const panel=$('adminBellPanel'),button=$('adminBellBtn');if(!panel||!button||!isAdminUser())return;const opening=panel.hidden;panel.hidden=!opening;button.setAttribute('aria-expanded',String(opening));if(opening)refreshAdminBell();}
+function closeAdminBell(){const panel=$('adminBellPanel'),button=$('adminBellBtn'),count=$('adminBellCount');if(panel)panel.hidden=true;if(button)button.setAttribute('aria-expanded','false');if(count)count.style.display='none';const wrap=$('adminNavWrap');if(wrap)wrap.style.display='none';}
+async function refreshAdminBell(){if(!db||!isAdminUser()||adminBellRefreshBusy)return;adminBellRefreshBusy=true;const box=$('adminBellItems');if(box)box.innerHTML='<div class="muted">جارٍ تحديث الحالات…</div>';try{const specs=[{table:'listings',label:'إعلانات البيع والشراء',url:'./admin.html#adminItems',status:'pending'},{table:'businesses',label:'محلات تنتظر المراجعة',url:'./admin.html#adminItems',status:'pending'},{table:'wanted_requests',label:'طلبات الناس',url:'./admin.html#adminItems',status:'pending'},{table:'reports',label:'بلاغات مفتوحة',url:'./admin.html#adminReportsSection',status:'open'}];const results=await Promise.all(specs.map(async x=>{const q=await db.from(x.table).select('id',{count:'exact',head:true}).eq('status',x.status);if(q.error)throw q.error;return {...x,count:q.count||0}}));let blocked={count:0,label:'حسابات مقيّدة',url:'./admin.html#blockedUsersList'};const br=await db.from('blocked_users').select('user_id',{count:'exact',head:true}).or('expires_at.is.null,expires_at.gt.'+new Date().toISOString());if(!br.error)blocked.count=br.count||0;results.push(blocked);const total=results.reduce((n,x)=>n+x.count,0);const badge=$('adminBellCount');if(badge){badge.textContent=total>99?'99+':String(total);badge.style.display=total?'inline-block':'none';badge.title=total+' حالة تحتاج متابعة'}if(box)box.innerHTML=results.map(x=>'<div class="admin-bell-row"><div><div class="admin-bell-label">'+esc(x.label)+'</div><div class="muted">'+(x.count?'تحتاج متابعة':'لا توجد حالات معلّقة')+'</div></div><span class="admin-bell-num">'+x.count+'</span><a class="admin-bell-open" href="'+x.url+'">مراجعة ←</a></div>').join('');}catch(e){console.warn('admin notifications:',e);if(box)box.innerHTML='<div class="muted">تعذّر تحميل الإشعارات. افتح لوحة الإدارة أو أعد المحاولة.</div>';const badge=$('adminBellCount');if(badge){badge.textContent='!';badge.style.display='inline-block'}}finally{adminBellRefreshBusy=false}}
+async function accountAction(){if(currentUser){const section=$('accountSection');if(section)section.scrollIntoView({behavior:'smooth',block:'start'});return}openModal('auth')}
+async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.signOut();if(error)throw error;currentUser=null;updateAccountUI();toast('تم تسجيل الخروج بنجاح.');window.scrollTo({top:0,behavior:'smooth'});}catch(e){toast('تعذّر تسجيل الخروج: '+(e.message||'خطأ غير معروف'))}}
+loadData();
+initSiteAnalytics();
+
+function openPromoContactForItem(table,id){
+ const modal=document.getElementById("promoContactModal");if(!modal)return;
+ const title=modal.querySelector("#promoContactTitle");if(title)title.textContent="📣 ترويج إعلانك";
+ const message=modal.querySelector(".promo-contact-text");
+ if(message)message.innerHTML='<p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ تواصل معنا لترويج إعلانك وتمييزه على دليل منبج.</p><p>اختار الطريقة المناسبة وتواصل معنا لنتفق على تفاصيل الترويج:</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">تواصل معنا على إنستغرام ↗</a><br><a class="promo-contact-link" style="background:#1877f2" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">تواصل معنا على فيسبوك ↗</a>';
+ modal.style.display="flex";document.body.style.overflow="hidden";const close=modal.querySelector(".close");if(close)close.focus();
+}
+function openPaidPromotionContact(){
+ const modal=document.getElementById("promoContactModal");if(!modal)return;
+ const title=modal.querySelector("#promoContactTitle");if(title)title.textContent="⭐ أضف إعلان مميّز مدفوع";
+ const message=modal.querySelector(".promo-contact-text");
+ if(message)message.innerHTML='<p>بدك إعلانك يوصل لعدد أكبر من أهالي منبج وريفها؟ تواصل معنا لترويج إعلانك وتمييزه على دليل منبج.</p><p>اختار الطريقة المناسبة وتواصل معنا لنتفق على تفاصيل الترويج:</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">تواصل معنا على إنستغرام ↗</a><br><a class="promo-contact-link" style="background:#1877f2" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">تواصل معنا على فيسبوك ↗</a>';
+ modal.style.display="flex";document.body.style.overflow="hidden";const close=modal.querySelector(".close");if(close)close.focus();
+}
+function openPromoContact(){const modal=document.getElementById("promoContactModal");if(modal){modal.style.display="flex";document.body.style.overflow="hidden";const close=modal.querySelector(".close");if(close)close.focus();}}
+function closePromoContact(){const modal=document.getElementById("promoContactModal");if(modal){modal.style.display="none";document.body.style.overflow="";}}
+document.addEventListener("keydown",function(event){if(event.key==="Escape")closePromoContact();});
+
+function formatPublishDate(value){if(!value)return '';const d=new Date(value);if(Number.isNaN(d.getTime()))return '';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function publicationDateMarkup(value){const date=formatPublishDate(value);return date?'<div class="publish-date">📅 '+esc(date)+'</div>':''}
+function profileNameMarkup(userId){const p=userId&&publicProfiles[userId];if(!p||!p.display_name)return '';return '<button class="profile-name" type="button" onclick="openPublicProfile(\''+esc(userId)+'\')">👤 '+esc(p.display_name)+'</button>'}
+async function loadPublicProfiles(){if(!db)return;try{const r=await db.from('public_profiles').select('user_id,display_name');if(r.error)throw r.error;publicProfiles={};(r.data||[]).forEach(p=>{if(p.display_name)publicProfiles[p.user_id]=p})}catch(e){console.warn('public profiles:',e.message)}}
+async function saveDisplayName(e){if(e&&e.preventDefault)e.preventDefault();if(!currentUser||!db){toast('سجّل الدخول أولاً.');return}const input=$('displayNameInput');const name=(input.value||'').trim();if(name.length>40){toast('الاسم يجب ألا يتجاوز 40 حرفاً.');return}if(name&&name.length<2){toast('اكتب اسماً من حرفين على الأقل، أو اتركه فارغاً.');return}try{const {error}=await db.from('public_profiles').upsert({user_id:currentUser.id,display_name:name||null,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error;await loadPublicProfiles();renderAll();input.value=name;toast(name?'تم حفظ الاسم الظاهر.':'تم حذف الاسم الظاهر.');$('displayNameStatus').textContent=name?'اسمك ظاهر الآن على إعلاناتك المنشورة.':'لم يتم تعيين اسم ظاهر لحسابك.'}catch(err){console.error(err);toast('تعذّر حفظ الاسم. تأكد من تطبيق تحديث قاعدة البيانات ثم حاول مجدداً.')}}
+async function clearDisplayName(){if(!$('displayNameInput'))return;$('displayNameInput').value='';await saveDisplayName(null)}
+async function openPublicProfile(userId){if(!db||!userId)return;const modal=$('publicProfileModal');const body=$('publicProfileBody');modal.style.display='flex';body.innerHTML=empty('عم نحمل إعلانات المستخدم المنشورة…');try{const p=publicProfiles[userId];if(!p||!p.display_name){body.innerHTML=empty('هذا المستخدم لم يضف اسماً ظاهراً.');return}const [a,b]=await Promise.all([db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',userId).eq('status','active').order('created_at',{ascending:false}),db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,address,area,village,category_id,status,image_urls,created_at').eq('owner_id',userId).eq('status','active').order('name')]);if(a.error)throw a.error;if(b.error)throw b.error;const ads=(a.data||[]).map(x=>({...x,_title:x.title,_kind:'إعلان',_area:x.area,_table:'listing'})).concat((b.data||[]).map(x=>({...x,_title:x.name,_kind:'محل أو خدمة',_area:[x.area,x.village].filter(Boolean).join(' · '),_table:'business'})));body.innerHTML='<div class="sectionhead"><div><h2 style="margin:0">👤 '+esc(p.display_name)+'</h2><div class="muted">الإعلانات المنشورة لهذا المستخدم: '+ads.length+'</div></div></div><div class="profile-ad-grid">'+(ads.length?ads.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._table==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._title)+'</h3>'+(x._table==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="meta">📍 '+esc(x._area||'منبج وريفها')+' · '+esc(x._kind)+'</div>'+publicationDateMarkup(x.created_at)+(x.description?'<div class="meta">'+esc(x.description.slice(0,140))+'</div>':'')+'</div></article>').join(''):empty('لا توجد إعلانات منشورة لهذا المستخدم حالياً.'))+'</div>'}catch(err){console.error('public profile:',err);body.innerHTML=empty('تعذّر تحميل إعلانات هذا المستخدم حالياً.')}}
+function closePublicProfile(){$('publicProfileModal').style.display='none'}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()});
+</script><div id="publicProfileModal" class="modalbg" style="display:none;z-index:9999" onclick="if(event.target===this)closePublicProfile()"><div class="modal profile-page" style="width:min(900px,96vw);max-width:900px"><div class="modalhead"><h2 style="margin:0">صفحة المعلن</h2><button type="button" class="btn outline" onclick="closePublicProfile()">إغلاق ✕</button></div><div id="publicProfileBody" style="padding:12px 0"></div></div></div><script>
+/* تثبيت دليل منبج: نافذة تأكيد مخصصة ثم استدعاء نافذة التثبيت الأصلية للمتصفح */
+let dalilInstallPrompt=null;
+const dalilInstallButton=document.getElementById('installAppBtn');
+function isDalilStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
+function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=(show&&!isDalilStandalone())?'flex':'none'}
+/* أخفِ زر التثبيت داخل النسخة المثبتة، وأبقِه ظاهراً في المتصفح فقط */
+showDalilInstallButton(!isDalilStandalone());
+window.addEventListener('pageshow',()=>{if(isDalilStandalone())showDalilInstallButton(false)});
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;if(!isDalilStandalone())showDalilInstallButton(true)});
+window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;closeDalilInstallModal();showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
+function openDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal){modal.classList.add('open');document.body.style.overflow='hidden'}}
+function closeDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal)modal.classList.remove('open');document.body.style.overflow=''}
+async function confirmDalilInstall(){
+ const modal=document.getElementById('dalilInstallModal');
+ if(dalilInstallPrompt){
+  const promptEvent=dalilInstallPrompt;dalilInstallPrompt=null;
+  try{
+   closeDalilInstallModal();
+   await promptEvent.prompt();
+   const choice=await promptEvent.userChoice;
+   if(choice&&choice.outcome==='accepted')showDalilInstallButton(false);
+   return;
+  }catch(error){console.warn('Native install prompt failed:',error)}
+ }
+ const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+ const isAndroid=/android/i.test(navigator.userAgent);
+ const msg=isIOS?'للتثبيت على iPhone: اضغط مشاركة في Safari ثم «إضافة إلى الشاشة الرئيسية».':isAndroid?'المتصفح لم يوفّر نافذة التثبيت المباشر. افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».':'افتح قائمة المتصفح واختر «تثبيت دليل منبج» أو «إنشاء اختصار».';
+ closeDalilInstallModal();window.alert(msg);
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeDalilInstallModal()});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Service worker registration failed:',err)))}
+
+(function(){
+ const menu=document.getElementById('accountMenu');if(!menu)return;
+ const groups=Array.from(menu.querySelectorAll('.account-menu-group'));
+ groups.forEach(group=>group.addEventListener('toggle',()=>{if(group.open)groups.forEach(other=>{if(other!==group)other.removeAttribute('open')})}));
+})();
+
+let galleryImages=[],galleryIndex=0,galleryTouchX=0;
+function openImageGallery(source){try{const raw=source?.dataset?.images;galleryImages=JSON.parse(raw||'[]').filter(u=>typeof u==='string'&&/^https?:\/\//i.test(u));if(!galleryImages.length)return;galleryIndex=0;const overlay=$('imageGalleryOverlay');overlay.classList.add('open');document.body.style.overflow='hidden';renderGalleryImage();}catch(e){console.warn('Could not open image gallery',e)}}
+function renderGalleryImage(){const img=$('imageGalleryImage'),counter=$('imageGalleryCounter'),thumbs=$('imageGalleryThumbs'),dialog=$('imageGalleryDialog');if(!img||!galleryImages.length)return;img.src=galleryImages[galleryIndex];counter.textContent=(galleryIndex+1)+' / '+galleryImages.length;dialog.classList.toggle('gallery-single',galleryImages.length<2);thumbs.innerHTML=galleryImages.length>1?galleryImages.map((url,i)=>'<button type="button" class="image-gallery-thumb '+(i===galleryIndex?'active':'')+'" aria-label="الصورة '+(i+1)+'" onclick="setGalleryImage('+i+')"><img src="'+esc(url)+'" alt="" loading="lazy"></button>').join(''):'';const active=thumbs.querySelector('.active');if(active)active.scrollIntoView({block:'nearest',inline:'nearest'})}
+function setGalleryImage(index){if(!galleryImages.length)return;galleryIndex=(index+galleryImages.length)%galleryImages.length;renderGalleryImage()}
+function changeGalleryImage(delta){setGalleryImage(galleryIndex+delta)}
+function closeImageGallery(){const overlay=$('imageGalleryOverlay');if(overlay)overlay.classList.remove('open');document.body.style.overflow='';const img=$('imageGalleryImage');if(img)img.removeAttribute('src')}
+document.addEventListener('keydown',event=>{if(!$('imageGalleryOverlay')?.classList.contains('open'))return;if(event.key==='Escape')closeImageGallery();if(event.key==='ArrowRight')changeGalleryImage(-1);if(event.key==='ArrowLeft')changeGalleryImage(1)});
+const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){galleryMain.addEventListener('touchstart',event=>{galleryTouchX=event.changedTouches[0].screenX},{passive:true});galleryMain.addEventListener('touchend',event=>{const dx=event.changedTouches[0].screenX-galleryTouchX;if(Math.abs(dx)>45)changeGalleryImage(dx<0?1:-1)},{passive:true})}
+</script>
+<div id="imageGalleryOverlay" class="image-gallery-overlay" role="dialog" aria-modal="true" aria-label="صور الإعلان" onclick="if(event.target===this)closeImageGallery()"><div class="image-gallery-dialog" id="imageGalleryDialog"><button type="button" class="gallery-control gallery-close" aria-label="إغلاق الصور" onclick="closeImageGallery()">×</button><div class="image-gallery-main" id="imageGalleryMain"><button type="button" class="gallery-control gallery-prev" aria-label="الصورة السابقة" onclick="changeGalleryImage(-1)">‹</button><img id="imageGalleryImage" alt="صورة الإعلان" src=""><button type="button" class="gallery-control gallery-next" aria-label="الصورة التالية" onclick="changeGalleryImage(1)">›</button></div><div class="image-gallery-counter" id="imageGalleryCounter">1 / 1</div><div class="image-gallery-thumbs" id="imageGalleryThumbs"></div></div></div>
+
+<div id="dalilInstallModal" class="install-modal-bg" role="dialog" aria-modal="true" aria-labelledby="dalilInstallTitle" onclick="if(event.target===this)closeDalilInstallModal()">
+ <div class="install-modal">
+  <div class="install-modal-icon">📍</div>
+  <h2 id="dalilInstallTitle">تثبيت دليل منبج؟</h2>
+  <p>خلّي دليل منبج بجيبك! ثبّت التطبيق لتوصل للمحلات والخدمات والإعلانات المحلية بسرعة من الشاشة الرئيسية.</p>
+  <div class="install-modal-actions">
+   <button type="button" class="install-cancel" onclick="closeDalilInstallModal()">مو هلأ</button>
+   <button type="button" class="install-confirm" onclick="confirmDalilInstall()">إي، ثبّت التطبيق</button>
+  </div>
+ </div>
+</div>
+</body></html>
+:'ل.س'}</div><div class="meta">📍 ${esc([x.area,x.village].filter(Boolean).join(' · ')||'منبج')} · ${esc(x.category||'أخرى')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}${profileNameMarkup(x.user_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${favoriteButtonMarkup("listing",x.id)}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
+function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<article class="service" style="align-items:flex-start"><span class="emoji">📣</span><div style="min-width:0;flex:1"><strong>${esc(r.title)}</strong><small style="line-height:1.8">${esc(r.category||'أخرى')} · 📍 ${esc(r.area||'منبج وريفها')}<br>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'}${r.created_at?' · '+esc(new Date(r.created_at).toLocaleDateString('ar-SY')):''}</small>${r.description?`<div class="meta" style="margin-top:6px">${esc(r.description.slice(0,180))}</div>`:'' }<div class="cardfoot" style="justify-content:flex-start">${r.contact_phone?`<a class="btn primary" style="padding:8px 11px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(r.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت طلبك على دليل منبج: '+r.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:'<span class="muted">ما في وسيلة تواصل مضافة</span>'}</div></div></article>`).join(''):empty('ما في طلبات منشورة حالياً. سجّل الدخول وانشر طلبك، ورح يظهر بعد موافقة الإدارة.')}
+function toggleMyAdsSection(forceOpen){const box=$('myAdsSection');if(!box)return;const opening=typeof forceOpen==='boolean'?forceOpen:box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';if(opening){loadMyAds();box.scrollIntoView({behavior:'smooth',block:'start'})}}
+function toggleDisplayNameSettings(){const box=$('displayNameSettings');if(!box)return;const opening=box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';if(opening){box.scrollIntoView({behavior:'smooth',block:'center'});$('displayNameInput')?.focus({preventScroll:true})}}
+function updateAccountUI(){
+ updateOwnerNotificationsVisibility();
+ const loggedIn=!!currentUser;const adminNav=$('adminNavBtn');const adminWrap=$('adminNavWrap');if(adminWrap)adminWrap.style.display=isAdminUser()?'inline-flex':'none';if(adminNav)adminNav.style.display='inline-flex';if(isAdminUser()&&db)setTimeout(()=>refreshAdminBell(),100);else closeAdminBell();const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display='none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
+ const accountBtn=$('accountBtn');if(accountBtn){accountBtn.textContent=loggedIn?'حسابي':'تسجيل الدخول';accountBtn.title=loggedIn?'إدارة حسابك ومحفوظاتك':'تسجيل الدخول إلى حسابك'}
+ const loginSection=$('accountLoginBtn');if(loginSection)loginSection.style.display=loggedIn?'none':'flex';
+ const accountGroups=[['accountGroupProfile','accountProfileBtn'],['accountGroupAds','accountMyAdsBtn'],['accountGroupFavorites','accountFavoritesBtn'],['accountGroupSecurity','accountLogoutBtn']];
+ accountGroups.forEach(([groupId,buttonId])=>{const group=$(groupId),button=$(buttonId);if(group)group.style.display=loggedIn?'block':'none';if(button)button.style.display=loggedIn?'flex':'none';});
+ const note=$('accountMenuNote');if(note)note.textContent=loggedIn?'اختَر قسماً لعرض خياراته، وتُفتح مجموعة واحدة كل مرة.':'سجّل الدخول للوصول إلى بياناتك وإعلاناتك ومحفوظاتك.';
+ const badge=$('accountStatusBadge');if(badge)badge.innerHTML='<i></i> '+(loggedIn?'أنت مسجّل الدخول':'حسابك الشخصي');
+ // تبقى لوحة الإدارة في الصفحة المستقلة admin.html فقط.
+ if(currentUser&&db){loadMyAds();loadFavoriteKeys().catch(e=>console.warn('favorites:',e))}else{favoriteKeys=new Set();const count=$('favoriteCount');if(count)count.textContent='0';renderAll()}
+}function closeModal(){$('modalbg').style.display='none';$('modalForm').reset();delete $('modalForm').dataset.mode}
+function openPasswordUpdateModal(){const f=$('modalForm');$('modalTitle').textContent='تعيين كلمة مرور جديدة';f.dataset.mode='recovery';f.innerHTML='<label>كلمة المرور الجديدة<input class="field" name="newPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="8 أحرف على الأقل"></label><label>تأكيد كلمة المرور<input class="field" name="confirmPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="أعد كتابة كلمة المرور"></label><button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>';$('modalbg').style.display='flex'}
+async function startPasswordReset(){if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة.');return}const input=$('modalForm').elements.email;const email=input?input.value.trim():'';if(!email){toast('اكتب بريدك الإلكتروني أولاً، ثم اضغط نسيت كلمة المرور.');if(input)input.focus();return}try{const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error)throw error;toast('إذا كان البريد مسجلاً، ستصلك رسالة لاستعادة كلمة المرور. افحص صندوق الوارد والرسائل غير المرغوب فيها.')}catch(e){console.error('password reset:',e);toast('تعذر إرسال رسالة الاستعادة حالياً. تحقق من إعدادات البريد وروابط Supabase.')}}
+async function signInSocial(provider){if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة.');return}if(!['google','facebook'].includes(provider))return;try{const {error}=await db.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin+window.location.pathname}});if(error)throw error}catch(e){console.error('social sign-in:',e);toast('تعذر بدء تسجيل الدخول عبر '+(provider==='google'?'Google':'Facebook')+'. تأكد من تفعيل المزوّد وإعداد مفاتيح OAuth في Supabase.')}}
+function openModal(type){const f=$('modalForm');$('modalbg').style.display='flex';let html='';if(type!=='auth'&&!currentUser){$('modalTitle').textContent='تسجيل الدخول مطلوب';f.innerHTML='<p>حتى نحمي بياناتك ونربط الإعلان بحسابك، سجّل الدخول أو أنشئ حساباً أولاً.</p><button type="button" class="btn primary" onclick="openModal(\'auth\')">تسجيل الدخول / إنشاء حساب</button>';return}
+ if(type==='auth'){$('modalTitle').textContent='حسابك على دليل منبج';html=`<button class="btn outline" type="button" onclick="signInSocial('google')" style="width:100%;margin-bottom:8px"><span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-inline-end:8px;font:bold 20px Arial,sans-serif;color:#4285f4">G</span> المتابعة باستخدام Google</button><button class="btn outline" type="button" onclick="signInSocial('facebook')" style="width:100%;margin-bottom:14px"><span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-inline-end:8px;background:#1877f2;border-radius:5px;color:white;font:bold 20px Arial,sans-serif">f</span> المتابعة باستخدام Facebook</button><div style="text-align:center;color:var(--muted);font-size:12px;margin:2px 0 10px">أو باستخدام البريد الإلكتروني</div><label>البريد الإلكتروني<input class="field" name="email" type="email" required autocomplete="email" placeholder="name@example.com"></label><label>كلمة المرور<input class="field" name="password" type="password" minlength="8" required autocomplete="current-password" placeholder="8 أحرف على الأقل"></label><label>الاسم الظاهر <small class="muted">(اختياري، يظهر على إعلاناتك)</small><input class="field" name="display_name" type="text" maxlength="40" minlength="2" autocomplete="nickname" placeholder="مثلاً: أحمد المنبجي"></label><div class="two"><button class="btn primary" type="submit" name="authmode" value="login">تسجيل الدخول</button><button class="btn outline" type="submit" name="authmode" value="signup">إنشاء حساب</button></div><button class="btn outline" type="button" onclick="startPasswordReset()" style="width:100%">نسيت كلمة المرور؟</button><small>بإنشاء الحساب، أنت توافق على استخدام المنصة بشكل قانوني وعدم نشر محتوى مضلل أو مؤذٍ.</small>`}
+ if(type==='listing'){$('modalTitle').textContent='إضافة إعلان بيع أو خدمة';html=`<label>اسم الإعلان<input class="field" name="title" required minlength="3" maxlength="120" placeholder="مثلاً: موبايل سامسونغ"></label><label>الوصف<textarea class="field" name="description" rows="3" maxlength="3000" placeholder="الحالة والتفاصيل"></textarea></label><div class="two"><label>السعر<input class="field" name="price" type="number" min="0" step="any" required></label><label>العملة<select class="field" name="currency" required><option value="SYP">ليرة سورية (ل.س)</option><option value="USD">دولار أمريكي ($)</option></select></label></div><label>القسم<select class="field" name="category" required>${categories.map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label></div><div class="two"><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>القرية / البلدة (اختياري)<input class="field" name="village" maxlength="160" placeholder="اسم القرية أو البلدة"></label></div><label>الحالة<select class="field" name="item_condition"><option value="used">مستعمل</option><option value="new">جديد</option><option value="service">خدمة</option></select></label></div><label>رقم واتساب مع رمز الدولة<input class="field" name="contact_phone" inputmode="tel" placeholder="مثلاً 9639xxxxxxxx"></label><label>صور الإعلان (حتى 4 صور)<input class="field" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label><small>كل صورة بحد أقصى 5 ميغابايت.</small><button class="btn primary" type="submit">إرسال للمراجعة</button><small>لن يظهر الإعلان للعامة إلا بعد تفعيله من إدارة الموقع.</small>`}
+ if(type==='request'){$('modalTitle').textContent='نشر طلب في مطلوب في منبج';html=`<label>شو محتاج؟<input class="field" name="title" required minlength="3" maxlength="120" placeholder="مثلاً: مطلوب موبايل مستعمل أو عامل بناء"></label><label>تفاصيل إضافية<textarea class="field" name="description" rows="3" maxlength="3000" placeholder="اكتب المواصفات أو طبيعة العمل"></textarea></label><div class="two"><label>الميزانية بالليرة السورية (اختياري)<input class="field" name="budget" type="number" min="0" step="1"></label><label>القسم<select class="field" name="category"><option>أخرى</option>${categories.map(c=>`<option>${esc(c.name)}</option>`).join('')}</select></label></div><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>رقم واتساب للتواصل (اختياري)<input class="field" name="contact_phone" inputmode="tel" maxlength="30" placeholder="مثلاً 9639xxxxxxxx"></label><small>إذا أضفت رقم واتساب، سيظهر للزوار حتى يتمكنوا من التواصل معك. اتركه فارغاً إذا ما بدك تنشر رقمك.</small><button class="btn primary" type="submit">إرسال الطلب للمراجعة</button>`}
+ if(type==='business'){$('modalTitle').textContent='إضافة محل أو خدمة';html=`<label>اسم المحل أو الخدمة<input class="field" name="name" required minlength="2" maxlength="160"></label><label>التصنيف<select class="field" name="category_id" required>${categoryOptions()}</select></label><label>وصف مختصر<textarea class="field" name="description" rows="3" maxlength="5000"></textarea></label><label>رقم واتساب مع رمز الدولة<input class="field" name="whatsapp" inputmode="tel" placeholder="مثلاً 9639xxxxxxxx"></label><small>سيظهر للزوار زر واتساب فقط للتواصل معك.</small><label>العنوان<input class="field" name="address" maxlength="500" placeholder="الحي أو الشارع"></label><div class="two"><label>المنطقة<select class="field" name="area" required>${areaOptions()}</select></label><label>القرية / الحي<input class="field" name="village" maxlength="160"></label></div><label>رابط الموقع على الخريطة (اختياري)<input class="field" name="map_url" type="url" placeholder="https://..."></label><label>صور المحل (حتى 4 صور)<input class="field" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label><small>كل صورة بحد أقصى 5 ميغابايت.</small><button class="btn primary" type="submit">إرسال للمراجعة</button><small>سيظهر المحل بعد موافقة الإدارة. لا تضف معلومات شخصية لا تريد نشرها.</small>`}
+ f.innerHTML=html}
+async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.');return}const f=e.currentTarget;const d=Object.fromEntries(new FormData(f).entries());const submitter=e.submitter;try{if(f.dataset.mode==='recovery'){if(!d.newPassword||d.newPassword.length<8){toast('كلمة المرور يجب أن تكون 8 أحرف على الأقل.');return}if(d.newPassword!==d.confirmPassword){toast('كلمتا المرور غير متطابقتين.');return}const {error}=await db.auth.updateUser({password:d.newPassword});if(error)throw error;history.replaceState(null,'',window.location.pathname+window.location.search);closeModal();toast('تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');return}if(d.email&&d.password){const mode=(submitter ? submitter.value : undefined)||'login';let result;if(mode==='signup'){const displayName=(d.display_name||'').trim();if(displayName.length===1){toast('إذا رغبت بإضافة اسم، اكتب حرفين على الأقل أو اترك الحقل فارغاً.');return}result=await db.auth.signUp({email:d.email,password:d.password,options:{data:{display_name:displayName}}});}else result=await db.auth.signInWithPassword({email:d.email,password:d.password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){toast('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب ثم سجّل الدخول.');closeModal();return}currentUser=result.data.user||(result.data.session ? result.data.session.user : undefined)||null;updateAccountUI();toast(mode==='signup'?'تم إنشاء الحساب وتسجيل الدخول.':'أهلاً بعودتك!');closeModal();await loadData();return}
+ if(!currentUser){toast('سجّل الدخول أولاً.');return}
+ try{const banCheck=await db.rpc('is_current_user_publication_blocked');if(banCheck.error)throw banCheck.error;if(banCheck.data){toast('حسابك محظور من النشر حالياً. يمكنك التصفح، لكن لا يمكنك إرسال محتوى جديد.');return}}catch(banCheckError){console.error('publication ban check:',banCheckError);toast('تعذّر التحقق من صلاحية النشر. حاول مجدداً بعد قليل.');return}
+ // تحقّق من أرقام التواصل قبل رفع الصور أو حفظ الإعلان، واحفظها بصيغة دولية موحّدة.
+ if(f.querySelector('[name="contact_phone"]'))d.contact_phone=normalizeSubmissionContact(d.contact_phone,'رقم واتساب');
+ if(f.querySelector('[name="whatsapp"]'))d.whatsapp=normalizeSubmissionContact(d.whatsapp,'رقم واتساب');
+ if(f.querySelector('[name="phone"]')&&String(d.phone||'').trim()){
+  const phoneNormalized=normalizeContactNumber(d.phone);
+  // لا نمنع أرقام الهاتف الأرضي المحلية المستخدمة للاتصال فقط؛ لكن لا نستخدم رقماً غير واضح كرابط واتساب.
+  if(phoneNormalized.ok)d.phone=phoneNormalized.digits;
+  else if(/^\\s*(?:\\+|00)/.test(asciiPhoneDigits(d.phone)))throw new Error('رقم الهاتف: '+phoneNormalized.message);
+ }
+ let table,payload;let imageUrls=[];const photoInput=f.querySelector('[name="photos"]');const photoFiles=photoInput&&photoInput.files?Array.from(photoInput.files):[];if(photoFiles.length>4)throw new Error('يمكن رفع 4 صور كحد أقصى.');for(const file of photoFiles){if(file.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');if(['image/jpeg','image/png','image/webp','image/avif'].indexOf(file.type)===-1)throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const up=await db.storage.from('manbij-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw up.error;imageUrls.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}if(f.querySelector('[name="item_condition"]')){table='listings';payload={user_id:currentUser.id,title:d.title,description:d.description||null,price:Number(d.price),currency:d.currency||'SYP',category:d.category,area:d.area,village:(d.village||'').trim()||null,item_condition:d.item_condition,contact_phone:d.contact_phone||null,image_urls:imageUrls,status:'active'}}else if(f.querySelector('[name="category_id"]')){table='businesses';payload={owner_id:currentUser.id,category_id:d.category_id,name:d.name,description:d.description||null,phone:d.phone||null,whatsapp:d.whatsapp||null,address:d.address||null,area:d.area,village:d.village||null,map_url:d.map_url||null,image_urls:imageUrls,status:'pending'}}else{table='wanted_requests';payload={user_id:currentUser.id,title:d.title,description:d.description||null,budget:d.budget===''?null:Number(d.budget),category:d.category||'أخرى',area:d.area,contact_phone:d.contact_phone?d.contact_phone.trim():null,status:'active'}}
  const {data:created,error}=await db.from(table).insert(payload).select('status,rejection_reason').single();if(error)throw error;if(table==='businesses'){toast('وصل طلب المحل أو الخدمة، وسيظهر بعد مراجعة الإدارة.')}else if(created&&created.status==='active'){toast(table==='listings'?'🎉 تم نشر إعلانك بنجاح وأصبح ظاهراً للزوار!':'🎉 تم نشر طلبك بنجاح وأصبح ظاهراً للزوار!')}else{toast('وصل منشورك، لكنه ينتظر مراجعة الإدارة حفاظاً على أمان الموقع.')}closeModal();await loadData();await loadMyAds();}catch(err){console.error(err);let msg=err.message||'خطأ غير معروف';if(/DAILY_POST_LIMIT_REACHED/i.test(msg)||/10 منشورات فقط خلال اليوم/i.test(err.details||'')){msg='وصلت للحد اليومي للنشر: مسموح 10 منشورات إجمالاً باليوم بين إعلانات البيع والمحلات وطلبات الناس. جرّب بكرا.'}else if(/LOGIN_REQUIRED_TO_POST/i.test(msg)){msg='سجّل الدخول أولاً حتى تنشر.'}else if(/row-level security|permission denied|not allowed/i.test(msg)){msg='قاعدة البيانات رفضت العملية بسبب سياسة الصلاحيات. نحتاج مراجعة سياسة الجدول في Supabase.'}toast('ما تمت العملية: '+msg)}}
 
 
