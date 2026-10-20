@@ -426,9 +426,17 @@ async function loadMyAds(){
   box.innerHTML=groups.map(r=>{
    const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved'].includes(String(r.status||'').toLowerCase());
    const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+(r._table==='listings'?'<button class="btn outline" type="button" onclick="openAccountEditListing(\''+esc(r.id)+'\')">✏️ تعديل الإعلان</button>':'')+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
+}
+async function openAccountEditListing(id){
+ if(!currentUser||!db){toast('سجّل الدخول أولاً.');return}
+ const result=await db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone').eq('id',id).eq('user_id',currentUser.id).maybeSingle();
+ if(result.error||!result.data){toast('ما قدرنا نحمّل الإعلان للتعديل. تأكد أنه إعلانك.');return}
+ const x=result.data;openModal('listing');const f=$('modalForm');f.dataset.mode='listing-edit';f.dataset.editListingId=String(x.id);$('modalTitle').textContent='✏️ تعديل الإعلان';
+ for(const key of ['title','description','price','category','area','item_condition','contact_phone']){const el=f.elements.namedItem(key);if(el)el.value=x[key]??''}
+ const hint=document.createElement('small');hint.className='muted';hint.textContent='اترك الصور فارغة للاحتفاظ بالصور الحالية. رفع صور جديدة يستبدل الصور القديمة.';const btn=f.querySelector('button[type="submit"]');if(btn){f.insertBefore(hint,btn);btn.textContent='حفظ التعديلات'}
 }
 async function deleteMyItem(table,id){
  if(!currentUser||!db||['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
