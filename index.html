@@ -819,13 +819,16 @@ async function loadStorefrontAds(biz){
  }catch(e){console.error('storefront ads:',e);box.innerHTML='<div class="storefront-note">تعذّر تحميل الإعلانات. قد تكون صلاحيات قاعدة البيانات لا تسمح بعرضها.</div>';if(dash)dash.innerHTML='<div class="storefront-note">تعذّر تحميل أدوات الإدارة. لم يتم إجراء أي تغيير.</div>'}
 }
 async function openSellerEditListing(id){
- const biz=businesses.find(x=>String(x.id)===String(activeStorefrontBusinessId));
- const result=await db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status').eq('id',id).eq('user_id',currentUser?.id).maybeSingle();
- if(result.error||!result.data){toast('ما قدرنا نحمّل الإعلان للتعديل. تأكد أنه إعلانك.');return}
- if(!biz||String(biz.owner_id)!==String(currentUser?.id)){toast('ما فيك تعدّل إلا إعلانات حسابك.');return}
- const x=result.data;openModal('listing');const f=$('modalForm');f.dataset.mode='listing-edit';f.dataset.editListingId=String(x.id);$('modalTitle').textContent='✏️ تعديل الإعلان';
- for(const key of ['title','description','price','category','area','item_condition','contact_phone']){const el=f.elements.namedItem(key);if(el)el.value=x[key]??''}
- const hint=document.createElement('small');hint.className='muted';hint.textContent='اترك الصور فارغة للاحتفاظ بالصور الحالية. رفع صور جديدة يستبدل الصور القديمة.';const btn=f.querySelector('button[type="submit"]');if(btn){f.insertBefore(hint,btn);btn.textContent='حفظ التعديلات'}
+ try{
+  if(!currentUser||!db){toast('سجّل الدخول أولاً لتعديل إعلانك.');return}
+  const result=await db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status').eq('id',id).eq('user_id',currentUser.id).maybeSingle();
+  if(result.error)throw result.error;if(!result.data){toast('لم يتم العثور على إعلان تابع لحسابك.');return}
+  const x=result.data;openModal('listing');const f=$('modalForm');
+  if(!f||!f.querySelector('[name="title"]'))throw new Error('تعذّر فتح نموذج التعديل. أغلق النافذة وحاول مرة أخرى.');
+  f.dataset.mode='listing-edit';f.dataset.editListingId=String(x.id);$('modalTitle').textContent='✏️ تعديل الإعلان';
+  for(const key of ['title','description','price','category','area','item_condition','contact_phone']){const el=f.elements.namedItem(key);if(el)el.value=x[key]??''}
+  const hint=document.createElement('small');hint.className='muted';hint.textContent='اترك الصور فارغة للاحتفاظ بالصور الحالية. رفع صور جديدة يستبدل الصور القديمة.';const btn=f.querySelector('button[type="submit"]');if(btn){f.insertBefore(hint,btn);btn.textContent='حفظ التعديلات'}
+ }catch(e){console.error('open seller edit:',e);toast(e.message||'تعذّر فتح نموذج التعديل.')} 
 }
 async function saveSellerListingEdit(f,d){
  if(!currentUser||!f.dataset.editListingId)throw new Error('جلسة التعديل غير صالحة.');
