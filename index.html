@@ -329,7 +329,7 @@ function openVerificationRequest(businessId){
  $('modalForm').innerHTML='<p style="line-height:1.9">حتى تحصل على علامة التوثيق لمحلّك، تواصل مع مشرف دليل منبج عبر إحدى وسائل التواصل التالية. اذكر اسم المحل وأرسل رابط صفحته أو ما يثبت ملكيتك له.</p><a class="btn primary" style="text-align:center;text-decoration:none" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">📘 مراسلتنا عبر فيسبوك</a><a class="btn outline" style="text-align:center;text-decoration:none" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">📸 مراسلتنا عبر إنستغرام</a><button type="button" class="btn outline" onclick="closeModal()">إغلاق</button>';
  $('modalbg').style.display='flex';
 }
-function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الكل'||(categories.find(c=>c.id===x.category_id)||{}).name===activeCat)&&matchesArea(x)&&matchesQuery({...x,category:(categories.find(c=>c.id===x.category_id)||{}).name}));$('businessGrid').innerHTML=arr.length?arr.map(x=>{const cat=categories.find(c=>c.id===x.category_id);const contact=x.whatsapp;const waCheck=normalizeContactNumber(contact);const wa=waCheck.ok?waCheck.digits:'';return `<article class="card" id="business-${esc(x.id)}">${photoMarkup(x.image_urls,(cat ? cat.icon : undefined)||emojiFor((cat ? cat.name : undefined)))}<div class="cardbody"><h3 class="business-title">${esc(x.name)}${x.is_verified?' <span class="verified-badge" title="محل موثّق" aria-label="محل موثّق">✓ موثّق</span>':''}</h3><div class="tag" style="align-self:flex-start">${esc((cat ? cat.name : undefined)||'محل')}</div><div class="meta">📍 ${esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,180))}</div>`:''}${profileNameMarkup(x.owner_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot">${wa?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${wa}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${x.map_url?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="${esc(x.map_url)}" target="_blank" rel="noopener noreferrer">الخريطة</a>`:''}${favoriteButtonMarkup("business",x.id)}${currentUser&&String(currentUser.id)===String(x.owner_id)?(x.is_verified?`<span class="tag" style="background:#e8f5ed;color:#176b50;border:1px solid #a9d8bb" role="status">✓ محلك موثّق</span>`:`<button type="button" class="btn outline" onclick="openVerificationRequest(&quot;${esc(x.id)}&quot;)">🛡️ طلب توثيق المحل</button>`):""}${isAdminUser()?`<details class="listing-admin-menu"><summary>⚙️ إدارة المحل</summary><div class="listing-admin-actions"><button type="button" class="btn outline" onclick="adminBusinessAction(&quot;status&quot;,&quot;${esc(x.id)}&quot;)">🔄 تغيير الحالة</button><button type="button" class="btn outline" onclick="adminBusinessAction(&quot;verify&quot;,&quot;${esc(x.id)}&quot;)">${x.is_verified?"إلغاء التوثيق":"✅ توثيق المحل"}</button><button type="button" class="btn danger" onclick="adminBusinessAction(&quot;delete&quot;,&quot;${esc(x.id)}&quot;)">🗑️ حذف المحل</button></div></details>`:""}</div></div></article>`}).join(''):empty('ما في محلات مفعّلة تطابق بحثك حالياً. فيك تضيف محلك ليظهر بعد المراجعة.')}
+function renderBusinesses(){const arr=businesses.filter(x=>(activeCat==='الكل'||(categories.find(c=>c.id===x.category_id)||{}).name===activeCat)&&matchesArea(x)&&matchesQuery({...x,category:(categories.find(c=>c.id===x.category_id)||{}).name}));$('businessGrid').innerHTML=arr.length?arr.map(x=>{const cat=categories.find(c=>c.id===x.category_id);const contact=x.whatsapp;const waCheck=normalizeContactNumber(contact);const wa=waCheck.ok?waCheck.digits:'';return `<article class="card" id="business-${esc(x.id)}">${photoMarkup(x.image_urls,(cat ? cat.icon : undefined)||emojiFor((cat ? cat.name : undefined)))}<div class="cardbody"><h3 class="business-title">${esc(x.name)}${x.is_verified?' <span class="verified-badge" title="محل موثّق" aria-label="محل موثّق">✓ موثّق</span>':''}</h3><div class="tag" style="align-self:flex-start">${esc((cat ? cat.name : undefined)||'محل')}</div><div class="meta">📍 ${esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,180))}</div>`:''}${profileNameMarkup(x.owner_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot">${wa?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${wa}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${x.map_url?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="${esc(x.map_url)}" target="_blank" rel="noopener noreferrer">الخريطة</a>`:''}${favoriteButtonMarkup("business",x.id)}<button type="button" class="btn outline" onclick="openBusinessStorefront(&quot;${esc(x.id)}&quot;)">🏪 صفحة المحل</button>${currentUser&&String(currentUser.id)===String(x.owner_id)?(x.is_verified?`<span class="tag" style="background:#e8f5ed;color:#176b50;border:1px solid #a9d8bb" role="status">✓ محلك موثّق</span>`:`<button type="button" class="btn outline" onclick="openVerificationRequest(&quot;${esc(x.id)}&quot;)">🛡️ طلب توثيق المحل</button>`):""}${isAdminUser()?`<details class="listing-admin-menu"><summary>⚙️ إدارة المحل</summary><div class="listing-admin-actions"><button type="button" class="btn outline" onclick="adminBusinessAction(&quot;status&quot;,&quot;${esc(x.id)}&quot;)">🔄 تغيير الحالة</button><button type="button" class="btn outline" onclick="adminBusinessAction(&quot;verify&quot;,&quot;${esc(x.id)}&quot;)">${x.is_verified?"إلغاء التوثيق":"✅ توثيق المحل"}</button><button type="button" class="btn danger" onclick="adminBusinessAction(&quot;delete&quot;,&quot;${esc(x.id)}&quot;)">🗑️ حذف المحل</button></div></details>`:""}</div></div></article>`}).join(''):empty('ما في محلات مفعّلة تطابق بحثك حالياً. فيك تضيف محلك ليظهر بعد المراجعة.')}
 function openListingReport(listingId){if(!currentUser){openModal('auth');toast('سجّل الدخول أولاً حتى نتمكن من ربط البلاغ بحسابك.');return}const row=listings.find(x=>String(x.id)===String(listingId));if(!row){toast('الإعلان غير متوفر حالياً.');return}window.__reportListingId=String(listingId);openModal('report')}
 function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||x.category===activeCat)&&(condition==='الكل'||x.item_condition===condition)&&matchesArea(x)&&matchesQuery(x));$('listingGrid').innerHTML=arr.length?arr.map(x=>`<article class="card" id="listing-${esc(x.id)}">${photoMarkup(x.image_urls,emojiFor(x.category))}<div class="cardbody"><h3>${esc(x.title)}</h3><div class="price">${Number(x.price||0).toLocaleString('en-US')} ل.س</div><div class="meta">📍 ${esc(x.area||'منبج')} · ${esc(x.category||'أخرى')}</div>${x.description?`<div class="meta">${esc(x.description.slice(0,150))}</div>`:''}${profileNameMarkup(x.user_id)}${publicationDateMarkup(x.created_at)}<div class="cardfoot"><span class="tag">${esc(conditionLabel(x.item_condition))}</span>${x.contact_phone?`<a class="btn outline" style="padding:7px 10px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(x.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت إعلانك على دليل منبج: '+x.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:''}${favoriteButtonMarkup("listing",x.id)}<button type="button" class="btn outline" style="padding:7px 10px;font-size:12px" onclick="openListingReport(&quot;${esc(x.id)}&quot;)">🚩 الإبلاغ عن الإعلان</button>${isAdminUser()?`<details class="listing-admin-menu"><summary>⚙️ إدارة الإعلان</summary><div class="listing-admin-actions"><button type="button" class="btn outline" onclick="adminListingAction(&quot;status&quot;,&quot;${esc(x.id)}&quot;)">🔄 تغيير الحالة</button><button type="button" class="btn outline" onclick="adminListingAction(&quot;block&quot;,&quot;${esc(x.id)}&quot;)">🚫 حظر صاحبه</button><button type="button" class="btn danger" onclick="adminListingAction(&quot;delete&quot;,&quot;${esc(x.id)}&quot;)">🗑️ حذف الإعلان</button><button type="button" class="btn featured-nav-btn" onclick="startPromotion(&quot;listing&quot;,&quot;${esc(x.id)}&quot;)">⭐ ترويج</button></div></details>`:""}</div></div></article>`).join(''):empty('ما في إعلانات مفعّلة تطابق بحثك حالياً. أضف إعلانك بعد تسجيل الدخول.')}
 function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<article class="service" id="request-${esc(r.id)}" style="align-items:flex-start"><span class="emoji">📣</span><div style="min-width:0;flex:1"><strong>${esc(r.title)}</strong><small style="line-height:1.8">${esc(r.category||'أخرى')} · 📍 ${esc(r.area||'منبج وريفها')}<br>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'}${r.created_at?' · '+esc(new Date(r.created_at).toLocaleDateString('ar-SY')):''}</small>${r.description?`<div class="meta" style="margin-top:6px">${esc(r.description.slice(0,180))}</div>`:'' }<div class="cardfoot" style="justify-content:flex-start">${r.contact_phone?`<a class="btn primary" style="padding:8px 11px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(r.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت طلبك على دليل منبج: '+r.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:'<span class="muted">ما في وسيلة تواصل مضافة</span>'}${isAdminUser()?`<details class="listing-admin-menu"><summary>⚙️ إدارة الطلب</summary><div class="listing-admin-actions"><button type="button" class="btn outline" onclick="adminRequestAction(&quot;status&quot;,&quot;${esc(r.id)}&quot;)">🔄 تغيير الحالة</button><button type="button" class="btn outline" onclick="adminRequestAction(&quot;block&quot;,&quot;${esc(r.id)}&quot;)">🚫 حظر صاحبه</button><button type="button" class="btn danger" onclick="adminRequestAction(&quot;delete&quot;,&quot;${esc(r.id)}&quot;)">🗑️ حذف الطلب</button></div></details>`:""}</div></div></article>`).join(''):empty('ما في طلبات منشورة حالياً. سجّل الدخول وانشر طلبك، ورح يظهر بعد موافقة الإدارة.')}
@@ -719,4 +719,107 @@ const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){ga
   </div>
  </div>
 </div>
+
+<style>
+.storefront-overlay{position:fixed;inset:0;background:#10261dcc;z-index:100;display:none;overflow:auto;padding:16px}
+.storefront-shell{max-width:1050px;margin:12px auto;background:#f7faf7;border-radius:22px;overflow:hidden;box-shadow:0 20px 70px #0004}
+.storefront-head{background:linear-gradient(130deg,#123d30,#176b50);color:#fff;padding:22px;position:relative}
+.storefront-close{position:absolute;left:16px;top:16px;background:#ffffff22;color:#fff;border:1px solid #ffffff55;border-radius:10px;padding:8px 12px}
+.storefront-title{font-size:clamp(24px,4vw,36px);margin:10px 0}
+.storefront-meta{display:flex;gap:8px;flex-wrap:wrap;color:#e7f5eb}
+.storefront-body{padding:18px}
+.storefront-actions,.seller-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.storefront-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.storefront-stat{background:#fff;border:1px solid #e0e9e2;border-radius:14px;padding:13px;text-align:center}
+.storefront-stat strong{display:block;font-size:23px;color:#176b50}
+.storefront-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.storefront-section-title{margin:22px 0 12px}
+.seller-panel{background:#e8f5ed;border:1px solid #b8ddc5;border-radius:16px;padding:14px;margin:16px 0}
+.seller-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.seller-item{background:#fff;border:1px solid #e0e9e2;border-radius:14px;padding:12px;margin:8px 0}
+.seller-item h4{margin:0 0 8px}
+.seller-item .seller-actions button{padding:7px 10px;font-size:12px}
+.storefront-note{font-size:13px;color:#68776e;line-height:1.7}
+@media(max-width:600px){.storefront-overlay{padding:5px}.storefront-shell{margin:4px auto;border-radius:15px}.storefront-body{padding:12px}.storefront-stats{gap:6px}.storefront-stat{padding:9px 5px}.storefront-stat strong{font-size:19px}}
+</style>
+<div class="storefront-overlay" id="businessStorefront" role="dialog" aria-modal="true" aria-label="صفحة المحل">
+ <div class="storefront-shell">
+  <div class="storefront-head">
+   <button class="storefront-close" type="button" onclick="closeBusinessStorefront()">✕ إغلاق</button>
+   <div id="storefrontIdentity">🏪</div><h1 class="storefront-title" id="storefrontName">صفحة المحل</h1>
+   <div class="storefront-meta" id="storefrontMeta"></div>
+   <div class="storefront-actions" id="storefrontContact"></div>
+  </div>
+  <div class="storefront-body">
+   <div id="sellerDashboard" class="seller-panel" style="display:none"></div>
+   <h2 class="storefront-section-title">عن المحل</h2><div id="storefrontDescription" class="storefront-note"></div>
+   <h2 class="storefront-section-title">إعلانات صاحب المحل</h2>
+   <div class="storefront-stats" id="storefrontStats"></div>
+   <div id="storefrontAds" class="storefront-grid"></div>
+  </div>
+ </div>
+</div>
+<script>
+let activeStorefrontBusinessId=null;
+function closeBusinessStorefront(){const el=$('businessStorefront');if(el)el.style.display='none';activeStorefrontBusinessId=null}
+async function openBusinessStorefront(businessId){
+ if(!db){toast('انتظر حتى يكتمل الاتصال ثم حاول مجدداً.');return}
+ const biz=businesses.find(x=>String(x.id)===String(businessId));
+ if(!biz){toast('المحل غير متوفر حالياً. حدّث الصفحة وحاول مجدداً.');return}
+ activeStorefrontBusinessId=String(businessId);
+ $('storefrontName').textContent=biz.name||'محل';
+ $('storefrontIdentity').innerHTML=photoMarkup(biz.image_urls,'🏪');
+ const cat=categories.find(x=>String(x.id)===String(biz.category_id));
+ $('storefrontMeta').innerHTML='<span>🏷️ '+esc(cat?.name||'محل')+'</span><span>📍 '+esc([biz.area,biz.village,biz.address].filter(Boolean).join(' · ')||'منبج وريفها')+'</span>'+(biz.is_verified?'<span class="verified-badge">✓ موثّق</span>':'');
+ $('storefrontDescription').textContent=biz.description||'لم يضف صاحب المحل وصفاً بعد.';
+ const contact=[];
+ const wa=normalizeContactNumber(biz.whatsapp||biz.phone);
+ if(wa.ok)contact.push('<a class="btn" style="background:#fff;color:#176b50;text-decoration:none" href="https://wa.me/'+wa.digits+'" target="_blank" rel="noopener noreferrer">واتساب</a>');
+ const phone=normalizeContactNumber(biz.phone);
+ if(phone.ok)contact.push('<a class="btn outline" style="background:#ffffff18;color:#fff;border-color:#ffffff66;text-decoration:none" href="tel:'+phone.digits+'">اتصال</a>');
+ if(biz.website_url){try{const u=new URL(biz.website_url);if(u.protocol==='https:'||u.protocol==='http:')contact.push('<a class="btn outline" style="background:#ffffff18;color:#fff;border-color:#ffffff66;text-decoration:none" href="'+esc(u.href)+'" target="_blank" rel="noopener noreferrer">الموقع</a>')}catch(e){}}
+ if(biz.map_url){try{const u=new URL(biz.map_url);if(u.protocol==='https:'||u.protocol==='http:')contact.push('<a class="btn outline" style="background:#ffffff18;color:#fff;border-color:#ffffff66;text-decoration:none" href="'+esc(u.href)+'" target="_blank" rel="noopener noreferrer">📍 الخريطة</a>')}catch(e){}}
+ $('storefrontContact').innerHTML=contact.join('')||'<span class="storefront-note" style="color:#fff">لم يضف المحل وسائل تواصل بعد.</span>';
+ $('businessStorefront').style.display='block';document.body.style.overflow='hidden';
+ $('storefrontAds').innerHTML='<div class="storefront-note">جارٍ تحميل الإعلانات…</div>';
+ $('sellerDashboard').style.display=currentUser&&String(currentUser.id)===String(biz.owner_id)?'block':'none';
+ await loadStorefrontAds(biz);
+}
+function closeBusinessStorefrontRestore(){closeBusinessStorefront();document.body.style.overflow=''}
+async function loadStorefrontAds(biz){
+ const box=$('storefrontAds'),dash=$('sellerDashboard');
+ try{
+  // Listings are linked to the signed-in seller by user_id; only the owner sees non-public statuses.
+  let q=db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',biz.owner_id).order('created_at',{ascending:false}).limit(100);
+  if(!(currentUser&&String(currentUser.id)===String(biz.owner_id)))q=q.eq('status','active');
+  const {data,error}=await q;if(error)throw error;
+  const rows=data||[],active=rows.filter(x=>x.status==='active'),sold=rows.filter(x=>x.status==='sold'||x.status==='closed');
+  $('storefrontStats').innerHTML='<div class="storefront-stat"><strong>'+active.length+'</strong><span>متاح</span></div><div class="storefront-stat"><strong>'+sold.length+'</strong><span>تم البيع</span></div><div class="storefront-stat"><strong>'+rows.length+'</strong><span>إجمالي الإعلانات</span></div>';
+  if(dash&&currentUser&&String(currentUser.id)===String(biz.owner_id)){
+   dash.innerHTML='<div class="seller-row"><div><strong>🧰 إدارة إعلاناتك</strong><div class="storefront-note">تقدر تضيف إعلان، وتعلّم الإعلان المباع، أو ترجّعه متاحاً، أو تحذفه.</div></div><button class="btn primary" type="button" onclick="closeBusinessStorefrontRestore();openModal(\'listing\')">＋ إضافة إعلان</button></div>'+
+    (rows.length?rows.map(x=>'<div class="seller-item"><h4>'+esc(x.title)+'</h4><div class="storefront-note">الحالة: '+esc(x.status==='active'?'متاح':x.status==='sold'||x.status==='closed'?'تم البيع':x.status==='pending'?'بانتظار المراجعة':x.status==='rejected'?'مرفوض':x.status)+'</div><div class="seller-actions">'+(x.status==='active'?'<button class="btn outline" type="button" onclick="sellerListingAction(\'sold\',\''+esc(x.id)+'\')">✓ تم البيع</button>':'')+((x.status==='sold'||x.status==='closed')?'<button class="btn outline" type="button" onclick="sellerListingAction(\'active\',\''+esc(x.id)+'\')">↻ إعادة نشر</button>':'')+'<button class="btn danger" type="button" onclick="sellerListingAction(\'delete\',\''+esc(x.id)+'\')">🗑️ حذف</button></div></div>').join(''):'<p class="storefront-note">ما عندك إعلانات مرتبطة بهذا الحساب حالياً. استخدم زر إضافة إعلان.</p>')+
+    '<p class="storefront-note">ملاحظة: الإعلانات الجديدة تخضع لنفس إعدادات المراجعة والموافقة الحالية في الموقع. التعديل على الحالة ممكن فقط إذا سمحت صلاحيات قاعدة البيانات بذلك.</p>';
+  }
+  const publicRows=rows.filter(x=>x.status==='active'||(currentUser&&String(currentUser.id)===String(biz.owner_id)&&(x.status==='sold'||x.status==='closed')));
+  box.innerHTML=publicRows.length?publicRows.map(x=>'<article class="card">'+photoMarkup(x.image_urls,emojiFor(x.category))+'<div class="cardbody"><h3>'+esc(x.title)+'</h3><div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div><div class="meta">📍 '+esc(x.area||'منبج وريفها')+'</div>'+(x.status==='sold'||x.status==='closed'?'<span class="tag">تم البيع</span>':'')+(x.description?'<div class="meta">'+esc(x.description.slice(0,150))+'</div>':'')+'<div class="cardfoot">'+(x.contact_phone?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':'')+'</div></div></article>').join(''):'<div class="storefront-note">لا توجد إعلانات منشورة لهذا المحل حالياً.</div>';
+ }catch(e){console.error('storefront ads:',e);box.innerHTML='<div class="storefront-note">تعذّر تحميل الإعلانات. قد تكون صلاحيات قاعدة البيانات لا تسمح بعرضها.</div>';if(dash)dash.innerHTML='<div class="storefront-note">تعذّر تحميل أدوات الإدارة. لم يتم إجراء أي تغيير.</div>'}
+}
+async function sellerListingAction(action,id){
+ if(!currentUser||!activeStorefrontBusinessId){toast('سجّل الدخول أولاً.');return}
+ const biz=businesses.find(x=>String(x.id)===String(activeStorefrontBusinessId));
+ if(!biz||String(biz.owner_id)!==String(currentUser.id)){toast('غير مسموح: هذه الصفحة ليست لمحلك.');return}
+ const rowConfirm=action==='delete'?'هل أنت متأكد من حذف الإعلان نهائياً؟':action==='sold'?'تأكيد تعليم الإعلان بأنه تم البيع؟':'إعادة نشر الإعلان وجعله متاحاً؟';
+ if(!confirm(rowConfirm))return;
+ try{
+  if(action==='delete'){
+   const {error}=await db.from('listings').delete().eq('id',id).eq('user_id',currentUser.id);if(error)throw error;
+  }else{
+   const {error}=await db.from('listings').update({status:action}).eq('id',id).eq('user_id',currentUser.id);if(error)throw error;
+  }
+  toast(action==='delete'?'تم حذف الإعلان.':action==='sold'?'تم تحديث الإعلان إلى تم البيع.':'تمت إعادة نشر الإعلان.');
+  listings=listings.filter(x=>String(x.id)!==String(id));await loadStorefrontAds(biz);renderAll();
+ }catch(e){console.error('seller action:',e);toast('لم نتمكن من تنفيذ العملية. قد تحتاج صلاحيات قاعدة البيانات إلى مراجعة؛ لم نغيّر أي صلاحية تلقائياً.')}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('businessStorefront')?.style.display==='block')closeBusinessStorefrontRestore()});
+</script>
 </body></html>
