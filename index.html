@@ -761,7 +761,7 @@ const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){ga
 </div>
 <script>
 let activeStorefrontBusinessId=null;
-function closeBusinessStorefront(){const el=$('businessStorefront');if(el)el.style.display='none';activeStorefrontBusinessId=null}
+function closeBusinessStorefront(){const el=$('businessStorefront');if(el)el.style.display='none';activeStorefrontBusinessId=null;document.body.style.overflow=''}
 async function openBusinessStorefront(businessId){
  if(!db){toast('انتظر حتى يكتمل الاتصال ثم حاول مجدداً.');return}
  const biz=businesses.find(x=>String(x.id)===String(businessId));
