@@ -238,7 +238,46 @@ function favoriteButtonMarkup(type,id){const saved=favoriteKeys.has(favoriteKey(
 async function loadFavoriteKeys(){if(!db||!currentUser){favoriteKeys=new Set();return}const {data,error}=await db.from('user_favorites').select('target_type,target_id').eq('user_id',currentUser.id);if(error)throw error;favoriteKeys=new Set((data||[]).map(x=>favoriteKey(x.target_type,x.target_id)));const count=$('favoriteCount');if(count)count.textContent=String(favoriteKeys.size);renderAll()}
 async function toggleFavorite(type,id){if(!currentUser){toast('سجّل الدخول حتى تحفظ الإعلان في حسابك.');openModal('auth');return}if(!db)return;const key=favoriteKey(type,id);try{if(favoriteKeys.has(key)){const {error}=await db.from('user_favorites').delete().eq('user_id',currentUser.id).eq('target_type',type).eq('target_id',id);if(error)throw error;favoriteKeys.delete(key);toast('تمت إزالة الإعلان من المحفوظات.')}else{const {error}=await db.from('user_favorites').insert({user_id:currentUser.id,target_type:type,target_id:id});if(error)throw error;favoriteKeys.add(key);toast('تم حفظ الإعلان في المحفوظات.')}const count=$('favoriteCount');if(count)count.textContent=String(favoriteKeys.size);renderAll();if($('favoritesSection')?.style.display!=='none')loadFavorites()}catch(e){console.error('favorite action:',e);toast('تعذّر تحديث المحفوظات. حدّث الصفحة وحاول مجدداً.')}}
 function openFavorites(){if(!currentUser){openModal('auth');return}const section=$('favoritesSection');if(section){section.style.display='block';section.scrollIntoView({behavior:'smooth',block:'start'})}loadFavorites()}
-async function loadFavorites(){const box=$('favoritesGrid');if(!box)return;if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض المحفوظات.');return}box.innerHTML=empty('عم نحمل المحفوظات…');try{const {data,error}=await db.from('user_favorites').select('target_type,target_id,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});if(error)throw error;const rows=data||[];favoriteKeys=new Set(rows.map(x=>favoriteKey(x.target_type,x.target_id)));const count=$('favoriteCount');if(count)count.textContent=String(rows.length);if(!rows.length){box.innerHTML=empty('ما عندك إعلانات محفوظة حالياً. اضغط ♡ حفظ على أي إعلان حتى يظهر هون.');return}const idsByType={listing:rows.filter(x=>x.target_type==='listing').map(x=>x.target_id),business:rows.filter(x=>x.target_type==='business').map(x=>x.target_id)};const [ads,biz]=await Promise.all([idsByType.listing.length?db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',idsByType.listing).eq('status','active'):{data:[],error:null},idsByType.business.length?db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,area,village,address,category_id,status,image_urls,created_at').in('id',idsByType.business).eq('status','active'):{data:[],error:null}]);if(ads.error)throw ads.error;if(biz.error)throw biz.error;const items=[...(ads.data||[]).map(x=>({...x,_favType:'listing',_favTitle:x.title})),...(biz.data||[]).map(x=>({...x,_favType:'business',_favTitle:x.name}))];if(!items.length){box.innerHTML=empty('الإعلانات المحفوظة لم تعد متاحة أو تم حذفها.');return}box.innerHTML=items.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._favType==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._favTitle)+'</h3><div class="meta">📍 '+esc(x.area||'منبج وريفها')+'</div>'+(x._favType==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="cardfoot"><button class="btn outline favorite-btn saved" onclick="toggleFavorite(\''+x._favType+'\',\''+esc(x.id)+'\')">♥ إزالة من المحفوظات</button>'+(x._favType==='listing'&&x.contact_phone?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':'')+'</div></div></article>').join('')}catch(e){console.error(e);box.innerHTML=empty('تعذّر تحميل المحفوظات. تحقق من اتصال قاعدة البيانات وصلاحياتها.')}}
+async function loadFavorites(){
+ const box=$('favoritesGrid');
+ if(!box)return;
+ if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض المحفوظات.');return}
+ box.innerHTML=empty('عم نحمل الإعلانات المحفوظة…');
+ try{
+  const {data,error}=await db.from('user_favorites').select('target_type,target_id,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  if(error)throw error;
+  const rows=data||[];
+  favoriteKeys=new Set(rows.map(x=>favoriteKey(x.target_type,x.target_id)));
+  const count=$('favoriteCount');
+  if(count)count.textContent=String(rows.length);
+  if(!rows.length){box.innerHTML=empty('ما عندك إعلانات محفوظة حالياً. اضغط ♡ حفظ على أي إعلان حتى يظهر هون.');return}
+  const listingIds=rows.filter(x=>x.target_type==='listing').map(x=>x.target_id);
+  const businessIds=rows.filter(x=>x.target_type==='business').map(x=>x.target_id);
+  const [ads,biz]=await Promise.all([
+   listingIds.length?db.from('listings').select('id,user_id,title,description,price,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',listingIds).eq('status','active'):{data:[],error:null},
+   businessIds.length?db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,area,village,address,category_id,status,image_urls,created_at').in('id',businessIds).eq('status','active'):{data:[],error:null}
+  ]);
+  if(ads.error)throw ads.error;
+  if(biz.error)throw biz.error;
+  const itemMap=new Map();
+  (ads.data||[]).forEach(x=>itemMap.set(favoriteKey('listing',x.id),{...x,_favType:'listing',_favTitle:x.title}));
+  (biz.data||[]).forEach(x=>itemMap.set(favoriteKey('business',x.id),{...x,_favType:'business',_favTitle:x.name}));
+  const items=rows.map(row=>({row,item:itemMap.get(favoriteKey(row.target_type,row.target_id))})).filter(entry=>entry.item);
+  if(!items.length){box.innerHTML=empty('الإعلانات المحفوظة لم تعد متاحة أو تم حذفها. يمكنك العودة للإعلانات وحفظ غيرها.');return}
+  box.innerHTML=items.map(({row,item:x})=>{
+   const isListing=x._favType==='listing';
+   const location=[x.area,x.village].filter(Boolean).join('، ')||'منبج وريفها';
+   const price=isListing?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'';
+   const detail=isListing&&x.item_condition?'<div class="meta">الحالة: '+esc(x.item_condition)+'</div>':'';
+   const contact=isListing&&x.contact_phone?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':(x.whatsapp?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.whatsapp)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':'');
+   const savedDate=row.created_at?new Date(row.created_at).toLocaleDateString('ar-SY'):'';
+   return '<article class="card">'+photoMarkup(x.image_urls,isListing?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._favTitle||'إعلان محفوظ')+'</h3><div class="meta">📍 '+esc(location)+'</div>'+price+detail+(savedDate?'<div class="meta">📌 تاريخ الحفظ: '+esc(savedDate)+'</div>':'')+'<div class="cardfoot"><button class="btn outline favorite-btn saved" type="button" onclick="toggleFavorite(\''+x._favType+'\',\''+esc(x.id)+'\')">♥ إزالة من المحفوظات</button>'+contact+'</div></div></article>';
+  }).join('');
+ }catch(e){
+  console.error('load favorites:',e);
+  box.innerHTML=empty('تعذّر تحميل المحفوظات. حدّث الصفحة وحاول مجدداً.');
+ }
+}
 async function loadData(){
  try{
   if(!window.supabase)await window.__dalilSupabaseLoader();
