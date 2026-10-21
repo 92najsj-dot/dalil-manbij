@@ -55,6 +55,10 @@ grant select, insert on public.reports to authenticated;
 grant update on public.reports to authenticated;
 
 -- Use the names consumed by index.html and admin.html.
+alter table public.businesses add column if not exists is_verified boolean not null default false;
+alter table public.businesses add column if not exists verified_at timestamptz;
+alter table public.businesses add column if not exists verified_by uuid references auth.users(id) on delete set null;
+
 create table if not exists public.business_verification_requests (
   id uuid primary key default gen_random_uuid(),
   business_id uuid not null unique references public.businesses(id) on delete cascade,
@@ -99,6 +103,3 @@ create policy "verification requests admin delete" on public.business_verificati
   using (((select auth.jwt())->'app_metadata'->>'role') = 'admin');
 grant select, insert, update, delete on public.business_verification_requests to authenticated;
 
-alter table public.businesses add column if not exists is_verified boolean not null default false;
-alter table public.businesses add column if not exists verified_at timestamptz;
-alter table public.businesses add column if not exists verified_by uuid references auth.users(id) on delete set null;
