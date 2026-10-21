@@ -265,7 +265,34 @@ function openVerificationContact(businessId){
  modal.style.display='flex';document.body.style.overflow='hidden';
 }
 function openFavorites(){if(!currentUser){openModal('auth');return}const section=$('favoritesSection');if(section){section.style.display='block';section.scrollIntoView({behavior:'smooth',block:'start'})}loadFavorites()}
-async function loadFavorites(){const box=$('favoritesGrid');if(!box)return;if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض المحفوظات.');return}box.innerHTML=empty('عم نحمل المحفوظات…');try{const {data,error}=await db.from('user_favorites').select('target_type,target_id,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});if(error)throw error;const rows=data||[];favoriteKeys=new Set(rows.map(x=>favoriteKey(x.target_type,x.target_id)));const count=$('favoriteCount');if(count)count.textContent=String(rows.length);if(!rows.length){box.innerHTML=empty('ما عندك إعلانات محفوظة حالياً. اضغط ♡ حفظ على أي إعلان حتى يظهر هون.');return}const idsByType={listing:rows.filter(x=>x.target_type==='listing').map(x=>x.target_id),business:rows.filter(x=>x.target_type==='business').map(x=>x.target_id)};const [ads,biz]=await Promise.all([idsByType.listing.length?db.from('listings').select('id,user_id,title,description,price,currency_code,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',idsByType.listing).eq('status','active'):{data:[],error:null},idsByType.business.length?db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,area,village,address,category_id,status,image_urls,created_at').in('id',idsByType.business).eq('status','active'):{data:[],error:null}]);if(ads.error)throw ads.error;if(biz.error)throw biz.error;const items=[...(ads.data||[]).map(x=>({...x,_favType:'listing',_favTitle:x.title})),...(biz.data||[]).map(x=>({...x,_favType:'business',_favTitle:x.name}))];if(!items.length){box.innerHTML=empty('الإعلانات المحفوظة لم تعد متاحة أو تم حذفها.');return}box.innerHTML=items.map(x=>'<article class="card">'+photoMarkup(x.image_urls,x._favType==='listing'?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._favTitle)+'</h3><div class="meta">📍 '+esc(x.area||'منبج وريفها')+'</div>'+(x._favType==='listing'?'<div class="price">'+Number(x.price||0).toLocaleString('en-US')+' ل.س</div>':'')+'<div class="cardfoot"><button class="btn outline favorite-btn saved" onclick="toggleFavorite(\''+x._favType+'\',\''+esc(x.id)+'\')">♥ إزالة من المحفوظات</button>'+(x._favType==='listing'&&x.contact_phone?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':'')+'</div></div></article>').join('')}catch(e){console.error(e);box.innerHTML=empty('تعذّر تحميل المحفوظات. تحقق من اتصال قاعدة البيانات وصلاحياتها.')}}
+async function loadFavorites(){
+ const box=$('favoritesGrid');if(!box)return;
+ if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض المحفوظات.');return}
+ box.innerHTML=empty('عم نحمل المحفوظات…');
+ try{
+  const {data,error}=await db.from('user_favorites').select('target_type,target_id,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  if(error)throw error;
+  const rows=data||[];favoriteKeys=new Set(rows.map(x=>favoriteKey(x.target_type,x.target_id)));
+  const count=$('favoriteCount');if(count)count.textContent=String(rows.length);
+  if(!rows.length){box.innerHTML=empty('ما عندك إعلانات محفوظة حالياً. اضغط ♡ حفظ على أي إعلان حتى يظهر هون.');return}
+  const idsByType={listing:rows.filter(x=>x.target_type==='listing').map(x=>x.target_id),business:rows.filter(x=>x.target_type==='business').map(x=>x.target_id)};
+  const [ads,biz]=await Promise.all([
+   idsByType.listing.length?db.from('listings').select('id,user_id,title,description,price,currency_code,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',idsByType.listing).eq('status','active'):{data:[],error:null},
+   idsByType.business.length?db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,area,village,address,category_id,status,is_verified,image_urls,created_at').in('id',idsByType.business).eq('status','active'):{data:[],error:null}
+  ]);
+  if(ads.error)throw ads.error;if(biz.error)throw biz.error;
+  const items=[...(ads.data||[]).map(x=>({...x,_favType:'listing',_favTitle:x.title})),...(biz.data||[]).map(x=>({...x,_favType:'business',_favTitle:x.name}))];
+  if(!items.length){box.innerHTML=empty('الإعلانات المحفوظة لم تعد متاحة أو تم حذفها.');return}
+  box.innerHTML=items.map(x=>{
+   const isListing=x._favType==='listing';
+   const location=[x.area,x.village,isListing?'':x.address].filter(Boolean).join(' · ')||'منبج وريفها';
+   const price=isListing?'<div class="price">'+(x.currency_code==='USD'?'USD':'ل.س')+' '+Number(x.price||0).toLocaleString('en-US')+'</div>':'';
+   const badge=!isListing&&x.is_verified?'<div class="tag" style="align-self:flex-start">✓ موثّق</div>':'';
+   const contact=isListing&&x.contact_phone?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':(!isListing&&x.whatsapp?'<a class="btn outline" href="https://wa.me/'+phoneDigits(x.whatsapp)+'" target="_blank" rel="noopener noreferrer">تواصل</a>':'');
+   return '<article class="card" id="saved-'+esc(x._favType)+'-'+esc(x.id)+'">'+photoMarkup(x.image_urls,isListing?emojiFor(x.category):'🏪')+'<div class="cardbody"><h3>'+esc(x._favTitle)+'</h3>'+badge+'<div class="meta">📍 '+esc(location)+'</div>'+price+(x.description?'<div class="meta">'+esc(x.description.slice(0,150))+'</div>':'')+'<div class="cardfoot">'+contact+'<button class="btn outline favorite-btn saved" type="button" onclick="toggleFavorite(\''+x._favType+'\',\''+esc(x.id)+'\')">♥ إزالة من المحفوظات</button></div></div></article>';
+  }).join('');
+ }catch(e){console.error(e);box.innerHTML=empty('تعذّر تحميل المحفوظات. تحقق من اتصال قاعدة البيانات وصلاحياتها.')}
+}
 async function loadData(){
  try{
   if(!window.supabase)await window.__dalilSupabaseLoader();
