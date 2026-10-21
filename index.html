@@ -535,6 +535,20 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
   if(isShop){
    payload={name:d.name.trim(),category_id:d.category_id,description:String(d.description||'').trim()||null,area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,address:String(d.address||'').trim()||null,phone:String(d.phone||'').trim()||null,whatsapp:String(d.whatsapp||'').trim()||null,map_url:String(d.map_url||'').trim()||null};
    if(payload.map_url&&!(payload.map_url.startsWith('https://')||payload.map_url.startsWith('http://'))){toast('رابط الخريطة لازم يبدأ بـ https:// أو http://');return}
+   const photoInput=f.querySelector('[name="shop_photo"]'), photo=photoInput&&photoInput.files&&photoInput.files[0];
+   const existingShop=businesses.find(b=>String(b.id)===String(id));
+   let currentImages=Array.isArray(existingShop&&existingShop.image_urls)?existingShop.image_urls:[];
+   if(!currentImages.length){const currentResult=await db.from('businesses').select('image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(currentResult.error)throw currentResult.error;currentImages=Array.isArray(currentResult.data&&currentResult.data.image_urls)?currentResult.data.image_urls:[]}
+   if(photo){
+    if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');
+    if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');
+    const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;
+    const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type});
+    if(uploaded.error)throw uploaded.error;
+    const newUrl=db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl;
+    payload.image_urls=[newUrl,...currentImages.slice(1)];
+   }
   }else{
    const price=String(d.price||'').trim();
    if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0)){toast('السعر لازم يكون رقماً غير سالب.');return}
@@ -616,7 +630,7 @@ async function editMyItem(table,id){
  if(!currentUser||!db||!['listings','businesses'].includes(table))return;
  const isShop=table==='businesses', f=$('modalForm');
  try{
-  const columns=isShop?'id,owner_id,name,category_id,description,area,village,address,phone,whatsapp,map_url':'id,user_id,title,category,description,price,currency,area,village,item_condition,contact_phone';
+  const columns=isShop?'id,owner_id,name,category_id,description,area,village,address,phone,whatsapp,map_url,image_urls':'id,user_id,title,category,description,price,currency,area,village,item_condition,contact_phone';
   const result=await db.from(table).select(columns).eq('id',id).eq(isShop?'owner_id':'user_id',currentUser.id).maybeSingle();
   if(result.error||!result.data){toast('تعذّر تحميل المحتوى أو لا تملك صلاحية تعديله.');return}
   const x=result.data;
@@ -632,6 +646,10 @@ async function editMyItem(table,id){
    <label>رقم الهاتف (اختياري)<input class="field" name="phone" inputmode="tel" value="${esc(x.phone||'')}"></label>
    <label>رقم واتساب مع رمز الدولة (اختياري)<input class="field" name="whatsapp" inputmode="tel" value="${esc(x.whatsapp||'')}"></label>
    <label>رابط الموقع على الخريطة (اختياري)<input class="field" name="map_url" type="url" value="${esc(x.map_url||'')}" placeholder="https://maps.google.com/..."></label>
+   <div class="shop-edit-image" style="border:1px solid var(--line);border-radius:12px;padding:12px">
+    <label>صورة المحل (اختياري) — اختر صورة جديدة لاستبدال الحالية<input class="field" name="shop_photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+    <div id="shopPhotoPreview" style="margin-top:8px">${Array.isArray(x.image_urls)&&x.image_urls[0]?'<img src="'+esc(x.image_urls[0])+'" alt="صورة المحل الحالية" style="width:100%;max-height:190px;object-fit:contain;border-radius:10px">':'<small>لا توجد صورة حالية للمحل.</small>'}</div>
+   </div>
    <button class="btn primary" type="submit">حفظ تفاصيل المحل</button>`:`
    <label>عنوان الإعلان<input class="field" name="title" required minlength="2" maxlength="180" value="${esc(x.title||'')}"></label>
    <label>التصنيف<select class="field category-select" name="category" required style="appearance:auto;-webkit-appearance:menulist;background-color:#fff;cursor:pointer"><option value="" disabled>اختر قسماً من أقسام دليل منبج</option>${listingCategoryOptions(x.category||'')}</select><small>اختر القسم من القائمة المنسدلة؛ لا تكتب اسم القسم يدوياً.</small></label>
