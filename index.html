@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#176b50"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="icon" href="./icon.svg" type="image/svg+xml"><meta name="description" content="دليل منبج وريفها: محلات وخدمات وإعلانات بيع وشراء وطلبات محلية.">
+<meta name="theme-color" content="#176b50"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="icon" href="./icon.svg" type="image/svg+xml">
 <meta name="description" content="دليل منبج الشامل للمحلات والمطاعم ومحلات الموبايلات والإلكترونيات والخدمات وإعلانات البيع والشراء في منبج وريفها.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://dalil-manbij-new.pages.dev/">
@@ -522,7 +522,7 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
   }else{
    const price=String(d.price||'').trim();
    if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0)){toast('السعر لازم يكون رقماً غير سالب.');return}
-   payload={title:d.title.trim(),category:String(d.category||'أخرى').trim()||'أخرى',description:String(d.description||'').trim()||null,price:price===''?null:Number(price),currency:['SYP','TRY','USD'].includes(d.currency)?d.currency:'SYP',area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,item_condition:String(d.item_condition||'').trim()||null,contact_phone:String(d.contact_phone||'').trim()||null};
+   payload={title:d.title.trim(),category:String(d.category||'أخرى').trim()||'أخرى',description:String(d.description||'').trim()||null,price:price===''?null:Number(price),currency:['SYP','USD'].includes(d.currency)?d.currency:'SYP',area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,item_condition:String(d.item_condition||'').trim()||null,contact_phone:String(d.contact_phone||'').trim()||null};
   }
   const ownerColumn=isShop?'owner_id':'user_id';
   const updated=await db.from(table).update(payload).eq('id',id).eq(ownerColumn,currentUser.id).select('id');
@@ -621,7 +621,7 @@ async function editMyItem(table,id){
    <label>التصنيف<select class="field category-select" name="category" required style="appearance:auto;-webkit-appearance:menulist;background-color:#fff;cursor:pointer"><option value="" disabled>اختر قسماً من أقسام دليل منبج</option>${listingCategoryOptions(x.category||'')}</select><small>اختر القسم من القائمة المنسدلة؛ لا تكتب اسم القسم يدوياً.</small></label>
    <label>الوصف<textarea class="field" name="description" rows="4" maxlength="5000">${esc(x.description||'')}</textarea></label>
    <label>السعر<input class="field" name="price" type="number" min="0" step="any" value="${esc(x.price==null?'':x.price)}"></label>
-   <label>العملة<select class="field" name="currency"><option value="SYP">ليرة سورية (SYP)</option><option value="TRY">ليرة تركية (TRY)</option><option value="USD">دولار (USD)</option></select></label>
+   <label>العملة<select class="field" name="currency"><option value="SYP">ليرة سورية (SYP)</option><option value="USD">دولار (USD)</option></select></label>
    <label>المنطقة أو البلدة<input class="field" name="area" required maxlength="120" value="${esc(x.area||'منبج')}"></label>
    <label>اسم القرية (اختياري)<input class="field" name="village" maxlength="120" value="${esc(x.village||'')}"></label>
    <label>حالة المنتج<input class="field" name="item_condition" maxlength="80" value="${esc(x.item_condition||'مستعمل')}"></label>
