@@ -465,10 +465,10 @@ async function loadMyAds(){
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
    const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved'].includes(String(r.status||'').toLowerCase());
-   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">📣 ترويج الإعلان</button>':'';
-   const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">✏️ تعديل</button>':'';
-   const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?'<button class="btn outline" type="button" onclick="markMyItemSold(\\''+esc(r.id)+'\\')">✓ تم البيع</button>':'';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">حذف إعلاني</button></div></article>';
+   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
+   const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">✏️ تعديل</button>':'';
+   const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?'<button class="btn outline" type="button" onclick="markMyItemSold(\''+esc(r.id)+'\')">✓ تم البيع</button>':'';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
 }
