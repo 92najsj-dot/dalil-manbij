@@ -279,10 +279,13 @@ async function reportListing(id){
  if(!choice){toast('الاختيار غير صحيح. أعد المحاولة.');return}
  const details=(prompt('تفاصيل إضافية (اختياري):')||'').trim().slice(0,1000);
  try{
-  const result=await db.from('listing_reports').insert({listing_id:item.id,reporter_user_id:currentUser.id,reason:choice[0],details});
+  const existing=await db.from('reports').select('id').eq('listing_id',item.id).eq('reporter_id',currentUser.id).maybeSingle();
+  if(existing.error)throw existing.error;
+  if(existing.data){toast('سبق أن أبلغت عن هذا الإعلان.');return}
+  const result=await db.from('reports').insert({listing_id:item.id,reporter_id:currentUser.id,reason:choice[1],details,status:'open'});
   if(result.error){if(result.error.code==='23505')throw new Error('سبق أن أبلغت عن هذا الإعلان.');throw result.error}
   toast('وصل بلاغك للإدارة، شكراً لمساعدتنا في الحفاظ على دليل منبج.');
- }catch(e){console.error('listing report:',e);toast('تعذّر إرسال البلاغ. تأكد من تطبيق تحديث قاعدة البيانات ثم حاول مجدداً.')}
+ }catch(e){console.error('listing report:',e);toast('تعذّر إرسال البلاغ. تحقق من الاتصال وصلاحيات البلاغات ثم حاول مجدداً.')}
 }
 function openVerificationContact(businessId){
  const shop=businesses.find(x=>String(x.id)===String(businessId));
