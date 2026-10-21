@@ -435,10 +435,36 @@ async function loadMyAds(){
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
    const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved'].includes(String(r.status||'').toLowerCase());
-   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
+   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">📣 ترويج الإعلان</button>':'';
+   const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">✏️ تعديل</button>':'';
+   const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?'<button class="btn outline" type="button" onclick="markMyItemSold(\\''+esc(r.id)+'\\')">✓ تم البيع</button>':'';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
+}
+
+async function editMyItem(table,id){
+ if(!currentUser||!db||!['listings','businesses'].includes(table))return;
+ const isShop=table==='businesses';
+ const result=await db.from(table).select(isShop?'id,owner_id,name,description,area,village,address,phone,whatsapp':'id,user_id,title,description,price,area,village').eq('id',id).eq(isShop?'owner_id':'user_id',currentUser.id).maybeSingle();
+ if(result.error||!result.data){toast('تعذّر تحميل المحتوى أو لا تملك صلاحية تعديله.');return}
+ const x=result.data;
+ const title=prompt(isShop?'اسم المحل:':'عنوان الإعلان:',isShop?x.name:x.title);if(title===null)return;
+ if(!title.trim()){toast('العنوان مطلوب.');return}
+ const description=prompt('الوصف:',x.description||'');if(description===null)return;
+ const area=prompt('المنطقة أو البلدة:',x.area||'منبج');if(area===null)return;
+ const village=prompt('اسم القرية (اختياري):',x.village||'');if(village===null)return;
+ const payload=isShop?{name:title.trim(),description:description.trim(),area:area.trim(),village:village.trim()||null,address:prompt('العنوان التفصيلي (اختياري):',x.address||'')??x.address,phone:x.phone,whatsapp:x.whatsapp}:{title:title.trim(),description:description.trim(),area:area.trim(),village:village.trim()||null};
+ if(!isShop){const price=prompt('السعر:',String(x.price??0));if(price===null)return;if(price.trim()!==''&&!Number.isFinite(Number(price))){toast('السعر لازم يكون رقماً.');return}payload.price=price.trim()===''?null:Number(price)}
+ const updated=await db.from(table).update(payload).eq('id',id).eq(isShop?'owner_id':'user_id',currentUser.id).select('id');
+ if(updated.error||!updated.data?.length){toast('لم يتم حفظ التعديلات. تحقق من صلاحيات قاعدة البيانات.');return}
+ toast('تم حفظ التعديلات.');await loadMyAds();await loadData();
+}
+async function markMyItemSold(id){
+ if(!currentUser||!db||!confirm('تأكيد أن الإعلان تم بيعه؟'))return;
+ const {data,error}=await db.from('listings').update({status:'sold'}).eq('id',id).eq('user_id',currentUser.id).eq('status','active').select('id');
+ if(error||!data?.length){toast('تعذّر تحديث الحالة. قد لا تسمح قاعدة البيانات بهذه الحالة.');return}
+ toast('تم تحديد الإعلان كمباع.');await loadMyAds();await loadData();
 }
 async function deleteMyItem(table,id){
  if(!currentUser||!db||['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
