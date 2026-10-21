@@ -859,10 +859,16 @@ function changeGalleryImage(delta){setGalleryImage(galleryIndex+delta)}
 function closeImageGallery(){const overlay=$('imageGalleryOverlay');if(overlay)overlay.classList.remove('open');document.body.style.overflow='';const img=$('imageGalleryImage');if(img)img.removeAttribute('src')}
 document.addEventListener('keydown',event=>{if(!$('imageGalleryOverlay')?.classList.contains('open'))return;if(event.key==='Escape')closeImageGallery();if(event.key==='ArrowRight')changeGalleryImage(-1);if(event.key==='ArrowLeft')changeGalleryImage(1)});
 const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){galleryMain.addEventListener('touchstart',event=>{galleryTouchX=event.changedTouches[0].screenX},{passive:true});galleryMain.addEventListener('touchend',event=>{const dx=event.changedTouches[0].screenX-galleryTouchX;if(Math.abs(dx)>45)changeGalleryImage(dx<0?1:-1)},{passive:true})}
-/* Recover cleanly when Android/Chrome restores the homepage from its back-forward cache. */
+/* Re-fetch homepage data when Android/Chrome restores the page after shop/edit navigation.
+   Reusing the current document avoids a reload loop while replacing stale loading placeholders. */
 window.addEventListener('pageshow',function(event){
  if(event.persisted){
-  window.location.reload();
+  if(typeof loadData==='function'){
+   loadData().catch(function(error){
+    console.error('Homepage restore failed:',error);
+    setStatus(false,'تعذّر تحديث الصفحة بعد الرجوع. اضغط تحديث الصفحة وحاول مجدداً.');
+   });
+  }
  }
 });
 
