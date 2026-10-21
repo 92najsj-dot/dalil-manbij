@@ -25,4 +25,9 @@
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
-  <url>\n    <loc>https://dalil-manbij-new.pages.dev/about.html</loc>\n    <changefreq>yearly</changefreq>\n    <priority>0.4</priority>\n  </url>\n</urlset>
+  <url>
+    <loc>https://dalil-manbij-new.pages.dev/about.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>
