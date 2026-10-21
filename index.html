@@ -237,11 +237,11 @@ function conditionLabel(v){return ({new:'جديد',used:'مستعمل',service:'
 function areaOptions(){return AREAS.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
 function categoryOptions(selectedId=''){return categories.map(c=>`<option value="${esc(c.id)}" ${String(c.id)===String(selectedId)?'selected':''}>${esc(c.name)}</option>`).join('')}
 function listingCategoryOptions(selectedName=''){
- const standard=['موبايلات وإلكترونيات','سيارات ومركبات','عقارات','أثاث وأدوات منزلية','ملابس وأحذية','أجهزة كهربائية','طاقة شمسية','معدات صناعية','مواد بناء','حيوانات ومواشي','خدمات','وظائف','أخرى'];
- const known=[...new Set([...standard,...categories.map(c=>c.name),...listings.map(x=>x.category).filter(Boolean)])];
+ const fallback=['موبايلات وإلكترونيات','سيارات ومركبات','عقارات ومقاولات','شركات ومكاتب','خدمات منزلية','ورش ومهن','زراعة ومواشي','صيدليات ومخابر','تعليم ودورات','ألبسة وأحذية','أطباء وعيادات','مطاعم ومقاهي','بقالة وسوبرماركت','أخرى'];
+ const source=categories.length?categories.map(c=>({value:String(c.name||''),label:String(c.name||'')})).filter(c=>c.value):fallback.map(name=>({value:name,label:name}));
  const selected=String(selectedName||'');
- if(selected&&!known.includes(selected))known.unshift(selected);
- return known.map(name=>'<option value="'+esc(name)+'" '+(name===selected?'selected':'')+'>'+esc(name)+'</option>').join('');
+ if(selected&&!source.some(c=>c.value===selected))source.unshift({value:selected,label:selected});
+ return '<option value="" disabled>اختر قسماً من أقسام دليل منبج</option>'+source.map(c=>'<option value="'+esc(c.value)+'" '+(c.value===selected?'selected':'')+'>'+esc(c.label)+'</option>').join('');
 }
 function setStatus(ok,msg){$('statusDot').className='dot'+(ok?' ok':'');$('connectionStatus').textContent=msg}
 function empty(msg){return `<div class="empty">${esc(msg)}</div>`}
