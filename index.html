@@ -421,7 +421,7 @@ async function loadMyBusinessEntry(){
    return;
   }
   const label={active:'منشور',approved:'مقبول',pending:'بانتظار المراجعة',rejected:'مرفوض',blocked:'موقوف'};
-  box.innerHTML=rows.map(b=>'<a class="account-menu-btn" style="display:flex;align-items:center;justify-content:space-between;gap:10px;text-decoration:none" href="business.html?id='+encodeURIComponent(b.id)+'"><span>🏪 '+esc(b.name||'محلي')+'</span><span style="font-size:11px;color:#176b50;white-space:nowrap">'+esc(label[String(b.status||'').toLowerCase()]||b.status||'إدارة المحل')+' · إدارة ↗</span></a>').join('');
+  box.innerHTML=rows.map(b=>'<a class="account-menu-btn" style="display:flex;align-items:center;justify-content:space-between;gap:10px;text-decoration:none" href="my-shop.html?businessId='+encodeURIComponent(b.id)+'"><span>🏪 '+esc(b.name||'محلي')+'</span><span style="font-size:11px;color:#176b50;white-space:nowrap">'+esc(label[String(b.status||'').toLowerCase()]||b.status||'إدارة المحل')+' · إدارة ↗</span></a>').join('');
  }catch(e){
   console.error('my business entry:',e);
   box.innerHTML='<div class="muted" style="padding:8px">تعذّر تحميل محلك الآن. جرّب تحديث الصفحة.</div>';
