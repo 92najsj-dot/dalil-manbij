@@ -106,7 +106,7 @@
   <details class="account-menu-group" id="accountGroupLocal" style="display:none">
    <summary><span class="account-menu-label"><span class="account-menu-icon">🏪</span> محلي</span><span class="account-menu-plus">＋</span></summary>
    <div class="account-menu-links">
-    <button class="account-menu-btn" id="accountLocalManageBtn" onclick="toggleMyAdsSection(true)" style="display:none">🛠️ إدارة محلي وإعلاناتي</button>
+    <div id="myBusinessEntry"><div class="muted" style="padding:8px">عم نتحقق إذا عندك محل مسجّل…</div></div>
     <button class="account-menu-btn" type="button" onclick="openModal('listing')">➕ نشر إعلان جديد</button>
    </div>
   </details>
@@ -404,6 +404,27 @@ function renderListings(){const arr=listings.filter(x=>(activeCat==='الكل'||
 function renderRequests(){$('requestList').innerHTML=requests.length?requests.slice(0,6).map(r=>`<article class="service" style="align-items:flex-start"><span class="emoji">📣</span><div style="min-width:0;flex:1"><strong>${esc(r.title)}</strong><small style="line-height:1.8">${esc(r.category||'أخرى')} · 📍 ${esc(r.area||'منبج وريفها')}<br>الميزانية: ${r.budget==null?'غير محددة':Number(r.budget).toLocaleString('en-US')+' ل.س'}${r.created_at?' · '+esc(new Date(r.created_at).toLocaleDateString('ar-SY')):''}</small>${r.description?`<div class="meta" style="margin-top:6px">${esc(r.description.slice(0,180))}</div>`:'' }<div class="cardfoot" style="justify-content:flex-start">${r.contact_phone?`<a class="btn primary" style="padding:8px 11px;font-size:12px;text-decoration:none" href="https://wa.me/${phoneDigits(r.contact_phone)}?text=${encodeURIComponent('مرحبا، شفت طلبك على دليل منبج: '+r.title)}" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>`:'<span class="muted">ما في وسيلة تواصل مضافة</span>'}</div></div></article>`).join(''):empty('ما في طلبات منشورة حالياً. سجّل الدخول وانشر طلبك، ورح يظهر بعد موافقة الإدارة.')}
 function toggleMyAdsSection(forceOpen){const box=$('myAdsSection');if(!box)return;const opening=typeof forceOpen==='boolean'?forceOpen:box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';if(opening){loadMyAds();box.scrollIntoView({behavior:'smooth',block:'start'})}}
 function toggleDisplayNameSettings(){const box=$('displayNameSettings');if(!box)return;const opening=box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';if(opening){box.scrollIntoView({behavior:'smooth',block:'center'});$('displayNameInput')?.focus({preventScroll:true})}}
+
+async function loadMyBusinessEntry(){
+ const box=$('myBusinessEntry');if(!box)return;
+ if(!currentUser||!db){box.innerHTML='';return}
+ box.innerHTML='<div class="muted" style="padding:8px">عم نتحقق إذا عندك محل مسجّل…</div>';
+ try{
+  const {data,error}=await db.from('businesses').select('id,name,status').eq('owner_id',currentUser.id).order('created_at',{ascending:false});
+  if(error)throw error;
+  const rows=data||[];
+  if(!rows.length){
+   box.innerHTML='<div class="muted" style="padding:8px">ما عندك محل مسجّل بهذا الحساب حالياً.</div><button class="account-menu-btn" type="button" onclick="openModal(\'business\')">🏪 أضف محلك إلى الدليل</button>';
+   return;
+  }
+  const label={active:'منشور',approved:'مقبول',pending:'بانتظار المراجعة',rejected:'مرفوض',blocked:'موقوف'};
+  box.innerHTML=rows.map(b=>'<a class="account-menu-btn" style="display:flex;align-items:center;justify-content:space-between;gap:10px;text-decoration:none" href="business.html?id='+encodeURIComponent(b.id)+'"><span>🏪 '+esc(b.name||'محلي')+'</span><span style="font-size:11px;color:#176b50;white-space:nowrap">'+esc(label[String(b.status||'').toLowerCase()]||b.status||'إدارة المحل')+' · إدارة ↗</span></a>').join('');
+ }catch(e){
+  console.error('my business entry:',e);
+  box.innerHTML='<div class="muted" style="padding:8px">تعذّر تحميل محلك الآن. جرّب تحديث الصفحة.</div>';
+ }
+}
+
 function updateAccountUI(){
  updateOwnerNotificationsVisibility();
  const loggedIn=!!currentUser;const adminNav=$('adminNavBtn');const adminWrap=$('adminNavWrap');if(adminWrap)adminWrap.style.display=isAdminUser()?'inline-flex':'none';if(adminNav)adminNav.style.display='inline-flex';if(isAdminUser()&&db)setTimeout(()=>refreshAdminBell(),100);else closeAdminBell();const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display='none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
@@ -414,7 +435,7 @@ function updateAccountUI(){
  const note=$('accountMenuNote');if(note)note.textContent=loggedIn?'اختَر قسماً لعرض خياراته، وتُفتح مجموعة واحدة كل مرة.':'سجّل الدخول للوصول إلى بياناتك وإعلاناتك ومحفوظاتك.';
  const badge=$('accountStatusBadge');if(badge)badge.innerHTML='<i></i> '+(loggedIn?'أنت مسجّل الدخول':'حسابك الشخصي');
  // تبقى لوحة الإدارة في الصفحة المستقلة admin.html فقط.
- if(currentUser&&db){loadMyAds();loadFavoriteKeys().catch(e=>console.warn('favorites:',e))}else{favoriteKeys=new Set();const count=$('favoriteCount');if(count)count.textContent='0';renderAll()}
+ if(currentUser&&db){loadMyAds();loadMyBusinessEntry();loadFavoriteKeys().catch(e=>console.warn('favorites:',e))}else{const businessBox=$('myBusinessEntry');if(businessBox)businessBox.innerHTML='';favoriteKeys=new Set();const count=$('favoriteCount');if(count)count.textContent='0';renderAll()}
 }function closeModal(){$('modalbg').style.display='none';$('modalForm').reset();delete $('modalForm').dataset.mode}
 function openPasswordUpdateModal(){const f=$('modalForm');$('modalTitle').textContent='تعيين كلمة مرور جديدة';f.dataset.mode='recovery';f.innerHTML='<label>كلمة المرور الجديدة<input class="field" name="newPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="8 أحرف على الأقل"></label><label>تأكيد كلمة المرور<input class="field" name="confirmPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="أعد كتابة كلمة المرور"></label><button class="btn primary" type="submit">حفظ كلمة المرور الجديدة</button>';$('modalbg').style.display='flex'}
 async function startPasswordReset(){if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة.');return}const input=$('modalForm').elements.email;const email=input?input.value.trim():'';if(!email){toast('اكتب بريدك الإلكتروني أولاً، ثم اضغط نسيت كلمة المرور.');if(input)input.focus();return}try{const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error)throw error;toast('إذا كان البريد مسجلاً، ستصلك رسالة لاستعادة كلمة المرور. افحص صندوق الوارد والرسائل غير المرغوب فيها.')}catch(e){console.error('password reset:',e);toast('تعذر إرسال رسالة الاستعادة حالياً. تحقق من إعدادات البريد وروابط Supabase.')}}
