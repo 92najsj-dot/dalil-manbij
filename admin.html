@@ -169,11 +169,22 @@ body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page
    <a href="#admin-promotions">⭐ إنشاء ترويج</a><a href="#admin-promotions" onclick="loadPromotionAdmin()">📋 الحملات الحالية</a><a href="promotions.html">📢 صفحة الإعلانات المميزة</a>
   </div></details>
   <details class="admin-menu-group"><summary>📊 التقارير وسجل الإدارة</summary><div class="admin-menu-links">
-   <a href="#admin-statistics">📈 إحصائيات الموقع</a><a href="#admin-audit" onclick="loadAuditLog()">🧾 سجل العمليات</a><button type="button" onclick="loadAdminPending();loadAdminReports();loadAdminViolations();loadAdminStatistics();loadPromotionAdmin();loadAuditLog();toast('بدأ تحديث أقسام الإدارة.')">↻ تحديث كل الأقسام</button>
+   <a href="#admin-statistics">📈 إحصائيات الموقع</a><a href="#admin-audit" onclick="loadAuditLog()">🧾 سجل العمليات</a><a href="#verification-admin" onclick="loadVerificationAdmin()">✓ إدارة توثيق المحلات</a><button type="button" onclick="loadAdminPending();loadAdminReports();loadAdminViolations();loadAdminStatistics();loadPromotionAdmin();loadAuditLog();toast('بدأ تحديث أقسام الإدارة.')">↻ تحديث كل الأقسام</button>
   </div></details>
  </div>
 
- <div class="admintabs admin-section-anchor" id="admin-content">
+ <section id="verification-admin" class="admin-section-anchor" style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin:20px 0">
+ <div class="adminhead"><div><h2 style="margin:0">✓ إدارة توثيق المحلات</h2><div class="muted">راجع الطلبات، وثّق المحلات بعد التحقق، أو أزل توثيق محل سابقاً.</div></div><button class="btn outline" type="button" onclick="loadVerificationAdmin()">↻ تحديث</button></div>
+ <div class="admintabs" style="margin-top:12px">
+  <button type="button" class="admintab active" data-verification-tab="requests" onclick="selectVerificationTab('requests')">📩 طلبات التوثيق</button>
+  <button type="button" class="admintab" data-verification-tab="verified" onclick="selectVerificationTab('verified')">✓ المحلات الموثّقة</button>
+  <button type="button" class="admintab" data-verification-tab="unverified" onclick="selectVerificationTab('unverified')">🏪 غير الموثّقة</button>
+ </div>
+ <div id="verificationAdminHint" class="muted" style="margin:10px 0">طلبات التوثيق الجديدة.</div>
+ <div id="verificationAdminItems"><div class="empty">اضغط تحديث لتحميل بيانات التوثيق.</div></div>
+</section>
+
+<div class="admintabs admin-section-anchor" id="admin-content">
   <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
   <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
   <button type="button" class="admintab" data-admin-tab="wanted_requests" onclick="selectAdminTab('wanted_requests')">طلبات الناس</button>
@@ -374,6 +385,75 @@ function clearAdminReadNotifications(){try{localStorage.removeItem(adminReadStor
 function updateAdminBellUnread(){const countNode=document.getElementById('adminPendingCount'),badge=document.getElementById('adminBellCount');if(!countNode||!badge)return;const value=String(countNode.textContent||'').trim();const unread=value!==adminReadSnapshot()&&parseInt(value,10)>0;badge.textContent=parseInt(value,10)>99?'99+':String(Math.max(0,parseInt(value,10)||0));badge.hidden=!unread}
 function toggleAdminNotifications(){const panel=document.getElementById('adminNotificationsPanel');const button=document.getElementById('adminNotificationsToggle');if(!panel||!button)return;const opening=panel.hidden;panel.hidden=!opening;button.setAttribute('aria-expanded',String(opening));}
 function closeAdminNotifications(){const panel=document.getElementById('adminNotificationsPanel');const button=document.getElementById('adminNotificationsToggle');if(panel)panel.hidden=true;if(button)button.setAttribute('aria-expanded','false');}
+
+let verificationAdminTab='requests';
+function selectVerificationTab(tab){
+ if(!isAdminUser()){toast('هذا القسم مخصص للإدارة فقط.');return}
+ if(!['requests','verified','unverified'].includes(tab))return;
+ verificationAdminTab=tab;
+ document.querySelectorAll('[data-verification-tab]').forEach(b=>b.classList.toggle('active',b.dataset.verificationTab===tab));
+ const hint=$('verificationAdminHint');
+ if(hint)hint.textContent=tab==='requests'?'طلبات التوثيق التي أرسلها أصحاب المحلات.':tab==='verified'?'المحلات التي تحمل علامة التوثيق حالياً.':'المحلات التي لم توثّق بعد.';
+ loadVerificationAdmin();
+}
+async function loadVerificationAdmin(){
+ const box=$('verificationAdminItems');if(!box)return;
+ if(!isAdminUser()||!db){box.innerHTML='<div class="empty">هذا القسم متاح لحساب الإدارة فقط.</div>';return}
+ box.innerHTML='<div class="empty">جارٍ تحميل بيانات التوثيق…</div>';
+ try{
+  let rows=[];
+  if(verificationAdminTab==='requests'){
+   const r=await db.from('business_verification_requests').select('id,business_id,owner_id,status,owner_note,admin_note,created_at').eq('status','pending').order('created_at',{ascending:true});
+   if(r.error)throw r.error;
+   const reqs=r.data||[],ids=[...new Set(reqs.map(x=>x.business_id))];
+   const br=ids.length?await db.from('businesses').select('id,name,owner_id,area,village,address,is_verified,status,phone,whatsapp,website_url,created_at').in('id',ids):{data:[],error:null};
+   if(br.error)throw br.error;
+   const map=new Map((br.data||[]).map(x=>[String(x.id),x]));
+   rows=reqs.map(x=>({...x,business:map.get(String(x.business_id))})).filter(x=>x.business);
+  }else{
+   const r=await db.from('businesses').select('id,name,owner_id,area,village,address,is_verified,status,phone,whatsapp,website_url,verified_at,verified_by,created_at').eq('is_verified',verificationAdminTab==='verified').order('name');
+   if(r.error)throw r.error;rows=(r.data||[]).map(x=>({business:x}));
+  }
+  if(!rows.length){box.innerHTML='<div class="empty">'+(verificationAdminTab==='requests'?'لا توجد طلبات توثيق معلّقة حالياً.':verificationAdminTab==='verified'?'لا توجد محلات موثّقة حالياً.':'لا توجد محلات غير موثّقة حالياً.')+'</div>';return}
+  box.innerHTML=rows.map(row=>{
+   const b=row.business||{},id=String(b.id||row.business_id||''),name=adminEscape(b.name||'محل بدون اسم'),place=adminEscape([b.area,b.village,b.address].filter(Boolean).join(' · ')||'منبج وريفها');
+   const date=row.created_at?new Date(row.created_at).toLocaleString('ar-SY'):'';
+   let actions='';
+   if(verificationAdminTab==='requests')actions='<button class="btn success" type="button" onclick="decideVerificationRequest(\''+adminEscape(row.id)+'\',\''+id+'\',true)">✓ توثيق وقبول الطلب</button><button class="btn reject" type="button" onclick="decideVerificationRequest(\''+adminEscape(row.id)+'\',\''+id+'\',false)">رفض الطلب</button>';
+   else if(verificationAdminTab==='verified')actions='<button class="btn reject" type="button" onclick="setBusinessVerification(\''+id+'\',false)">إزالة التوثيق</button>';
+   else actions='<button class="btn success" type="button" onclick="setBusinessVerification(\''+id+'\',true)">✓ توثيق المحل</button>';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+name+(b.is_verified?' · ✓ موثّق':'')+'</h3><div class="adminmeta">📍 '+place+'<br>الحالة: '+adminEscape(b.status||'غير محددة')+'<br>معرّف المحل: '+adminEscape(id)+'<br>معرّف المالك: '+adminEscape(b.owner_id||row.owner_id||'غير متوفر')+(date?'<br>تاريخ الطلب: '+adminEscape(date):'')+(row.owner_note?'<br>ملاحظة صاحب المحل: '+adminEscape(row.owner_note):'')+'</div></div><div class="adminactions">'+actions+'</div></article>';
+  }).join('');
+ }catch(e){console.error('verification admin:',e);box.innerHTML='<div class="empty">تعذّر تحميل إدارة التوثيق: '+adminEscape(e.message||'خطأ غير معروف')+'</div>'}
+}
+async function setBusinessVerification(id,verified){
+ if(!isAdminUser()||!db)return;
+ if(!confirm(verified?'تأكيد توثيق هذا المحل بعد التحقق من بياناته؟':'تأكيد إزالة التوثيق عن هذا المحل؟'))return;
+ try{
+  const patch=verified?{is_verified:true,verified_at:new Date().toISOString(),verified_by:currentUser.id}:{is_verified:false,verified_at:null,verified_by:null};
+  const r=await db.from('businesses').update(patch).eq('id',id).select('id,name,is_verified');
+  if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('لم يتم التغيير؛ تحقق من صلاحيات الإدارة.');
+  await logAdminAction(verified?'verify_business':'unverify_business','businesses',id,{is_verified:verified});
+  toast(verified?'تم توثيق المحل بنجاح.':'تمت إزالة التوثيق.');
+  await loadVerificationAdmin();
+ }catch(e){console.error(e);toast('تعذّر تغيير التوثيق: '+(e.message||'خطأ غير معروف'))}
+}
+async function decideVerificationRequest(requestId,businessId,approve){
+ if(!isAdminUser()||!db)return;
+ if(!confirm(approve?'قبول طلب التوثيق وتوثيق المحل؟':'رفض طلب التوثيق؟'))return;
+ try{
+  if(approve){
+   const v=await db.from('businesses').update({is_verified:true,verified_at:new Date().toISOString(),verified_by:currentUser.id}).eq('id',businessId).select('id');
+   if(v.error)throw v.error;if(!v.data||!v.data.length)throw new Error('تعذّر توثيق المحل.');
+  }
+  const note=approve?'تم التحقق وقبول الطلب.':(prompt('سبب رفض طلب التوثيق (اختياري):','')||'');
+  const r=await db.from('business_verification_requests').update({status:approve?'approved':'rejected',admin_note:note,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',requestId).eq('status','pending').select('id');
+  if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('تم تحديث الطلب من قبل أو لم يعد معلّقاً.');
+  await logAdminAction(approve?'approve_verification_request':'reject_verification_request','business_verification_requests',requestId,{business_id:businessId,note});
+  toast(approve?'تم قبول الطلب وتوثيق المحل.':'تم رفض طلب التوثيق.');
+  await loadVerificationAdmin();
+ }catch(e){console.error(e);toast('تعذّرت مراجعة طلب التوثيق: '+(e.message||'خطأ غير معروف'))}
+}
 async function loadAdminPending(){
  if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
  const box=$('adminItems');if(!box)return;
