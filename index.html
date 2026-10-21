@@ -618,7 +618,7 @@ async function editMyItem(table,id){
    <label>رابط الموقع على الخريطة (اختياري)<input class="field" name="map_url" type="url" value="${esc(x.map_url||'')}" placeholder="https://maps.google.com/..."></label>
    <button class="btn primary" type="submit">حفظ تفاصيل المحل</button>`:`
    <label>عنوان الإعلان<input class="field" name="title" required minlength="2" maxlength="180" value="${esc(x.title||'')}"></label>
-   <label>التصنيف<select class='field' name='category' required>${listingCategoryOptions(x.category||'')}</select></label>
+   <label>التصنيف<select class="field category-select" name="category" required style="appearance:auto;-webkit-appearance:menulist;background-color:#fff;cursor:pointer"><option value="" disabled>اختر قسماً من أقسام دليل منبج</option>${listingCategoryOptions(x.category||'')}</select><small>اختر القسم من القائمة المنسدلة؛ لا تكتب اسم القسم يدوياً.</small></label>
    <label>الوصف<textarea class="field" name="description" rows="4" maxlength="5000">${esc(x.description||'')}</textarea></label>
    <label>السعر<input class="field" name="price" type="number" min="0" step="any" value="${esc(x.price==null?'':x.price)}"></label>
    <label>العملة<select class="field" name="currency"><option value="SYP">ليرة سورية (SYP)</option><option value="TRY">ليرة تركية (TRY)</option><option value="USD">دولار (USD)</option></select></label>
