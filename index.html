@@ -414,7 +414,7 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
   let payload;
   if(isShop){
    payload={name:d.name.trim(),category_id:d.category_id,description:String(d.description||'').trim()||null,area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,address:String(d.address||'').trim()||null,phone:String(d.phone||'').trim()||null,whatsapp:String(d.whatsapp||'').trim()||null,map_url:String(d.map_url||'').trim()||null};
-   if(payload.map_url&&!/^https?:\\/\\//i.test(payload.map_url)){toast('رابط الخريطة لازم يبدأ بـ https:// أو http://');return}
+   if(payload.map_url&&!(payload.map_url.startsWith('https://')||payload.map_url.startsWith('http://'))){toast('رابط الخريطة لازم يبدأ بـ https:// أو http://');return}
   }else{
    const price=String(d.price||'').trim();
    if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0)){toast('السعر لازم يكون رقماً غير سالب.');return}
