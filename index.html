@@ -344,7 +344,10 @@ async function loadData(){
   const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
   if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
-  db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser&&event!=='SIGNED_OUT')setTimeout(()=>enforceBlockedUser(currentUser),0);if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
+  if(!window.__dalilAuthStateListenerRegistered){
+   window.__dalilAuthStateListenerRegistered=true;
+   db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser&&event!=='SIGNED_OUT')setTimeout(()=>enforceBlockedUser(currentUser),0);if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
+  }
   const editListingId=new URLSearchParams(location.search).get('editListing');
   if(editListingId){
    if(currentUser){
@@ -861,15 +864,21 @@ document.addEventListener('keydown',event=>{if(!$('imageGalleryOverlay')?.classL
 const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){galleryMain.addEventListener('touchstart',event=>{galleryTouchX=event.changedTouches[0].screenX},{passive:true});galleryMain.addEventListener('touchend',event=>{const dx=event.changedTouches[0].screenX-galleryTouchX;if(Math.abs(dx)>45)changeGalleryImage(dx<0?1:-1)},{passive:true})}
 /* Re-fetch homepage data when Android/Chrome restores the page after shop/edit navigation.
    Reusing the current document avoids a reload loop while replacing stale loading placeholders. */
+let __dalilHomepageRefreshTimer=null;
+let __dalilPageWasHidden=false;
+function refreshHomepageAfterReturn(){
+ if(__dalilHomepageRefreshTimer)clearTimeout(__dalilHomepageRefreshTimer);
+ __dalilHomepageRefreshTimer=setTimeout(async function(){
+  if(document.visibilityState==='hidden'||typeof loadData!=='function')return;
+  try{await loadData()}catch(error){console.error('Homepage restore failed:',error);setStatus(false,'تعذّر تحديث الصفحة بعد الرجوع. اسحب الصفحة للأسفل لتحديثها.')}
+ },250);
+}
 window.addEventListener('pageshow',function(event){
- if(event.persisted){
-  if(typeof loadData==='function'){
-   loadData().catch(function(error){
-    console.error('Homepage restore failed:',error);
-    setStatus(false,'تعذّر تحديث الصفحة بعد الرجوع. اضغط تحديث الصفحة وحاول مجدداً.');
-   });
-  }
- }
+ if(event.persisted)refreshHomepageAfterReturn();
+});
+document.addEventListener('visibilitychange',function(){
+ if(document.visibilityState==='hidden'){__dalilPageWasHidden=true;return}
+ if(__dalilPageWasHidden){__dalilPageWasHidden=false;refreshHomepageAfterReturn()}
 });
 
 </script>
