@@ -266,7 +266,7 @@ async function adminDeleteContent(table,id){
  try{await db.from('admin_audit_log').insert({admin_user_id:currentUser.id,action:'delete',entity_type:table,entity_id:String(id),details:{source:'public_card'}})}catch(_){}
  toast('تم حذف المحتوى.');await loadData();
 }
-async async function reportListing(id){
+async function reportListing(id){
  if(!currentUser){toast('سجّل الدخول حتى تتمكن من الإبلاغ عن إعلان.');openModal('auth');return}
  const item=listings.find(x=>String(x.id)===String(id));
  if(!item){toast('الإعلان غير موجود أو تم تحديث الصفحة.');return}
@@ -450,7 +450,7 @@ function renderOwnerNotifications(){const box=$('ownerNotificationsList'),count=
 function ownerNotificationNavigate(id){const n=ownerNotificationsCache.find(x=>x.id===id);if(!n)return true;if(n.status==='rejected'){toast(n.detail||'تم رفض المحتوى.');return false}if(n.url&&n.url.charAt(0)==='#'){const target=document.querySelector(n.url);if(target){setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),100);return true}}return true}
 function updateOwnerNotificationsVisibility(){const b=$('ownerNotificationsButton');if(b)b.style.display=currentUser?'inline-flex':'none';if(!currentUser){const p=$('ownerNotificationsPanel');if(p)p.hidden=true;ownerNotificationsCache=[]}else setTimeout(()=>refreshOwnerNotifications(),250)}
 
-async async function loadMyAds(){
+async function loadMyAds(){
  const box=$('myAdsPanel');if(!box)return;
  if(!currentUser||!db){box.innerHTML=empty('سجّل الدخول لعرض إعلاناتك وطلباتك.');return}
  box.innerHTML=empty('عم نحمل إعلاناتك وطلباتك…');
@@ -676,7 +676,7 @@ async function unblockUser(userId){
  }catch(e){console.error(e);toast('تعذّر رفع الحظر: '+(e.message||'خطأ غير معروف'))}
 }
 let publicationBanNoticeShown=false;
-async async function enforceBlockedUser(user){
+async function enforceBlockedUser(user){
  if(!db||!user||user.app_metadata?.role==='admin')return;
  try{
   const {data,error}=await db.rpc('is_current_user_publication_blocked');
@@ -703,7 +703,7 @@ function toggleAdminBell(){const panel=$('adminBellPanel'),button=$('adminBellBt
 function closeAdminBell(){const panel=$('adminBellPanel'),button=$('adminBellBtn'),count=$('adminBellCount');if(panel)panel.hidden=true;if(button)button.setAttribute('aria-expanded','false');if(count)count.style.display='none';const wrap=$('adminNavWrap');if(wrap)wrap.style.display='none';}
 async function refreshAdminBell(){if(!db||!isAdminUser()||adminBellRefreshBusy)return;adminBellRefreshBusy=true;const box=$('adminBellItems');if(box)box.innerHTML='<div class="muted">جارٍ تحديث الحالات…</div>';try{const specs=[{table:'listings',label:'إعلانات البيع والشراء',url:'./admin.html#adminItems',status:'pending'},{table:'businesses',label:'محلات تنتظر المراجعة',url:'./admin.html#adminItems',status:'pending'},{table:'wanted_requests',label:'طلبات الناس',url:'./admin.html#adminItems',status:'pending'},{table:'reports',label:'بلاغات مفتوحة',url:'./admin.html#adminReportsSection',status:'open'}];const results=await Promise.all(specs.map(async x=>{const q=await db.from(x.table).select('id',{count:'exact',head:true}).eq('status',x.status);if(q.error)throw q.error;return {...x,count:q.count||0}}));let blocked={count:0,label:'حسابات مقيّدة',url:'./admin.html#blockedUsersList'};const br=await db.from('blocked_users').select('user_id',{count:'exact',head:true}).or('expires_at.is.null,expires_at.gt.'+new Date().toISOString());if(!br.error)blocked.count=br.count||0;results.push(blocked);const total=results.reduce((n,x)=>n+x.count,0);const badge=$('adminBellCount');if(badge){badge.textContent=total>99?'99+':String(total);badge.style.display=total?'inline-block':'none';badge.title=total+' حالة تحتاج متابعة'}if(box)box.innerHTML=results.map(x=>'<div class="admin-bell-row"><div><div class="admin-bell-label">'+esc(x.label)+'</div><div class="muted">'+(x.count?'تحتاج متابعة':'لا توجد حالات معلّقة')+'</div></div><span class="admin-bell-num">'+x.count+'</span><a class="admin-bell-open" href="'+x.url+'">مراجعة ←</a></div>').join('');}catch(e){console.warn('admin notifications:',e);if(box)box.innerHTML='<div class="muted">تعذّر تحميل الإشعارات. افتح لوحة الإدارة أو أعد المحاولة.</div>';const badge=$('adminBellCount');if(badge){badge.textContent='!';badge.style.display='inline-block'}}finally{adminBellRefreshBusy=false}}
 async function accountAction(){if(currentUser){const section=$('accountSection');if(section)section.scrollIntoView({behavior:'smooth',block:'start'});return}openModal('auth')}
-async async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.signOut();if(error)throw error;currentUser=null;updateAccountUI();toast('تم تسجيل الخروج بنجاح.');window.scrollTo({top:0,behavior:'smooth'});}catch(e){toast('تعذّر تسجيل الخروج: '+(e.message||'خطأ غير معروف'))}}
+async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.signOut();if(error)throw error;currentUser=null;updateAccountUI();toast('تم تسجيل الخروج بنجاح.');window.scrollTo({top:0,behavior:'smooth'});}catch(e){toast('تعذّر تسجيل الخروج: '+(e.message||'خطأ غير معروف'))}}
 loadData();
 initSiteAnalytics();
 
