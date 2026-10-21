@@ -676,7 +676,7 @@ async function unblockUser(userId){
  }catch(e){console.error(e);toast('تعذّر رفع الحظر: '+(e.message||'خطأ غير معروف'))}
 }
 let publicationBanNoticeShown=false;
-async async function enforceBlockedUser(user){
+async function enforceBlockedUser(user){
  if(!db||!user||user.app_metadata?.role==='admin')return;
  try{
   const {data,error}=await db.rpc('is_current_user_publication_blocked');
