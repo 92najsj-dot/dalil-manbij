@@ -51,10 +51,19 @@ async function run(){
   if(ads.error)throw ads.error;
   const rows=ads.data||[];
   $('listings').innerHTML=rows.length?rows.map(a=>{
-   const ownerControls=isOwner?'<div class="actions"><button class="btn" type="button" onclick="editListingFromShop(\''+esc(a.id)+'\')">✏️ تعديل الإعلان</button>'+(a.status!=='sold'?'<button class="btn" type="button" onclick="markSoldFromShop(\''+esc(a.id)+'\')">✓ تم البيع</button>':'<button class="btn" type="button" onclick="markAvailableFromShop(\''+esc(a.id)+'\')">↩ إعادة تنشيط الإعلان</button>')+'</div>':'';
+   const ownerControls=isOwner?'<div class="actions"><button class="btn" type="button" onclick="editListingFromShop(\''+esc(a.id)+'\')">✏️ تعديل الإعلان</button>'+(a.status!=='sold'?'<button class="btn" type="button" onclick="markSoldFromShop(\''+esc(a.id)+'\')">✓ تم البيع</button>':'<button class="btn" type="button" onclick="markAvailableFromShop(\''+esc(a.id)+'\')">↩ إعادة تنشيط الإعلان</button>')+'<button class="btn" type="button" style="color:#a32626;border-color:#e8bebe" onclick="deleteListingFromShop(\''+esc(a.id)+'\')">🗑️ حذف الإعلان</button></div>':'';
    return `<article class="card">${listingPhoto(a.image_urls)}<div class="cardbody"><h3>${esc(a.title)}</h3><div class="price">${a.currency==='USD'?'USD':'ل.س'} ${Number(a.price||0).toLocaleString('en-US')}</div><div class="small">📍 ${esc([a.area,a.village].filter(Boolean).join(' · ')||'منبج وريفها')} · ${esc(a.category||'أخرى')}</div>${a.status==='sold'?'<div class="verified" style="display:inline-block;margin:7px 0;background:#fff0d8;color:#80510c">✓ مباع</div>':''}${a.description?'<p class="small">'+esc(a.description.slice(0,140))+'</p>':''}${a.status!=='sold'&&a.contact_phone?'<a class="btn" href="https://wa.me/'+digits(a.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل بخصوص الإعلان</a>':''}${ownerControls}</div></article>`;
   }).join(''):'<div class="status">ما في إعلانات بيع منشورة مرتبطة بحساب صاحب هذا المحل حالياً. إذا نشرت إعلاناً ولم يظهر، تأكد أنك نشرت من نفس الحساب الذي يملك المحل وأن الإعلان مقبول ومنشور.</div>';
  }catch(e){console.error(e);$('status').textContent='تعذّر تحميل الصفحة. تحقق من اتصال الإنترنت ثم أعد المحاولة.';$('listings').innerHTML=''}
+}
+async function deleteListingFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('حذف الإعلان متاح لصاحب المحل فقط.');return}
+ if(!confirm('هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن الحذف.'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').delete().eq('id',id).eq('user_id',currentUser.id).select('id');
+ if(r.error||!r.data||!r.data.length){console.error('delete listing:',r.error);alert('تعذّر حذف الإعلان. قد تكون صلاحيات الحذف غير مفعّلة في قاعدة البيانات.');return}
+ alert('تم حذف الإعلان.');
+ location.reload();
 }
 async function markSoldFromShop(id){
  if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('هذا الخيار متاح لصاحب المحل فقط.');return}
