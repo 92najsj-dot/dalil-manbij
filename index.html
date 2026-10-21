@@ -406,6 +406,25 @@ function openModal(type){const f=$('modalForm');$('modalbg').style.display='flex
  f.innerHTML=html}
 async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة البيانات غير متصلة. أعد تحميل الصفحة بعد التحقق من الإنترنت.');return}const f=e.currentTarget;const d=Object.fromEntries(new FormData(f).entries());const submitter=e.submitter;try{if(f.dataset.mode==='recovery'){if(!d.newPassword||d.newPassword.length<8){toast('كلمة المرور يجب أن تكون 8 أحرف على الأقل.');return}if(d.newPassword!==d.confirmPassword){toast('كلمتا المرور غير متطابقتين.');return}const {error}=await db.auth.updateUser({password:d.newPassword});if(error)throw error;history.replaceState(null,'',window.location.pathname+window.location.search);closeModal();toast('تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');return}if(d.email&&d.password){const mode=(submitter ? submitter.value : undefined)||'login';let result;if(mode==='signup'){const displayName=(d.display_name||'').trim();if(displayName.length===1){toast('إذا رغبت بإضافة اسم، اكتب حرفين على الأقل أو اترك الحقل فارغاً.');return}result=await db.auth.signUp({email:d.email,password:d.password,options:{data:{display_name:displayName}}});}else result=await db.auth.signInWithPassword({email:d.email,password:d.password});if(result.error)throw result.error;if(mode==='signup'&&!result.data.session){toast('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتفعيل الحساب ثم سجّل الدخول.');closeModal();return}currentUser=result.data.user||(result.data.session ? result.data.session.user : undefined)||null;updateAccountUI();toast(mode==='signup'?'تم إنشاء الحساب وتسجيل الدخول.':'أهلاً بعودتك!');closeModal();await loadData();return}
  if(!currentUser){toast('سجّل الدخول أولاً.');return}
+ if(f.dataset.mode==='edit-business'||f.dataset.mode==='edit-listing'){
+  const isShop=f.dataset.mode==='edit-business', table=isShop?'businesses':'listings', id=f.dataset.editId;
+  if(!id){toast('تعذّر تحديد المحتوى المراد تعديله.');return}
+  if(isShop&&!String(d.name||'').trim()){toast('اسم المحل مطلوب.');return}
+  if(!isShop&&!String(d.title||'').trim()){toast('عنوان الإعلان مطلوب.');return}
+  let payload;
+  if(isShop){
+   payload={name:d.name.trim(),category_id:d.category_id,description:String(d.description||'').trim()||null,area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,address:String(d.address||'').trim()||null,phone:String(d.phone||'').trim()||null,whatsapp:String(d.whatsapp||'').trim()||null,map_url:String(d.map_url||'').trim()||null};
+   if(payload.map_url&&!/^https?:\\/\\//i.test(payload.map_url)){toast('رابط الخريطة لازم يبدأ بـ https:// أو http://');return}
+  }else{
+   const price=String(d.price||'').trim();
+   if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0)){toast('السعر لازم يكون رقماً غير سالب.');return}
+   payload={title:d.title.trim(),category:String(d.category||'أخرى').trim()||'أخرى',description:String(d.description||'').trim()||null,price:price===''?null:Number(price),currency:['SYP','TRY','USD'].includes(d.currency)?d.currency:'SYP',area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,item_condition:String(d.item_condition||'').trim()||null,contact_phone:String(d.contact_phone||'').trim()||null};
+  }
+  const ownerColumn=isShop?'owner_id':'user_id';
+  const updated=await db.from(table).update(payload).eq('id',id).eq(ownerColumn,currentUser.id).select('id');
+  if(updated.error||!updated.data?.length){console.error('edit update:',updated.error);toast('لم يتم حفظ التعديلات. تحقق من صلاحيات قاعدة البيانات.');return}
+  closeModal();toast(isShop?'تم تحديث تفاصيل المحل بنجاح.':'تم تحديث الإعلان بنجاح.');await loadData();await loadMyAds();return;
+ }
  try{const banCheck=await db.rpc('is_current_user_publication_blocked');if(banCheck.error)throw banCheck.error;if(banCheck.data){toast('حسابك محظور من النشر حالياً. يمكنك التصفح، لكن لا يمكنك إرسال محتوى جديد.');return}}catch(banCheckError){console.error('publication ban check:',banCheckError);toast('تعذّر التحقق من صلاحية النشر. حاول مجدداً بعد قليل.');return}
  // تحقّق من أرقام التواصل قبل رفع الصور أو حفظ الإعلان، واحفظها بصيغة دولية موحّدة.
  if(f.querySelector('[name="contact_phone"]'))d.contact_phone=normalizeSubmissionContact(d.contact_phone,'رقم واتساب');
@@ -475,20 +494,39 @@ async function loadMyAds(){
 
 async function editMyItem(table,id){
  if(!currentUser||!db||!['listings','businesses'].includes(table))return;
- const isShop=table==='businesses';
- const result=await db.from(table).select(isShop?'id,owner_id,name,description,area,village,address,phone,whatsapp':'id,user_id,title,description,price,area,village').eq('id',id).eq(isShop?'owner_id':'user_id',currentUser.id).maybeSingle();
- if(result.error||!result.data){toast('تعذّر تحميل المحتوى أو لا تملك صلاحية تعديله.');return}
- const x=result.data;
- const title=prompt(isShop?'اسم المحل:':'عنوان الإعلان:',isShop?x.name:x.title);if(title===null)return;
- if(!title.trim()){toast('العنوان مطلوب.');return}
- const description=prompt('الوصف:',x.description||'');if(description===null)return;
- const area=prompt('المنطقة أو البلدة:',x.area||'منبج');if(area===null)return;
- const village=prompt('اسم القرية (اختياري):',x.village||'');if(village===null)return;
- const payload=isShop?{name:title.trim(),description:description.trim(),area:area.trim(),village:village.trim()||null,address:prompt('العنوان التفصيلي (اختياري):',x.address||'')??x.address,phone:x.phone,whatsapp:x.whatsapp}:{title:title.trim(),description:description.trim(),area:area.trim(),village:village.trim()||null};
- if(!isShop){const price=prompt('السعر:',String(x.price??0));if(price===null)return;if(price.trim()!==''&&!Number.isFinite(Number(price))){toast('السعر لازم يكون رقماً.');return}payload.price=price.trim()===''?null:Number(price)}
- const updated=await db.from(table).update(payload).eq('id',id).eq(isShop?'owner_id':'user_id',currentUser.id).select('id');
- if(updated.error||!updated.data?.length){toast('لم يتم حفظ التعديلات. تحقق من صلاحيات قاعدة البيانات.');return}
- toast('تم حفظ التعديلات.');await loadMyAds();await loadData();
+ const isShop=table==='businesses', f=$('modalForm');
+ try{
+  const columns=isShop?'id,owner_id,name,category_id,description,area,village,address,phone,whatsapp,map_url':'id,user_id,title,category,description,price,currency,area,village,item_condition,contact_phone';
+  const result=await db.from(table).select(columns).eq('id',id).eq(isShop?'owner_id':'user_id',currentUser.id).maybeSingle();
+  if(result.error||!result.data){toast('تعذّر تحميل المحتوى أو لا تملك صلاحية تعديله.');return}
+  const x=result.data;
+  $('modalTitle').textContent=isShop?'تعديل تفاصيل محلي':'تعديل الإعلان';
+  f.dataset.mode=isShop?'edit-business':'edit-listing';f.dataset.editId=String(id);
+  f.innerHTML=isShop?`
+   <label>اسم المحل أو الخدمة<input class="field" name="name" required minlength="2" maxlength="160" value="${esc(x.name||'')}"></label>
+   <label>التصنيف<select class="field" name="category_id" required>${categoryOptions()}</select></label>
+   <label>وصف المحل أو الخدمة<textarea class="field" name="description" rows="3" maxlength="5000">${esc(x.description||'')}</textarea></label>
+   <label>المنطقة أو البلدة<input class="field" name="area" required maxlength="120" value="${esc(x.area||'منبج')}"></label>
+   <label>اسم القرية (اختياري)<input class="field" name="village" maxlength="120" value="${esc(x.village||'')}"></label>
+   <label>العنوان التفصيلي (اختياري)<input class="field" name="address" maxlength="300" value="${esc(x.address||'')}"></label>
+   <label>رقم الهاتف (اختياري)<input class="field" name="phone" inputmode="tel" value="${esc(x.phone||'')}"></label>
+   <label>رقم واتساب مع رمز الدولة (اختياري)<input class="field" name="whatsapp" inputmode="tel" value="${esc(x.whatsapp||'')}"></label>
+   <label>رابط الموقع على الخريطة (اختياري)<input class="field" name="map_url" type="url" value="${esc(x.map_url||'')}" placeholder="https://maps.google.com/..."></label>
+   <button class="btn primary" type="submit">حفظ تفاصيل المحل</button>`:`
+   <label>عنوان الإعلان<input class="field" name="title" required minlength="2" maxlength="180" value="${esc(x.title||'')}"></label>
+   <label>التصنيف<input class="field" name="category" required maxlength="120" value="${esc(x.category||'أخرى')}"></label>
+   <label>الوصف<textarea class="field" name="description" rows="4" maxlength="5000">${esc(x.description||'')}</textarea></label>
+   <label>السعر<input class="field" name="price" type="number" min="0" step="any" value="${esc(x.price==null?'':x.price)}"></label>
+   <label>العملة<select class="field" name="currency"><option value="SYP">ليرة سورية (SYP)</option><option value="TRY">ليرة تركية (TRY)</option><option value="USD">دولار (USD)</option></select></label>
+   <label>المنطقة أو البلدة<input class="field" name="area" required maxlength="120" value="${esc(x.area||'منبج')}"></label>
+   <label>اسم القرية (اختياري)<input class="field" name="village" maxlength="120" value="${esc(x.village||'')}"></label>
+   <label>حالة المنتج<input class="field" name="item_condition" maxlength="80" value="${esc(x.item_condition||'مستعمل')}"></label>
+   <label>رقم واتساب مع رمز الدولة (اختياري)<input class="field" name="contact_phone" inputmode="tel" value="${esc(x.contact_phone||'')}"></label>
+   <button class="btn primary" type="submit">حفظ تعديلات الإعلان</button>`;
+  if(isShop){const cat=f.elements.category_id;if(cat)cat.value=x.category_id||''}
+  else{const currency=f.elements.currency;if(currency)currency.value=x.currency||'SYP'}
+  $('modalbg').style.display='flex';document.body.style.overflow='hidden';
+ }catch(e){console.error('edit item:',e);toast('تعذّر فتح نموذج التعديل. حاول مرة أخرى.')}
 }
 async function markMyItemSold(id){
  if(!currentUser||!db||!confirm('تأكيد أن الإعلان تم بيعه؟'))return;
