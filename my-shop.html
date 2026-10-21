@@ -23,7 +23,7 @@ let db=null,user=null,shops=[],ads=[],categories=[],editMode='',editId='';
 function say(t,bad=false){$('message').textContent=t;$('message').style.background=bad?'#fff0f0':'#eef6f0';$('message').style.color=bad?'#a32626':'#176b50'}
 function showEditor(title,mode,id,html){editMode=mode;editId=id||'';$('editorTitle').textContent=title;$('editorFields').innerHTML=html;$('editor').classList.remove('hidden');$('editor').scrollIntoView({behavior:'smooth',block:'start'})}
 function hideEditor(){$('editor').classList.add('hidden');$('editorForm').reset();editMode='';editId=''}
-function shopForm(x={}){return '<div class="formgrid"><label>اسم المحل<input name="name" required minlength="2" maxlength="160" value="'+esc(x.name||'')+'"></label><label>المنطقة<input name="area" required maxlength="120" value="'+esc(x.area||'منبج')+'"></label><label>القرية<input name="village" maxlength="120" value="'+esc(x.village||'')+'"></label><label>العنوان<input name="address" maxlength="300" value="'+esc(x.address||'')+'"></label><label>الهاتف<input name="phone" inputmode="tel" value="'+esc(x.phone||'')+'"></label><label>واتساب<input name="whatsapp" inputmode="tel" value="'+esc(x.whatsapp||'')+'"></label><label>رابط الخريطة<input name="map_url" type="url" value="'+esc(x.map_url||'')+'"></label><label>موقع إلكتروني<input name="website_url" type="url" value="'+esc(x.website_url||'')+'" placeholder="https://..."></label></div><label>الوصف<textarea name="description" maxlength="5000">'+esc(x.description||'')+'</textarea></label>'}
+function shopForm(x={}){const imgs=Array.isArray(x.image_urls)?x.image_urls:[];const preview=imgs[0]?'<img src="'+esc(imgs[0])+'" alt="صورة المحل الحالية" style="display:block;width:100%;max-height:190px;object-fit:contain;border-radius:10px">':'<small class="small">لا توجد صورة حالية للمحل.</small>';return '<div class="formgrid"><label>اسم المحل<input name="name" required minlength="2" maxlength="160" value="'+esc(x.name||'')+'"></label><label>المنطقة<input name="area" required maxlength="120" value="'+esc(x.area||'منبج')+'"></label><label>القرية<input name="village" maxlength="120" value="'+esc(x.village||'')+'"></label><label>العنوان<input name="address" maxlength="300" value="'+esc(x.address||'')+'"></label><label>الهاتف<input name="phone" inputmode="tel" value="'+esc(x.phone||'')+'"></label><label>واتساب<input name="whatsapp" inputmode="tel" value="'+esc(x.whatsapp||'')+'"></label><label>رابط الخريطة<input name="map_url" type="url" value="'+esc(x.map_url||'')+'"></label></div><label>الوصف<textarea name="description" maxlength="5000">'+esc(x.description||'')+'</textarea></label><section class="notice" style="margin-top:12px"><label>صورة المحل (اختياري)<input name="shop_photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label><small class="small">اختر صورة جديدة لاستبدال الصورة الحالية. الحد الأقصى 5 ميغابايت.</small><div id="shopPhotoPreview" style="margin-top:10px">'+preview+'</div></section>'}
 function adCategoryOptions(selected=''){
  const fallback=['بقالة وسوبرماركت','مطاعم ومقاهي','موبايلات وإلكترونيات','أطباء وعيادات','ألبسة وأحذية','سيارات ونقل','تعليم ودورات','صيدليات ومخابر','عقارات ومقاولات','ورش ومهن','زراعة ومواشي','شركات ومكاتب','خدمات منزلية','أخرى'];
  const list=categories.length?categories.map(c=>String(c.name||'')).filter(Boolean):fallback;
@@ -32,7 +32,7 @@ function adCategoryOptions(selected=''){
  return '<option value="" disabled>اختر قسماً من أقسام دليل منبج</option>'+list.map(name=>'<option value="'+esc(name)+'" '+(name===current?'selected':'')+'>'+esc(name)+'</option>').join('');
 }
 function adForm(x={}){return '<label>عنوان الإعلان<input name="title" required minlength="2" maxlength="180" value="'+esc(x.title||'')+'"></label><div class="formgrid"><label>القسم<select name="category" required style="appearance:auto;-webkit-appearance:menulist;background:#fff;cursor:pointer">'+adCategoryOptions(x.category||'')+'</select><small class="small">اختر قسماً من أقسام الموقع.</small></label><label>السعر<input name="price" type="number" min="0" step="any" value="'+esc(x.price==null?'':x.price)+'"></label><label>العملة<select name="currency"><option value="SYP">ليرة سورية</option><option value="USD">دولار أمريكي</option></select></label><label>المنطقة<input name="area" required maxlength="120" value="'+esc(x.area||'منبج')+'"></label><label>القرية<input name="village" maxlength="120" value="'+esc(x.village||'')+'"></label><label>حالة المنتج<select name="item_condition"><option value="new">جديد</option><option value="used">مستعمل</option><option value="service">خدمة</option></select></label><label>واتساب للتواصل<input name="contact_phone" inputmode="tel" value="'+esc(x.contact_phone||'')+'"></label></div><label>الوصف<textarea name="description" maxlength="5000">'+esc(x.description||'')+'</textarea></label>'}
-function openShopEdit(id){const x=shops.find(s=>String(s.id)===String(id));if(!x)return;showEditor('✏️ تعديل بيانات المحل','shop',id,shopForm(x))}
+function openShopEdit(id){const x=shops.find(s=>String(s.id)===String(id));if(!x)return;showEditor('✏️ تعديل بيانات المحل','shop',id,shopForm(x));const input=$('editorForm').elements.shop_photo;if(input)input.addEventListener('change',()=>{const preview=$('shopPhotoPreview'),file=input.files&&input.files[0];if(!preview)return;if(!file){preview.innerHTML=Array.isArray(x.image_urls)&&x.image_urls[0]?'<img src="'+esc(x.image_urls[0])+'" alt="صورة المحل الحالية" style="display:block;width:100%;max-height:190px;object-fit:contain;border-radius:10px">':'<small class="small">لا توجد صورة حالية للمحل.</small>';return}if(file.size>5*1024*1024){input.value='';say('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.',true);return}if(!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)){input.value='';say('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.',true);return}const url=URL.createObjectURL(file);preview.innerHTML='<img src="'+url+'" alt="معاينة الصورة الجديدة" style="display:block;width:100%;max-height:190px;object-fit:contain;border-radius:10px">';});}
 function openAdEdit(id){const x=ads.find(a=>String(a.id)===String(id));if(!x)return;showEditor('✏️ تعديل الإعلان','ad',id,adForm(x));const c=$('editorForm').elements.currency;if(c)c.value=x.currency||'SYP'}
 async function loadAll(){
  if(!user){say('سجّل الدخول من الواجهة الرئيسية أولاً، ثم افتح إدارة محلي.',true);$('shops').innerHTML='<a class="btn primary" href="index.html">تسجيل الدخول</a>';return}
@@ -40,7 +40,7 @@ async function loadAll(){
  try{
   const [cr,sr,ar]=await Promise.all([
    db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),
-   db.from('businesses').select('id,owner_id,name,category_id,description,area,village,address,phone,whatsapp,map_url,website_url,status,created_at').eq('owner_id',user.id).order('created_at',{ascending:false}),
+   db.from('businesses').select('id,owner_id,name,category_id,description,area,village,address,phone,whatsapp,map_url,image_urls,status,created_at').eq('owner_id',user.id).order('created_at',{ascending:false}),
    db.from('listings').select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,status,created_at').eq('user_id',user.id).order('created_at',{ascending:false})
   ]);
   if(sr.error)throw sr.error;if(ar.error)throw ar.error;categories=cr.error?[]:(cr.data||[]);shops=sr.data||[];ads=ar.data||[];
@@ -56,7 +56,19 @@ $('editorForm').addEventListener('submit',async e=>{
  try{
   if(editMode==='shop'){
    const x=shops.find(z=>String(z.id)===String(editId));if(!x)throw new Error('لم يتم العثور على المحل.');
-   const payload={name:d.name.trim(),description:d.description.trim()||null,area:d.area.trim(),village:d.village.trim()||null,address:d.address.trim()||null,phone:d.phone.trim()||null,whatsapp:d.whatsapp.trim()||null,map_url:d.map_url.trim()||null,website_url:d.website_url.trim()||null};
+   const payload={name:d.name.trim(),description:d.description.trim()||null,area:d.area.trim(),village:d.village.trim()||null,address:d.address.trim()||null,phone:d.phone.trim()||null,whatsapp:d.whatsapp.trim()||null,map_url:d.map_url.trim()||null};
+   const photoInput=form.elements.shop_photo,photo=photoInput&&photoInput.files&&photoInput.files[0];
+   if(photo){
+    if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');
+    if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');
+    const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const path=user.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;
+    const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type});
+    if(uploaded.error)throw uploaded.error;
+    const publicUrl=db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl;
+    const oldImages=Array.isArray(x.image_urls)?x.image_urls:[];
+    payload.image_urls=[publicUrl,...oldImages.slice(1)];
+   }
    const r=await db.from('businesses').update(payload).eq('id',editId).eq('owner_id',user.id).select('id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('لم تحفظ التعديلات. تحقق من صلاحيات صاحب المحل.');
   }else if(editMode==='ad'){
    const price=String(d.price||'').trim();if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0))throw new Error('السعر يجب أن يكون رقماً غير سالب.');
