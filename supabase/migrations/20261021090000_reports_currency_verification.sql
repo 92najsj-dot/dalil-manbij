@@ -65,3 +65,6 @@ create policy "Admins manage verification requests" on public.business_verificat
   with check ((auth.jwt()->'app_metadata'->>'role') = 'admin');
 grant select, insert on public.business_verification_requests to authenticated;
 grant update, delete on public.business_verification_requests to authenticated;
+
+-- Verified businesses display a badge and no longer see the verification request action.
+alter table public.businesses add column if not exists is_verified boolean not null default false;
