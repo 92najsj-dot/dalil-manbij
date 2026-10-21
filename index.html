@@ -385,24 +385,40 @@ async function loadFavorites(){
   }).join('');
  }catch(e){console.error(e);box.innerHTML=empty('تعذّر تحميل المحفوظات. تحقق من اتصال قاعدة البيانات وصلاحياتها.')}
 }
+function withLoadTimeout(promise, label, ms=12000){
+ return Promise.race([Promise.resolve(promise),new Promise(resolve=>setTimeout(()=>resolve({data:null,error:new Error(label+' timed out')}),ms))]);
+}
 async function loadData(){
  try{
-  if(!window.supabase)await window.__dalilSupabaseLoader();
+  if(!window.supabase)await Promise.race([window.__dalilSupabaseLoader(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة تحميل مكتبة الاتصال')),12000))]);
   if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال. تحقق من الإنترنت ثم أعد المحاولة.');
   if(!db){db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}
-  const [{data:{session},error:sessionErr},{data:cats,error:catsErr},{data:biz,error:bizErr},{data:ads,error:adsErr},{data:reqs,error:reqErr}]=await Promise.all([
-   db.auth.getSession(),db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,is_verified,image_urls,created_at').eq('status','active').order('is_featured',{ascending:false}).order('name'),db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('status',['active','sold']).order('created_at',{ascending:false}),db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at,contact_phone').eq('status','active').order('created_at',{ascending:false})
+  const [sessionResult,catsResult,bizResult,adsResult,reqResult]=await Promise.all([
+   withLoadTimeout(db.auth.getSession(),'session'),
+   withLoadTimeout(db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),'categories'),
+   withLoadTimeout(db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,is_verified,image_urls,created_at').eq('status','active').order('is_featured',{ascending:false}).order('name'),'businesses'),
+   withLoadTimeout(db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('status',['active','sold']).order('created_at',{ascending:false}),'listings'),
+   withLoadTimeout(db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at,contact_phone').eq('status','active').order('created_at',{ascending:false}),'requests')
   ]);
-  if(sessionErr)throw sessionErr;currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser)setTimeout(()=>enforceBlockedUser(currentUser),0);
+  const sessionErr=sessionResult.error||null, cats=catsResult.data, catsErr=catsResult.error||null, biz=bizResult.data, bizErr=bizResult.error||null, ads=adsResult.data, adsErr=adsResult.error||null, reqs=reqResult.data, reqErr=reqResult.error||null;
+  currentUser=(sessionResult.data&&sessionResult.data.session?sessionResult.data.session.user:undefined)||null;updateAccountUI();if(currentUser)setTimeout(()=>enforceBlockedUser(currentUser),0);
   if(catsErr)console.warn('categories:',catsErr.message);categories=cats||[];
   if(bizErr)console.warn('businesses:',bizErr.message);businesses=biz||[];
   if(adsErr)console.warn('listings:',adsErr.message);listings=ads||[];
   if(reqErr)console.warn('requests:',reqErr.message);requests=reqs||[];
-  await loadPublicProfiles();renderCategories();renderAll();renderRequests();populatePromotionTargets();updateAccountUI();
+  renderCategories();renderAll();renderRequests();populatePromotionTargets();updateAccountUI();
+  // Public profile names are optional; they must never block the directory from rendering.
+  loadPublicProfiles().then(()=>renderAll()).catch(e=>console.warn('public profiles:',e&&e.message||e));
   await loadPublicPromotions();
   const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
-  if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
+  if(issues.length){
+   if(bizErr)$('businessGrid').innerHTML=empty('تعذّر تحميل دليل المحلات حالياً. تحقق من الاتصال ثم أعد المحاولة.');
+   if(adsErr)$('listingGrid').innerHTML=empty('تعذّر تحميل إعلانات البيع والشراء حالياً. تحقق من الاتصال ثم أعد المحاولة.');
+   if(reqErr)$('requestList').innerHTML=empty('تعذّر تحميل الطلبات حالياً. تحقق من الاتصال ثم أعد المحاولة.');
+   if(catsErr)$('categories').innerHTML='<button class="cat active" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button>';
+   toast('بعض الأقسام لم تُحمّل. حدّث الصفحة بعد التحقق من اتصال الإنترنت.');
+  }
   if(!window.__dalilAuthStateListenerRegistered){
    window.__dalilAuthStateListenerRegistered=true;
    db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser&&event!=='SIGNED_OUT')setTimeout(()=>enforceBlockedUser(currentUser),0);if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
