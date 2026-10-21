@@ -469,10 +469,10 @@ async function loadMyAds(){
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
    const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved'].includes(String(r.status||'').toLowerCase());
-   const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">📣 ترويج الإعلان</button>':'';
-   const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">✏️ تعديل</button>':'';
-   const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?'<button class="btn outline" type="button" onclick="markMyItemSold(\\''+esc(r.id)+'\\')">✓ تم البيع</button>':'';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\\''+r._table+'\\',\\''+esc(r.id)+'\\')">حذف إعلاني</button></div></article>';
+   const promoteButton=canPromote?`<button class="btn outline" type="button" onclick="openPromoContactForItem('${r._table}','${esc(r.id)}')">📣 ترويج الإعلان</button>`:'';
+   const editButton=(r._table==='listings'||r._table==='businesses')?`<button class="btn outline" type="button" onclick="editMyItem('${r._table}','${esc(r.id)}')">✏️ تعديل</button>`:'';
+   const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?`<button class="btn outline" type="button" onclick="markMyItemSold('${esc(r.id)}')">✓ تم البيع</button>`:'';
+   return `<article class="adminitem"><div style="min-width:180px;flex:1"><h3>${esc(r._title||'بدون عنوان')}</h3><div class="adminmeta">${esc(r._kind)} · ${esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')}</div><div style="margin-top:8px">${statusTag(r.status)}</div></div><div class="adminactions">${editButton}${soldButton}${promoteButton}<button class="btn reject" type="button" onclick="deleteMyItem('${r._table}','${esc(r.id)}')">حذف إعلاني</button></div></article>`;
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
 }
@@ -574,7 +574,7 @@ async function loadAdminPending(){
    const reviewActions=adminShowAll
     ?(row.status==='pending'?'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>':'')
     :'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>';
-   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف المحتوى: '+adminEscape(row.id||'غير متوفر')+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+ownerAction+'<button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
+   return `<article class="adminitem"><div style="min-width:180px;flex:1"><h3>${esc(r._title||'بدون عنوان')}</h3><div class="adminmeta">${esc(r._kind)} · ${esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')}</div><div style="margin-top:8px">${statusTag(r.status)}</div></div><div class="adminactions">${editButton}${soldButton}${promoteButton}<button class="btn reject" type="button" onclick="deleteMyItem('${r._table}','${esc(r.id)}')">حذف إعلاني</button></div></article>`;
   }).join('');
  }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الإدارة. تأكد من تطبيق ترحيل قاعدة البيانات الجديد ثم أعد المحاولة.</div>';}
 }
@@ -644,7 +644,7 @@ function renderBlockedUsers(){
   const active=!r.expires_at||new Date(r.expires_at)>new Date();
   const until=r.expires_at?new Date(r.expires_at).toLocaleString('ar-SY'):'نهائي — حتى رفع الحظر';
   const remaining=r.expires_at&&active?Math.max(1,Math.ceil((new Date(r.expires_at)-Date.now())/86400000))+' يوم متبقٍ':'';
-  return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+ (active?'🚫 حظر نشر فعّال':'⌛ انتهت مدة الحظر')+'</h3><div class="adminmeta">معرّف المستخدم: '+adminEscape(r.user_id)+'<br>السبب: '+adminEscape(r.reason||'غير محدد')+'<br>تاريخ الحظر: '+adminEscape(r.banned_at?new Date(r.banned_at).toLocaleString('ar-SY'):'')+'<br>ينتهي: '+adminEscape(until)+(remaining?'<br>'+remaining:'')+'</div></div><div class="adminactions">'+(active?'<button type="button" class="btn outline" onclick="unblockUser(\''+adminEscape(r.user_id)+'\')">🔓 رفع الحظر</button>':'<button type="button" class="btn outline" onclick="unblockUser(\''+adminEscape(r.user_id)+'\')">إزالة الحظر المنتهي</button>')+'</div></article>';
+   return `<article class="adminitem"><div style="min-width:180px;flex:1"><h3>${esc(r._title||'بدون عنوان')}</h3><div class="adminmeta">${esc(r._kind)} · ${esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')}</div><div style="margin-top:8px">${statusTag(r.status)}</div></div><div class="adminactions">${editButton}${soldButton}${promoteButton}<button class="btn reject" type="button" onclick="deleteMyItem('${r._table}','${esc(r.id)}')">حذف إعلاني</button></div></article>`;
  }).join('');
 }
 async function blockUser(userId,title){
