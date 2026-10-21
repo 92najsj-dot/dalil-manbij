@@ -342,6 +342,16 @@ async function loadData(){
   setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
   if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
   db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser&&event!=='SIGNED_OUT')setTimeout(()=>enforceBlockedUser(currentUser),0);if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
+  const editListingId=new URLSearchParams(location.search).get('editListing');
+  if(editListingId){
+   if(currentUser){
+    const nextUrl=new URL(location.href);nextUrl.searchParams.delete('editListing');history.replaceState(null,'',nextUrl.pathname+nextUrl.search+nextUrl.hash);
+    setTimeout(()=>editMyItem('listings',editListingId),250);
+   }else{
+    const nextUrl=new URL(location.href);nextUrl.searchParams.delete('editListing');nextUrl.searchParams.set('afterLoginEditListing',editListingId);history.replaceState(null,'',nextUrl.pathname+nextUrl.search+nextUrl.hash);
+    setTimeout(()=>openModal('auth'),150);
+   }
+  }
   if(new URLSearchParams(location.search).get('publish')==='listing'){
    if(currentUser){
     const nextUrl=new URL(location.href);nextUrl.searchParams.delete('publish');history.replaceState(null,'',nextUrl.pathname+nextUrl.search+nextUrl.hash);
