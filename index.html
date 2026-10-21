@@ -129,6 +129,16 @@
 
 <section id="favoritesSection" style="display:none"><div class="sectionhead"><div><h2>⭐ المحفوظات</h2><div class="muted">إعلانات احتفظت بها لتعود إليها لاحقاً.</div></div><button class="btn outline" onclick="loadFavorites()">↻ تحديث</button></div><div id="favoritesGrid" class="profile-ad-grid"><div class="empty">سجّل الدخول لعرض المحفوظات.</div></div></section>
 <section id="adminPanel" aria-live="polite">
+<section id="verificationAdmin" class="adminpromo" style="margin:0 0 22px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff">
+ <div class="adminhead"><div><h2 style="margin:0">✓ إدارة توثيق المحلات</h2><div class="muted">راجع طلبات التوثيق، وثّق المحلات التي تحققت منها، أو أزل توثيق محل سابقاً.</div></div><button class="btn outline" type="button" onclick="loadVerificationAdmin()">↻ تحديث</button></div>
+ <div class="admintabs" style="margin-top:12px">
+  <button type="button" class="admintab active" data-verification-tab="requests" onclick="selectVerificationTab('requests')">📩 طلبات التوثيق</button>
+  <button type="button" class="admintab" data-verification-tab="verified" onclick="selectVerificationTab('verified')">✓ المحلات الموثّقة</button>
+  <button type="button" class="admintab" data-verification-tab="unverified" onclick="selectVerificationTab('unverified')">🏪 غير الموثّقة</button>
+ </div>
+ <div id="verificationAdminHint" class="muted" style="margin:10px 0">طلبات التوثيق الجديدة.</div>
+ <div id="verificationAdminItems"><div class="empty">تظهر هنا طلبات التوثيق عند تسجيل الدخول كإدارة.</div></div>
+</section>
  <div class="adminhead"><div><h2 style="margin:0">🛡️ لوحة الإدارة <span class="admincount" id="adminPendingCount">0 بانتظار المراجعة</span></h2><div class="muted" style="margin-top:6px">راجع المحتوى قبل نشره للعموم.</div></div><button class="btn outline" type="button" onclick="loadAdminPending()">↻ تحديث</button></div>
  <div class="admintabs">
   <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
@@ -287,14 +297,23 @@ async function reportListing(id){
   toast('وصل بلاغك للإدارة، شكراً لمساعدتنا في الحفاظ على دليل منبج.');
  }catch(e){console.error('listing report:',e);toast('تعذّر إرسال البلاغ. تحقق من الاتصال وصلاحيات البلاغات ثم حاول مجدداً.')}
 }
-function openVerificationContact(businessId){
+async function openVerificationContact(businessId){
  const shop=businesses.find(x=>String(x.id)===String(businessId));
  if(!shop||!currentUser||String(currentUser.id)!==String(shop.owner_id)){toast('هذا الخيار متاح لصاحب المحل فقط.');return}
  if(shop.is_verified){toast('هذا المحل موثّق بالفعل ✓');return}
- const modal=$('promoContactModal');if(!modal){toast('تعذّر فتح نافذة التواصل.');return}
- const title=$('promoContactTitle');if(title)title.textContent='✓ طلب توثيق المحل مجاناً';
+ if(!db){toast('تعذّر الاتصال بقاعدة البيانات.');return}
+ try{
+  const existing=await db.from('business_verification_requests').select('id,status').eq('business_id',shop.id).eq('status','pending').maybeSingle();
+  if(existing.error)throw existing.error;
+  if(!existing.data){
+   const created=await db.from('business_verification_requests').insert({business_id:shop.id,owner_id:currentUser.id,status:'pending',owner_note:'طلب توثيق مرسل من صفحة دليل منبج'}).select('id').single();
+   if(created.error&&created.error.code!=='23505')throw created.error;
+  }
+ }catch(e){console.error('verification request:',e);toast('تعذّر تسجيل طلب التوثيق. حدّث الصفحة وحاول مجدداً.');return}
+ const modal=$('promoContactModal');if(!modal){toast('تم تسجيل طلب التوثيق، لكن تعذّر فتح نافذة التواصل.');return}
+ const title=$('promoContactTitle');if(title)title.textContent='✓ تم تسجيل طلب التوثيق';
  const body=modal.querySelector('.promo-contact-text');
- if(body)body.innerHTML='<p>توثيق المحل على دليل منبج مجاني. لإرسال طلب التوثيق، تواصل معنا عبر أحد حساباتنا الرسمية وأرسل اسم المحل ورابط صفحته وأي معلومات تساعدنا على التحقق منه.</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">📸 تواصل معنا على إنستغرام @dalil_manbij ↗</a><br><a class="promo-contact-link" style="background:#1877f2" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">📘 تواصل معنا على فيسبوك ↗</a>';
+ if(body)body.innerHTML='<p>تم تسجيل طلبك في لوحة الإدارة. التوثيق مجاني، وسنراجع المحل. لتسريع المراجعة يمكنك إرسال اسم المحل ورابط صفحته عبر حساباتنا الرسمية:</p><a class="promo-contact-link" href="https://www.instagram.com/dalil_manbij/" target="_blank" rel="noopener noreferrer">📸 تواصل معنا على إنستغرام @dalil_manbij ↗</a><br><a class="promo-contact-link" style="background:#1877f2" href="https://www.facebook.com/share/16GT5yo5yVM/" target="_blank" rel="noopener noreferrer">📘 تواصل معنا على فيسبوك ↗</a>';
  modal.style.display='flex';document.body.style.overflow='hidden';
 }
 function openFavorites(){if(!currentUser){openModal('auth');return}const section=$('favoritesSection');if(section){section.style.display='block';section.scrollIntoView({behavior:'smooth',block:'start'})}loadFavorites()}
@@ -617,6 +636,76 @@ function adminEscape(value){
 function adminDescription(row,table){
  if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null,row.rejection_reason?'⚠ '+row.rejection_reason:null].filter(Boolean).join(' · ');
  return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null,row.rejection_reason?'⚠ '+row.rejection_reason:null].filter(Boolean).join(' · ');
+}
+let verificationAdminTab='requests';
+function selectVerificationTab(tab){
+ if(!isAdminUser()){toast('هذا القسم مخصص للإدارة فقط.');return}
+ if(!['requests','verified','unverified'].includes(tab))return;
+ verificationAdminTab=tab;
+ document.querySelectorAll('[data-verification-tab]').forEach(b=>b.classList.toggle('active',b.dataset.verificationTab===tab));
+ const hint=$('verificationAdminHint');
+ if(hint)hint.textContent=tab==='requests'?'طلبات التوثيق التي أرسلها أصحاب المحلات.':tab==='verified'?'المحلات التي تحمل علامة التوثيق حالياً.':'المحلات التي لم توثّق بعد.';
+ loadVerificationAdmin();
+}
+async function loadVerificationAdmin(){
+ const box=$('verificationAdminItems');if(!box)return;
+ if(!isAdminUser()||!db){box.innerHTML='<div class="empty">هذا القسم متاح لحساب الإدارة فقط.</div>';return}
+ box.innerHTML='<div class="empty">جارٍ تحميل بيانات التوثيق…</div>';
+ try{
+  let rows=[];
+  if(verificationAdminTab==='requests'){
+   const r=await db.from('business_verification_requests').select('id,business_id,owner_id,status,owner_note,admin_note,created_at').eq('status','pending').order('created_at',{ascending:true});
+   if(r.error)throw r.error;
+   const reqs=r.data||[];
+   const ids=[...new Set(reqs.map(x=>x.business_id))];
+   const br=ids.length?await db.from('businesses').select('id,name,owner_id,area,village,address,is_verified,status,phone,whatsapp,website_url,created_at').in('id',ids):{data:[],error:null};
+   if(br.error)throw br.error;
+   const map=new Map((br.data||[]).map(x=>[String(x.id),x]));
+   rows=reqs.map(x=>({...x,business:map.get(String(x.business_id))})).filter(x=>x.business);
+  }else{
+   const r=await db.from('businesses').select('id,name,owner_id,area,village,address,is_verified,status,phone,whatsapp,website_url,verified_at,verified_by,created_at').eq('is_verified',verificationAdminTab==='verified').order('name');
+   if(r.error)throw r.error;rows=(r.data||[]).map(x=>({business:x}));
+  }
+  if(!rows.length){box.innerHTML='<div class="empty">'+(verificationAdminTab==='requests'?'لا توجد طلبات توثيق معلّقة حالياً.':verificationAdminTab==='verified'?'لا توجد محلات موثّقة حالياً.':'لا توجد محلات غير موثّقة حالياً.')+'</div>';return}
+  box.innerHTML=rows.map(row=>{
+   const b=row.business||{},id=String(b.id||row.business_id||''),name=adminEscape(b.name||'محل بدون اسم'),place=adminEscape([b.area,b.village,b.address].filter(Boolean).join(' · ')||'منبج وريفها');
+   const date=row.created_at?new Date(row.created_at).toLocaleString('ar-SY'):'';
+   let actions='';
+   if(verificationAdminTab==='requests')actions='<button class="btn success" type="button" onclick="decideVerificationRequest(\''+adminEscape(row.id)+'\',\''+id+'\',true)">✓ توثيق وقبول الطلب</button><button class="btn reject" type="button" onclick="decideVerificationRequest(\''+adminEscape(row.id)+'\',\''+id+'\',false)">رفض الطلب</button>';
+   else if(verificationAdminTab==='verified')actions='<button class="btn reject" type="button" onclick="setBusinessVerification(\''+id+'\',false)">إزالة التوثيق</button>';
+   else actions='<button class="btn success" type="button" onclick="setBusinessVerification(\''+id+'\',true)">✓ توثيق المحل</button>';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+name+(b.is_verified?' · ✓ موثّق':'')+'</h3><div class="adminmeta">📍 '+place+'<br>الحالة: '+adminEscape(b.status||'غير محددة')+'<br>معرّف المحل: '+adminEscape(id)+'<br>معرّف المالك: '+adminEscape(b.owner_id||row.owner_id||'غير متوفر')+(date?'<br>تاريخ الطلب: '+adminEscape(date):'')+(row.owner_note?'<br>ملاحظة صاحب المحل: '+adminEscape(row.owner_note):'')+'</div></div><div class="adminactions">'+actions+'</div></article>';
+  }).join('');
+ }catch(e){console.error('verification admin:',e);box.innerHTML='<div class="empty">تعذّر تحميل إدارة التوثيق: '+adminEscape(e.message||'خطأ غير معروف')+'</div>'}
+}
+async function setBusinessVerification(id,verified){
+ if(!isAdminUser()||!db)return;
+ const message=verified?'تأكيد توثيق هذا المحل بعد التحقق من بياناته؟':'تأكيد إزالة التوثيق عن هذا المحل؟';
+ if(!confirm(message))return;
+ try{
+  const patch=verified?{is_verified:true,verified_at:new Date().toISOString(),verified_by:currentUser.id}:{is_verified:false,verified_at:null,verified_by:null};
+  const r=await db.from('businesses').update(patch).eq('id',id).select('id,name,is_verified');
+  if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('لم يتم التغيير؛ تحقق من صلاحيات الإدارة.');
+  await logAdminAction(verified?'verify_business':'unverify_business','businesses',id,{is_verified:verified});
+  toast(verified?'تم توثيق المحل بنجاح.':'تمت إزالة التوثيق.');
+  await loadVerificationAdmin();await loadData();
+ }catch(e){console.error(e);toast('تعذّر تغيير التوثيق: '+(e.message||'خطأ غير معروف'))}
+}
+async function decideVerificationRequest(requestId,businessId,approve){
+ if(!isAdminUser()||!db)return;
+ if(!confirm(approve?'قبول طلب التوثيق وتوثيق المحل؟':'رفض طلب التوثيق؟'))return;
+ try{
+  if(approve){
+   const v=await db.from('businesses').update({is_verified:true,verified_at:new Date().toISOString(),verified_by:currentUser.id}).eq('id',businessId).select('id');
+   if(v.error)throw v.error;if(!v.data||!v.data.length)throw new Error('تعذّر توثيق المحل.');
+  }
+  const note=approve?'تم التحقق وقبول الطلب.':(prompt('سبب رفض طلب التوثيق (اختياري):','')||'');
+  const r=await db.from('business_verification_requests').update({status:approve?'approved':'rejected',admin_note:note,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',requestId).eq('status','pending').select('id');
+  if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('تم تحديث الطلب من قبل أو لم يعد معلّقاً.');
+  await logAdminAction(approve?'approve_verification_request':'reject_verification_request','business_verification_requests',requestId,{business_id:businessId,note});
+  toast(approve?'تم قبول الطلب وتوثيق المحل.':'تم رفض طلب التوثيق.');
+  await loadVerificationAdmin();await loadData();
+ }catch(e){console.error(e);toast('تعذّرت مراجعة طلب التوثيق: '+(e.message||'خطأ غير معروف'))}
 }
 async function loadAdminPending(){
  if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
