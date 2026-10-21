@@ -1,6 +1,8 @@
 -- Dalil Manbij: database foundations for requested feature rollout.
 -- Review/apply in Supabase SQL Editor only after confirming the live schema.
--- Village input already exists in the listing form; add currency safely.
+-- Add village and currency columns for listing form support.
+alter table public.listings add column if not exists village text;
+
 alter table public.listings
   add column if not exists currency_code text not null default 'SYP'
   check (currency_code in ('SYP','USD'));
