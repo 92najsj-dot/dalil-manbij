@@ -22,7 +22,8 @@
 <script>
 const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
 const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
-const $=id=>document.getElementById(id);\nlet currentUser=null, shopOwnerId=null;
+const $=id=>document.getElementById(id);
+let currentUser=null, shopOwnerId=null;
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const digits=v=>String(v||'').replace(/[^0-9]/g,'').replace(/^00/,'');
 function images(v){if(Array.isArray(v))return v;if(typeof v==='string'){try{const x=JSON.parse(v);return Array.isArray(x)?x:[]}catch(_){return v.startsWith('http')?[v]:[]}}return []}
@@ -37,7 +38,11 @@ async function run(){
   if(r.error)throw r.error;
   const x=r.data;
   if(!x){$('status').textContent='المحل غير موجود أو لم يعد منشوراً.';$('listings').innerHTML='';return}
-  document.title=x.name+' | دليل منبج';\n  shopOwnerId=x.owner_id;\n  const sessionResult=await db.auth.getSession();\n  currentUser=sessionResult.data&&sessionResult.data.session?sessionResult.data.session.user:null;\n  const isOwner=!!(currentUser&&String(currentUser.id)===String(x.owner_id));
+  document.title=x.name+' | دليل منبج';
+  shopOwnerId=x.owner_id;
+  const sessionResult=await db.auth.getSession();
+  currentUser=sessionResult.data&&sessionResult.data.session?sessionResult.data.session.user:null;
+  const isOwner=!!(currentUser&&String(currentUser.id)===String(x.owner_id));
   const contact=x.whatsapp||x.phone, wa=digits(contact);
   $('status').hidden=true;$('shop').hidden=false;
   $('shop').innerHTML=photo(x.image_urls)+'<div class="body"><div class="titleline"><h1>'+esc(x.name)+'</h1>'+(x.is_verified?'<span class="verified">✓ محل موثّق</span>':'')+'</div><div class="meta">📍 '+esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')+'</div>'+(x.description?'<div class="desc">'+esc(x.description)+'</div>':'')+'<div class="actions">'+(wa?'<a class="btn primary" href="https://wa.me/'+wa+'" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>':'')+(x.phone?'<a class="btn" href="tel:'+esc(x.phone)+'">اتصال</a>':'')+(x.map_url?'<a class="btn" href="'+esc(x.map_url)+'" target="_blank" rel="noopener noreferrer">عرض الموقع على الخريطة</a>':'')+(x.website_url?'<a class="btn" href="'+esc(x.website_url)+'" target="_blank" rel="noopener noreferrer">موقع المحل</a>':'')+'<button class="btn primary" type="button" onclick="window.location.href=\'index.html?publish=listing#listings\'">➕ نشر إعلان من داخل المحل</button><button class="btn" type="button" onclick="shareShop()">مشاركة صفحة المحل ↗</button></div></div>';
