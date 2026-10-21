@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#176b50">
+<title>صفحة المحل | دليل منبج</title>
+<meta name="description" content="صفحة المحل ومعلومات التواصل والإعلانات على دليل منبج.">
+<style>
+:root{--green:#176b50;--line:#dfe9e3;--muted:#617368;--bg:#f5f8f6}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#20372b;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}a{color:inherit}.top{background:#fff;border-bottom:1px solid var(--line);padding:14px 16px}.topin{max-width:1000px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-size:22px;font-weight:900;color:var(--green);text-decoration:none}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:#fff;text-decoration:none;font-weight:700;cursor:pointer}.primary{background:var(--green);border-color:var(--green);color:white}.wrap{max-width:1000px;margin:22px auto;padding:0 14px}.status{padding:16px;background:#fff;border:1px solid var(--line);border-radius:14px;color:var(--muted)}.shop{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.cover{min-height:160px;background:linear-gradient(135deg,#d8efe2,#f4f9f5);display:flex;align-items:center;justify-content:center;font-size:64px}.cover img{width:100%;max-height:330px;object-fit:cover}.body{padding:20px}.titleline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.titleline h1{margin:0;font-size:clamp(24px,4vw,34px)}.verified{background:#e2f6e9;color:#176b50;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:800}.meta{color:var(--muted);line-height:1.9;margin:10px 0}.desc{line-height:1.9;white-space:pre-wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:26px 0 12px}.sectionhead h2{margin:0;font-size:22px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}.photo{height:160px;background:#eaf2ed;display:flex;align-items:center;justify-content:center;font-size:44px}.photo img{width:100%;height:100%;object-fit:cover}.cardbody{padding:13px}.card h3{margin:0 0 8px;font-size:17px}.price{color:var(--green);font-weight:900;font-size:18px}.small{color:var(--muted);font-size:13px;line-height:1.8}.footer{text-align:center;padding:28px 12px;color:var(--muted);font-size:13px}@media(max-width:480px){.body{padding:15px}.cover{min-height:120px}.actions .btn{flex:1}.grid{grid-template-columns:1fr 1fr}.photo{height:115px}.cardbody{padding:10px}.card h3{font-size:14px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><a class="brand" href="index.html">📍 دليل منبج</a><a class="btn" href="index.html#businesses">رجوع لدليل المحلات</a></div></header>
+<main class="wrap">
+<div id="status" class="status">عم نحمل صفحة المحل…</div>
+<section id="shop" class="shop" hidden></section>
+<div class="sectionhead"><h2>🛍️ إعلانات صاحب المحل</h2><span class="small">الإعلانات المنشورة فقط</span></div>
+<div id="listings" class="grid"><div class="status">عم نحمل الإعلانات…</div></div>
+</main>
+<footer class="footer">دليل منبج · من أهل منبج وريفها ولأهلها</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
+const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
+const $=id=>document.getElementById(id);
+let currentUser=null, shopOwnerId=null;
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const digits=v=>String(v||'').replace(/[^0-9]/g,'').replace(/^00/,'');
+function images(v){if(Array.isArray(v))return v;if(typeof v==='string'){try{const x=JSON.parse(v);return Array.isArray(x)?x:[]}catch(_){return v.startsWith('http')?[v]:[]}}return []}
+function photo(v){const a=images(v);return a.length?'<div class="cover"><img src="'+esc(a[0])+'" alt="صورة المحل" loading="lazy"></div>':'<div class="cover">🏪</div>'}
+function listingPhoto(v){const a=images(v);return a.length?'<div class="photo"><img src="'+esc(a[0])+'" alt="" loading="lazy"></div>':'<div class="photo">🛍️</div>'}
+async function run(){
+ const id=new URLSearchParams(location.search).get('id');
+ if(!id){$('status').textContent='رابط المحل غير مكتمل. ارجع إلى دليل المحلات واختر محلاً.';$('listings').innerHTML='';return}
+ try{
+  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const r=await db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,is_verified,image_urls,created_at').eq('id',id).eq('status','active').maybeSingle();
+  if(r.error)throw r.error;
+  const x=r.data;
+  if(!x){$('status').textContent='المحل غير موجود أو لم يعد منشوراً.';$('listings').innerHTML='';return}
+  document.title=x.name+' | دليل منبج';
+  shopOwnerId=x.owner_id;
+  const sessionResult=await db.auth.getSession();
+  currentUser=sessionResult.data&&sessionResult.data.session?sessionResult.data.session.user:null;
+  const isOwner=!!(currentUser&&String(currentUser.id)===String(x.owner_id));
+  const contact=x.whatsapp||x.phone, wa=digits(contact);
+  $('status').hidden=true;$('shop').hidden=false;
+  $('shop').innerHTML=photo(x.image_urls)+'<div class="body"><div class="titleline"><h1>'+esc(x.name)+'</h1>'+(x.is_verified?'<span class="verified">✓ محل موثّق</span>':'')+'</div><div class="meta">📍 '+esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')+'</div>'+(x.description?'<div class="desc">'+esc(x.description)+'</div>':'')+'<div class="actions">'+(wa?'<a class="btn primary" href="https://wa.me/'+wa+'" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>':'')+(x.phone?'<a class="btn" href="tel:'+esc(x.phone)+'">اتصال</a>':'')+(x.map_url?'<a class="btn" href="'+esc(x.map_url)+'" target="_blank" rel="noopener noreferrer">عرض الموقع على الخريطة</a>':'')+(x.website_url?'<a class="btn" href="'+esc(x.website_url)+'" target="_blank" rel="noopener noreferrer">موقع المحل</a>':'')+(isOwner?'<button class="btn primary" type="button" onclick="window.location.href=\'index.html?publish=listing#listings\'">➕ نشر إعلان من داخل المحل</button>':'')+'<button class="btn" type="button" onclick="shareShop()">مشاركة صفحة المحل ↗</button></div></div>';
+  if(navigator.share){window.shareShop=()=>navigator.share({title:x.name+' | دليل منبج',text:'شوف صفحة '+x.name+' على دليل منبج',url:location.href}).catch(()=>{})}else{window.shareShop=async()=>{try{await navigator.clipboard.writeText(location.href);alert('تم نسخ رابط صفحة المحل')}catch(_){prompt('انسخ رابط صفحة المحل:',location.href)}}}
+  const ads=await db.from('listings').select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,image_urls,created_at,status').eq('user_id',x.owner_id).in('status',['active','approved','sold']).order('created_at',{ascending:false}).limit(60);
+  if(ads.error)throw ads.error;
+  const rows=ads.data||[];
+  $('listings').innerHTML=rows.length?rows.map(a=>{
+   const ownerControls=isOwner?'<div class="actions"><button class="btn" type="button" onclick="editListingFromShop(\''+esc(a.id)+'\')">✏️ تعديل الإعلان</button>'+(a.status!=='sold'?'<button class="btn" type="button" onclick="markSoldFromShop(\''+esc(a.id)+'\')">✓ تم البيع</button>':'<button class="btn" type="button" onclick="markAvailableFromShop(\''+esc(a.id)+'\')">↩ إعادة تنشيط الإعلان</button>')+'<button class="btn" type="button" style="color:#a32626;border-color:#e8bebe" onclick="deleteListingFromShop(\''+esc(a.id)+'\')">🗑️ حذف الإعلان</button></div>':'';
+   return `<article class="card">${listingPhoto(a.image_urls)}<div class="cardbody"><h3>${esc(a.title)}</h3><div class="price">${a.currency==='USD'?'USD':'ل.س'} ${Number(a.price||0).toLocaleString('en-US')}</div><div class="small">📍 ${esc([a.area,a.village].filter(Boolean).join(' · ')||'منبج وريفها')} · ${esc(a.category||'أخرى')}</div>${a.status==='sold'?'<div class="verified" style="display:inline-block;margin:7px 0;background:#fff0d8;color:#80510c">✓ مباع</div>':''}${a.description?'<p class="small">'+esc(a.description.slice(0,140))+'</p>':''}${a.status!=='sold'&&a.contact_phone?'<a class="btn" href="https://wa.me/'+digits(a.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل بخصوص الإعلان</a>':''}${ownerControls}</div></article>`;
+  }).join(''):'<div class="status">ما في إعلانات بيع منشورة مرتبطة بحساب صاحب هذا المحل حالياً. إذا نشرت إعلاناً ولم يظهر، تأكد أنك نشرت من نفس الحساب الذي يملك المحل وأن الإعلان مقبول ومنشور.</div>';
+ }catch(e){console.error(e);$('status').textContent='تعذّر تحميل الصفحة. تحقق من اتصال الإنترنت ثم أعد المحاولة.';$('listings').innerHTML=''}
+}
+async function deleteListingFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('حذف الإعلان متاح لصاحب المحل فقط.');return}
+ if(!confirm('هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن الحذف.'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').delete().eq('id',id).eq('user_id',currentUser.id).select('id');
+ if(r.error||!r.data||!r.data.length){console.error('delete listing:',r.error);alert('تعذّر حذف الإعلان. قد تكون صلاحيات الحذف غير مفعّلة في قاعدة البيانات.');return}
+ alert('تم حذف الإعلان.');
+ location.reload();
+}
+async function markSoldFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('هذا الخيار متاح لصاحب المحل فقط.');return}
+ if(!confirm('تأكيد وضع الإعلان كـ «مباع»؟ سيظهر للزوار أنه مباع ولن يظهر زر التواصل.'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').update({status:'sold'}).eq('id',id).eq('user_id',currentUser.id).select('id');
+ if(r.error||!r.data||!r.data.length){alert('تعذّر تحديث الإعلان.');return}
+ location.reload();
+}
+async function markAvailableFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId))return;
+ if(!confirm('إعادة الإعلان إلى الحالة المنشورة؟'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').update({status:'active'}).eq('id',id).eq('user_id',currentUser.id).eq('status','sold').select('id');
+ if(r.error||!r.data||!r.data.length){alert('تعذّر إعادة تنشيط الإعلان.');return}
+ location.reload();
+}
+function editListingFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('سجّل الدخول بالحساب الذي يملك المحل لتعديل الإعلان.');return}
+ location.href='index.html?editListing='+encodeURIComponent(id)+'#listings';
+}
+
+run();
+</script>
+</body>
+</html>

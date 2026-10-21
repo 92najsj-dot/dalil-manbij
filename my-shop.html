@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#176b50">
+<title>إدارة محلي وإعلاناتي | دليل منبج</title>
+<style>
+:root{--g:#176b50;--line:#dfe9e3;--muted:#687b70;--bg:#f4f8f5;--red:#a32626}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#20372b;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}header{background:#fff;border-bottom:1px solid var(--line);padding:14px}header .inner{max-width:1000px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-size:22px;font-weight:900;color:var(--g);text-decoration:none}.wrap{max-width:1000px;margin:20px auto;padding:0 14px}.panel,.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.muted,.small{color:var(--muted);line-height:1.8}.small{font-size:13px}.btn{border:1px solid var(--line);background:#fff;color:#20372b;padding:10px 13px;border-radius:11px;font-weight:750;font-size:15px;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center;gap:6px}.primary{background:var(--g);border-color:var(--g);color:white}.danger{color:var(--red);border-color:#edcaca}.status{display:inline-block;background:#e6f5eb;color:var(--g);border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}.field,label{display:block;width:100%}label{font-weight:700;margin:10px 0}input,textarea,select{display:block;width:100%;font:inherit;padding:11px;border:1px solid var(--line);border-radius:10px;margin-top:5px;background:#fff;color:#20372b}textarea{min-height:90px}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}.card h3{margin:0 0 8px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.hidden{display:none!important}.notice{padding:12px;border-radius:10px;background:#eef6f0;margin:10px 0}.footer{text-align:center;color:var(--muted);padding:26px;font-size:13px}@media(max-width:520px){.panel,.card{padding:12px}.btn{font-size:14px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="inner"><a class="brand" href="index.html">📍 دليل منبج</a><div class="actions" style="margin:0"><a class="btn" href="index.html">الواجهة الرئيسية</a><button class="btn" id="refreshBtn" type="button">↻ تحديث</button></div></div></header>
+<main class="wrap">
+<section class="panel"><div class="row"><div><h1 style="margin:0">🏪 إدارة محلي وإعلاناتي</h1><p class="muted">عدّل معلومات محلك وإعلاناتك من هذه الصفحة دون الرجوع إلى الواجهة الرئيسية بعد كل إجراء.</p></div><button class="btn primary" id="newAdBtn" type="button">＋ نشر إعلان جديد</button></div><div id="message" class="notice">جارٍ التحقق من تسجيل الدخول…</div></section>
+<section class="panel"><div class="row"><h2 style="margin:0">بيانات المحل</h2><span class="small">تظهر لك المحلات التابعة لحسابك فقط</span></div><div id="shops" class="grid" style="margin-top:12px"></div><div id="shopEdit" class="hidden"></div></section>
+<section class="panel"><div class="row"><h2 style="margin:0">إعلاناتي</h2><span class="small">التعديل والحذف وتغيير حالة الإعلان من هنا</span></div><div id="ads" class="grid" style="margin-top:12px"></div></section>
+<section id="editor" class="panel hidden"><div class="row"><h2 id="editorTitle" style="margin:0">تعديل</h2><button class="btn" type="button" id="cancelEditor">إغلاق ✕</button></div><form id="editorForm"><div id="editorFields"></div><div class="actions"><button class="btn primary" type="submit">💾 حفظ</button><button class="btn" type="button" id="cancelEditor2">إلغاء</button></div></form></section>
+</main><footer class="footer">دليل منبج · من أهل منبج وريفها ولأهلها</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co',SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
+const $=id=>document.getElementById(id),esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let db=null,user=null,shops=[],ads=[],categories=[],editMode='',editId='';
+function say(t,bad=false){$('message').textContent=t;$('message').style.background=bad?'#fff0f0':'#eef6f0';$('message').style.color=bad?'#a32626':'#176b50'}
+function showEditor(title,mode,id,html){editMode=mode;editId=id||'';$('editorTitle').textContent=title;$('editorFields').innerHTML=html;$('editor').classList.remove('hidden');$('editor').scrollIntoView({behavior:'smooth',block:'start'})}
+function hideEditor(){$('editor').classList.add('hidden');$('editorForm').reset();editMode='';editId=''}
+function shopForm(x={}){return '<div class="formgrid"><label>اسم المحل<input name="name" required minlength="2" maxlength="160" value="'+esc(x.name||'')+'"></label><label>المنطقة<input name="area" required maxlength="120" value="'+esc(x.area||'منبج')+'"></label><label>القرية<input name="village" maxlength="120" value="'+esc(x.village||'')+'"></label><label>العنوان<input name="address" maxlength="300" value="'+esc(x.address||'')+'"></label><label>الهاتف<input name="phone" inputmode="tel" value="'+esc(x.phone||'')+'"></label><label>واتساب<input name="whatsapp" inputmode="tel" value="'+esc(x.whatsapp||'')+'"></label><label>رابط الخريطة<input name="map_url" type="url" value="'+esc(x.map_url||'')+'"></label><label>موقع إلكتروني<input name="website_url" type="url" value="'+esc(x.website_url||'')+'" placeholder="https://..."></label></div><label>الوصف<textarea name="description" maxlength="5000">'+esc(x.description||'')+'</textarea></label>'}
+function adCategoryOptions(selected=''){
+ const fallback=['بقالة وسوبرماركت','مطاعم ومقاهي','موبايلات وإلكترونيات','أطباء وعيادات','ألبسة وأحذية','سيارات ونقل','تعليم ودورات','صيدليات ومخابر','عقارات ومقاولات','ورش ومهن','زراعة ومواشي','شركات ومكاتب','خدمات منزلية','أخرى'];
+ const list=categories.length?categories.map(c=>String(c.name||'')).filter(Boolean):fallback;
+ const current=String(selected||'');
+ if(current&&!list.includes(current))list.unshift(current);
+ return '<option value="" disabled>اختر قسماً من أقسام دليل منبج</option>'+list.map(name=>'<option value="'+esc(name)+'" '+(name===current?'selected':'')+'>'+esc(name)+'</option>').join('');
+}
+function adForm(x={}){return '<label>عنوان الإعلان<input name="title" required minlength="2" maxlength="180" value="'+esc(x.title||'')+'"></label><div class="formgrid"><label>القسم<select name="category" required style="appearance:auto;-webkit-appearance:menulist;background:#fff;cursor:pointer">'+adCategoryOptions(x.category||'')+'</select><small class="small">اختر قسماً من أقسام الموقع.</small></label><label>السعر<input name="price" type="number" min="0" step="any" value="'+esc(x.price==null?'':x.price)+'"></label><label>العملة<select name="currency"><option value="SYP">ليرة سورية</option><option value="USD">دولار أمريكي</option></select></label><label>المنطقة<input name="area" required maxlength="120" value="'+esc(x.area||'منبج')+'"></label><label>القرية<input name="village" maxlength="120" value="'+esc(x.village||'')+'"></label><label>حالة المنتج<select name="item_condition"><option value="new">جديد</option><option value="used">مستعمل</option><option value="service">خدمة</option></select></label><label>واتساب للتواصل<input name="contact_phone" inputmode="tel" value="'+esc(x.contact_phone||'')+'"></label></div><label>الوصف<textarea name="description" maxlength="5000">'+esc(x.description||'')+'</textarea></label>'}
+function openShopEdit(id){const x=shops.find(s=>String(s.id)===String(id));if(!x)return;showEditor('✏️ تعديل بيانات المحل','shop',id,shopForm(x))}
+function openAdEdit(id){const x=ads.find(a=>String(a.id)===String(id));if(!x)return;showEditor('✏️ تعديل الإعلان','ad',id,adForm(x));const c=$('editorForm').elements.currency;if(c)c.value=x.currency||'SYP'}
+async function loadAll(){
+ if(!user){say('سجّل الدخول من الواجهة الرئيسية أولاً، ثم افتح إدارة محلي.',true);$('shops').innerHTML='<a class="btn primary" href="index.html">تسجيل الدخول</a>';return}
+ say('جارٍ تحميل بيانات محلك وإعلاناتك…');
+ try{
+  const [cr,sr,ar]=await Promise.all([
+   db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),
+   db.from('businesses').select('id,owner_id,name,category_id,description,area,village,address,phone,whatsapp,map_url,website_url,status,created_at').eq('owner_id',user.id).order('created_at',{ascending:false}),
+   db.from('listings').select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,status,created_at').eq('user_id',user.id).order('created_at',{ascending:false})
+  ]);
+  if(sr.error)throw sr.error;if(ar.error)throw ar.error;categories=cr.error?[]:(cr.data||[]);shops=sr.data||[];ads=ar.data||[];
+  $('shops').innerHTML=shops.length?shops.map(x=>'<article class="card"><div class="row"><h3>🏪 '+esc(x.name)+'</h3><span class="status">'+esc(({active:'منشور',approved:'مقبول',pending:'بانتظار المراجعة',rejected:'مرفوض',blocked:'موقوف'})[String(x.status||'').toLowerCase()]||x.status||'غير محدد')+'</span></div><p class="small">📍 '+esc([x.area,x.village,x.address].filter(Boolean).join(' · '))+'</p><p class="small">'+esc(x.description||'لا يوجد وصف')+'</p><div class="actions"><button class="btn primary" type="button" onclick="openShopEdit(\''+esc(x.id)+'\')">✏️ تعديل محلي</button><a class="btn" href="business.html?id='+encodeURIComponent(x.id)+'" target="_blank" rel="noopener">عرض الصفحة العامة ↗</a></div></article>').join(''):'<div class="notice">ما في محل مسجّل بهذا الحساب حتى الآن.</div>';
+  $('ads').innerHTML=ads.length?ads.map(x=>'<article class="card"><div class="row"><h3>'+esc(x.title)+'</h3><span class="status">'+esc(({active:'منشور',approved:'مقبول',pending:'بانتظار المراجعة',rejected:'مرفوض',sold:'مباع',blocked:'موقوف'})[String(x.status||'').toLowerCase()]||x.status||'غير محدد')+'</span></div><p class="small">'+esc(x.category||'أخرى')+' · '+esc(x.area||'منبج')+' · '+esc(x.currency||'SYP')+' '+esc(x.price==null?'':x.price)+'</p><div class="actions"><button class="btn primary" type="button" onclick="openAdEdit(\''+esc(x.id)+'\')">✏️ تعديل الإعلان</button>'+(x.status==='sold'?'<button class="btn" type="button" onclick="setAdStatus(\''+esc(x.id)+'\',\'active\')">↩ إعادة تنشيط</button>':'<button class="btn" type="button" onclick="setAdStatus(\''+esc(x.id)+'\',\'sold\')">✓ تم البيع</button>')+'<button class="btn danger" type="button" onclick="deleteAd(\''+esc(x.id)+'\')">🗑️ حذف</button></div></article>').join(''):'<div class="notice">ما عندك إعلانات بيع مرتبطة بهذا الحساب حالياً.</div>';
+  say('تم تحميل بياناتك. التعديلات والنشر والحذف تتم من هذه الصفحة.');
+ }catch(e){console.error('my-shop load:',e);say('تعذّر تحميل بيانات المحل أو الإعلانات: '+(e.message||'خطأ غير معروف'),true)}
+}
+$('editorForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!user||!db)return;
+ const form=e.currentTarget,fd=new FormData(form),d=Object.fromEntries(fd.entries());
+ const submit=form.querySelector('[type=submit]');submit.disabled=true;
+ try{
+  if(editMode==='shop'){
+   const x=shops.find(z=>String(z.id)===String(editId));if(!x)throw new Error('لم يتم العثور على المحل.');
+   const payload={name:d.name.trim(),description:d.description.trim()||null,area:d.area.trim(),village:d.village.trim()||null,address:d.address.trim()||null,phone:d.phone.trim()||null,whatsapp:d.whatsapp.trim()||null,map_url:d.map_url.trim()||null,website_url:d.website_url.trim()||null};
+   const r=await db.from('businesses').update(payload).eq('id',editId).eq('owner_id',user.id).select('id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('لم تحفظ التعديلات. تحقق من صلاحيات صاحب المحل.');
+  }else if(editMode==='ad'){
+   const price=String(d.price||'').trim();if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0))throw new Error('السعر يجب أن يكون رقماً غير سالب.');
+   const payload={title:d.title.trim(),category:d.category.trim()||'أخرى',description:d.description.trim()||null,price:price===''?null:Number(price),currency:['SYP','USD'].includes(d.currency)?d.currency:'SYP',area:d.area.trim(),village:d.village.trim()||null,item_condition:d.item_condition.trim()||null,contact_phone:d.contact_phone.trim()||null};
+   const r=await db.from('listings').update(payload).eq('id',editId).eq('user_id',user.id).select('id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('لم تحفظ التعديلات. تحقق من صلاحيات صاحب الإعلان.');
+  }else if(editMode==='new-ad'){
+   const price=String(d.price||'').trim();if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0))throw new Error('السعر يجب أن يكون رقماً غير سالب.');
+   const payload={user_id:user.id,title:d.title.trim(),category:d.category.trim()||'أخرى',description:d.description.trim()||null,price:price===''?null:Number(price),currency:['SYP','USD'].includes(d.currency)?d.currency:'SYP',area:d.area.trim(),village:d.village.trim()||null,item_condition:d.item_condition.trim()||'جديد',contact_phone:d.contact_phone.trim()||null,status:'active'};
+   const r=await db.from('listings').insert(payload).select('id').single();if(r.error)throw r.error;
+  }
+  hideEditor();try{localStorage.setItem('dalil-content-updated',String(Date.now()))}catch(_){}say('تم حفظ التغيير بنجاح. تم تحديث بيانات الإدارة؛ افتح صفحة المحل العامة أو حدّث الصفحة الرئيسية لرؤية التغييرات.');await loadAll();
+ }catch(err){console.error('my-shop save:',err);say('لم تتم العملية: '+(err.message||'خطأ غير معروف'),true)}finally{submit.disabled=false}
+});
+async function setAdStatus(id,status){if(!user||!confirm(status==='sold'?'تأكيد وضع الإعلان كمباع؟':'إعادة تنشيط الإعلان؟'))return;try{const r=await db.from('listings').update({status}).eq('id',id).eq('user_id',user.id).select('id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('لم تتغير الحالة؛ تحقق من صلاحيات قاعدة البيانات.');say(status==='sold'?'تم وضع الإعلان كمباع.':'تمت إعادة تنشيط الإعلان.');await loadAll()}catch(e){say('تعذّر تحديث حالة الإعلان: '+e.message,true)}}
+async function deleteAd(id){if(!user||!confirm('حذف الإعلان نهائياً؟ لا يمكن التراجع عن هذا الإجراء.'))return;try{const r=await db.from('listings').delete().eq('id',id).eq('user_id',user.id).select('id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('لم يتم الحذف؛ تحقق من صلاحيات قاعدة البيانات.');say('تم حذف الإعلان.');hideEditor();await loadAll()}catch(e){say('تعذّر حذف الإعلان: '+e.message,true)}}
+$('newAdBtn').addEventListener('click',()=>{if(!user){say('سجّل الدخول أولاً من الواجهة الرئيسية.',true);return}showEditor('＋ نشر إعلان جديد','new-ad','',adForm({area:'منبج',currency:'SYP',item_condition:'جديد'}));const c=$('editorForm').elements.currency;if(c)c.value='SYP'});
+$('refreshBtn').addEventListener('click',loadAll);$('cancelEditor').addEventListener('click',hideEditor);$('cancelEditor2').addEventListener('click',hideEditor);
+(async()=>{try{db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const r=await db.auth.getSession();user=r.data?.session?.user||null;if(!user){say('سجّل الدخول من الواجهة الرئيسية أولاً، ثم افتح إدارة محلي.',true);$('shops').innerHTML='<a class="btn primary" href="index.html">العودة وتسجيل الدخول</a>';return}await loadAll();db.auth.onAuthStateChange((event,session)=>{user=session?.user||null;if(event==='SIGNED_OUT')location.href='index.html';else loadAll()})}catch(e){console.error(e);say('تعذّر الاتصال. ارجع للرئيسية وحاول تسجيل الدخول من جديد.',true)}})();
+</script>
+</body></html>
