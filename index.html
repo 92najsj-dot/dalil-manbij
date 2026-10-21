@@ -838,6 +838,13 @@ function changeGalleryImage(delta){setGalleryImage(galleryIndex+delta)}
 function closeImageGallery(){const overlay=$('imageGalleryOverlay');if(overlay)overlay.classList.remove('open');document.body.style.overflow='';const img=$('imageGalleryImage');if(img)img.removeAttribute('src')}
 document.addEventListener('keydown',event=>{if(!$('imageGalleryOverlay')?.classList.contains('open'))return;if(event.key==='Escape')closeImageGallery();if(event.key==='ArrowRight')changeGalleryImage(-1);if(event.key==='ArrowLeft')changeGalleryImage(1)});
 const galleryMain=document.getElementById('imageGalleryMain');if(galleryMain){galleryMain.addEventListener('touchstart',event=>{galleryTouchX=event.changedTouches[0].screenX},{passive:true});galleryMain.addEventListener('touchend',event=>{const dx=event.changedTouches[0].screenX-galleryTouchX;if(Math.abs(dx)>45)changeGalleryImage(dx<0?1:-1)},{passive:true})}
+/* Recover cleanly when Android/Chrome restores the homepage from its back-forward cache. */
+window.addEventListener('pageshow',function(event){
+ if(event.persisted){
+  window.location.reload();
+ }
+});
+
 </script>
 <div id="imageGalleryOverlay" class="image-gallery-overlay" role="dialog" aria-modal="true" aria-label="صور الإعلان" onclick="if(event.target===this)closeImageGallery()"><div class="image-gallery-dialog" id="imageGalleryDialog"><button type="button" class="gallery-control gallery-close" aria-label="إغلاق الصور" onclick="closeImageGallery()">×</button><div class="image-gallery-main" id="imageGalleryMain"><button type="button" class="gallery-control gallery-prev" aria-label="الصورة السابقة" onclick="changeGalleryImage(-1)">‹</button><img id="imageGalleryImage" alt="صورة الإعلان" src=""><button type="button" class="gallery-control gallery-next" aria-label="الصورة التالية" onclick="changeGalleryImage(1)">›</button></div><div class="image-gallery-counter" id="imageGalleryCounter">1 / 1</div><div class="image-gallery-thumbs" id="imageGalleryThumbs"></div></div></div>
 
