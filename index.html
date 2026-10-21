@@ -338,9 +338,13 @@ async function loadData(){
   if(reqErr)console.warn('requests:',reqErr.message);requests=reqs||[];
   await loadPublicProfiles();renderCategories();renderAll();renderRequests();populatePromotionTargets();updateAccountUI();
   await loadPublicPromotions();
-  const issues=[catsErr,bizErr,adsErr,reqErr].filter(Boolean);
-  setStatus(!issues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
-  if(issues.length)toast('الاتصال يعمل، لكن بعض الأقسام لم تُحمّل بسبب صلاحيات قاعدة البيانات.');
+  const queryIssues=[['أقسام المحلات',catsErr],['دليل المحلات',bizErr],['إعلانات البيع',adsErr],['الطلبات',reqErr]].filter(([,err])=>!!err);
+  setStatus(!queryIssues.length,'متصل بقاعدة البيانات · '+(currentUser?'تم تسجيل الدخول':'زائر'));
+  if(queryIssues.length){
+   const details=queryIssues.map(([label,err])=>label+': '+(err.message||err.code||'خطأ غير معروف')).join(' | ');
+   console.error('Dalil Manbij database query failures:',queryIssues.map(([section,err])=>({section,code:err.code,message:err.message,details:err.details,hint:err.hint})));
+   toast('بعض الأقسام لم تُحمّل. السبب: '+details.slice(0,420));
+  }
   db.auth.onAuthStateChange((event,session)=>{currentUser=(session ? session.user : undefined)||null;updateAccountUI();if(currentUser&&event!=='SIGNED_OUT')setTimeout(()=>enforceBlockedUser(currentUser),0);if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}});
   if(recoveryLinkAtLoad){const {data:{session:recoverySession}}=await db.auth.getSession();if(recoverySession&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}}
  }catch(e){console.error(e);setStatus(false,'تعذر الاتصال بقاعدة البيانات');$('businessGrid').innerHTML=empty('ما قدرنا نحمل دليل المحلات. تحقق من الإنترنت وإعدادات Supabase ثم أعد المحاولة.');$('listingGrid').innerHTML=empty('ما قدرنا نحمل الإعلانات حالياً.');$('requestList').innerHTML=empty('ما قدرنا نحمل الطلبات حالياً.');toast('تعذر الاتصال: '+(e.message||'خطأ غير معروف'))}
