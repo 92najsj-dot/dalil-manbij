@@ -880,6 +880,7 @@ document.addEventListener('visibilitychange',function(){
  if(document.visibilityState==='hidden'){__dalilPageWasHidden=true;return}
  if(__dalilPageWasHidden){__dalilPageWasHidden=false;refreshHomepageAfterReturn()}
 });
+window.addEventListener('storage',function(event){if(event.key==='dalil-content-updated')refreshHomepageAfterReturn()});
 
 </script>
 <div id="imageGalleryOverlay" class="image-gallery-overlay" role="dialog" aria-modal="true" aria-label="صور الإعلان" onclick="if(event.target===this)closeImageGallery()"><div class="image-gallery-dialog" id="imageGalleryDialog"><button type="button" class="gallery-control gallery-close" aria-label="إغلاق الصور" onclick="closeImageGallery()">×</button><div class="image-gallery-main" id="imageGalleryMain"><button type="button" class="gallery-control gallery-prev" aria-label="الصورة السابقة" onclick="changeGalleryImage(-1)">‹</button><img id="imageGalleryImage" alt="صورة الإعلان" src=""><button type="button" class="gallery-control gallery-next" aria-label="الصورة التالية" onclick="changeGalleryImage(1)">›</button></div><div class="image-gallery-counter" id="imageGalleryCounter">1 / 1</div><div class="image-gallery-thumbs" id="imageGalleryThumbs"></div></div></div>
