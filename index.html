@@ -590,6 +590,11 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
    const price=String(d.price||'').trim();
    if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0)){toast('السعر لازم يكون رقماً غير سالب.');return}
    payload={title:d.title.trim(),category:String(d.category||'أخرى').trim()||'أخرى',description:String(d.description||'').trim()||null,price:price===''?null:Number(price),currency:['SYP','USD'].includes(d.currency)?d.currency:'SYP',area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,item_condition:String(d.item_condition||'').trim()||null,contact_phone:String(d.contact_phone||'').trim()||null};
+   const photoInput=f.querySelector('[name="listing_photos"]'),files=photoInput&&photoInput.files?Array.from(photoInput.files):[];
+   let currentImages=Array.isArray(result.data.image_urls)?result.data.image_urls.slice():[];
+   if(currentImages.length+files.length>4){toast('الحد الأقصى 4 صور للإعلان.');return}
+   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
+   if(files.length)payload.image_urls=currentImages;
   }
   const ownerColumn=isShop?'owner_id':'user_id';
   const updated=await db.from(table).update(payload).eq('id',id).eq(ownerColumn,currentUser.id).select('id');
@@ -722,6 +727,7 @@ async function editMyItem(table,id){
    <label>اسم القرية (اختياري)<input class="field" name="village" maxlength="120" value="${esc(x.village||'')}"></label>
    <label>حالة المنتج<input class="field" name="item_condition" maxlength="80" value="${esc(x.item_condition||'مستعمل')}"></label>
    <label>رقم واتساب مع رمز الدولة (اختياري)<input class="field" name="contact_phone" inputmode="tel" value="${esc(x.contact_phone||'')}"></label>
+   <div style="border:1px solid var(--line);border-radius:12px;padding:12px"><label>صور الإعلان (اختياري) — اختر صوراً جديدة لإضافتها<input class="field" name="listing_photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label><div id="listingPhotoPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${Array.isArray(x.image_urls)&&x.image_urls.length?x.image_urls.map((url,i)=>'<img src="'+esc(url)+'" alt="الصورة الحالية '+(i+1)+'" style="width:76px;height:76px;object-fit:cover;border-radius:9px">' ).join(''):'<small>لا توجد صور حالية للإعلان.</small>'}</div><small>يمكنك إضافة حتى 4 صور بالمجموع، بحد أقصى 5 ميغابايت للصورة.</small></div>
    <button class="btn primary" type="submit">حفظ تعديلات الإعلان</button>`;
   if(isShop){const cat=f.elements.category_id;if(cat)cat.value=x.category_id||''}
   else{const currency=f.elements.currency;if(currency)currency.value=x.currency||'SYP'}
