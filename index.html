@@ -910,6 +910,21 @@ async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.sig
 loadData();
 initSiteAnalytics();
 
+/* إشعارات داخلية مجانية: تحديث عند العودة للصفحة ودورياً دون خدمات Push أو تغييرات قاعدة البيانات */
+let dalilInAppNoticeRefreshBusy=false;
+async function refreshDalilInAppNotifications(){
+ if(dalilInAppNoticeRefreshBusy||!db||!currentUser||document.visibilityState==='hidden')return;
+ dalilInAppNoticeRefreshBusy=true;
+ try{
+  await refreshOwnerNotifications();
+  if(isAdminUser())await refreshAdminBell();
+ }catch(e){console.warn('in-app notification refresh:',e)}
+ finally{dalilInAppNoticeRefreshBusy=false}
+}
+window.addEventListener('focus',()=>{refreshDalilInAppNotifications()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshDalilInAppNotifications()});
+window.setInterval(()=>{refreshDalilInAppNotifications()},60000);
+
 function openPromoContactForItem(table,id){
  const modal=document.getElementById("promoContactModal");if(!modal)return;
  const title=modal.querySelector("#promoContactTitle");if(title)title.textContent="📣 ترويج إعلانك";
