@@ -490,8 +490,8 @@ function shareDalilItem(type,id){
  const item=(type==='business'?businesses:listings).find(x=>String(x.id)===String(id));
  if(!item){toast('تعذّر العثور على العنصر للمشاركة. حدّث الصفحة وجرب مرة ثانية.');return}
  const title=type==='business'?(item.name||'محل على دليل منبج'):(item.title||'إعلان على دليل منبج');
- const url=new URL(type==='business'?'business.html':'/',location.origin);
- if(type==='business')url.searchParams.set('id',id);else{url.searchParams.set('listingId',id);url.hash='listings'}
+ const url=new URL('/',location.origin);
+ if(type==='business')url.searchParams.set('businessId',id);else{url.searchParams.set('listingId',id);url.hash='listings'}
  const text='📍 '+title+' — على دليل منبج، سوق منبج وريفها.\n'+url.href;
  shareDalilText('دليل منبج | '+title,text);
 }
