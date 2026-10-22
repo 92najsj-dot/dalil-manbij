@@ -955,11 +955,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()
 let dalilInstallPrompt=null;
 const dalilInstallButton=document.getElementById('installAppBtn');
 function isDalilStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
-function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=(show&&!isDalilStandalone())?'flex':'none'}
-/* أخفِ زر التثبيت داخل النسخة المثبتة، وأبقِه ظاهراً في المتصفح فقط */
-showDalilInstallButton(!isDalilStandalone());
-window.addEventListener('pageshow',()=>{if(isDalilStandalone())showDalilInstallButton(false)});
-window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;if(!isDalilStandalone())showDalilInstallButton(true)});
+/* تطبيق أندرويد الأصلي يفتح الموقع داخل WebView؛ لا تعرض له زر تثبيت الموقع داخله */
+function isDalilNativeAndroidApp(){
+ const ua=String(navigator.userAgent||'');
+ return ua.toLowerCase().includes('; wv)') || (ua.includes('Android') && ua.includes('Version/4.0') && ua.includes('Chrome/') && ua.includes('Mobile Safari'));
+}
+function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=(show&&!isDalilStandalone()&&!isDalilNativeAndroidApp())?'flex':'none'}
+/* زر التثبيت مخصص للمتصفح فقط، ويختفي داخل التطبيق المثبت أو WebView الأصلي */
+showDalilInstallButton(!isDalilStandalone()&&!isDalilNativeAndroidApp());
+window.addEventListener('pageshow',()=>{if(isDalilStandalone()||isDalilNativeAndroidApp())showDalilInstallButton(false)});
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;if(!isDalilStandalone()&&!isDalilNativeAndroidApp())showDalilInstallButton(true)});
 window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;closeDalilInstallModal();showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
 function openDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal){modal.classList.add('open');document.body.style.overflow='hidden'}}
 function closeDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal)modal.classList.remove('open');document.body.style.overflow=''}
