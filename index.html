@@ -80,6 +80,25 @@
 #adminNavWrap{flex-shrink:0}#adminBellItems .admin-bell-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}#adminBellItems .admin-bell-row:last-child{border-bottom:0}#adminBellItems .admin-bell-label{font-size:13px;font-weight:800;color:var(--dark)}#adminBellItems .admin-bell-num{background:var(--mint);color:var(--green);border-radius:999px;padding:3px 9px;font-weight:900}#adminBellItems .admin-bell-open{font-size:12px;text-decoration:none;color:var(--green);white-space:nowrap}@media(max-width:650px){#adminNavWrap{order:2}#adminNavBtn{padding:9px 10px;font-size:13px}#adminBellBtn{padding:9px 10px!important}}
 
 #ownerNotificationsList .owner-notice{padding:12px 0;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:10px}#ownerNotificationsList .owner-notice:last-child{border-bottom:0}#ownerNotificationsList .owner-notice-title{font-weight:800;color:var(--dark);font-size:14px}#ownerNotificationsList .owner-notice-detail{font-size:12px;color:var(--muted);line-height:1.8;margin-top:4px}#ownerNotificationsList .owner-notice-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}#ownerNotificationsList .owner-notice-actions button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 9px;font-size:11px;color:var(--green);font-weight:800}#ownerNotificationsList .owner-notice.is-read{opacity:.75}@media(max-width:650px){#ownerNotificationsButton{padding:8px 10px;font-size:12px}#ownerNotificationsPanel{padding:11px!important}#ownerNotificationsList .owner-notice{gap:8px;flex-direction:column}#ownerNotificationsList .owner-notice-actions{width:100%}#ownerNotificationsList .owner-notice-actions button{flex:1;min-height:36px}}
+
+/* Welcome modal: preview-only feature */
+.dalil-welcome-bg{position:fixed;inset:0;z-index:15000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(9,27,20,.68);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.dalil-welcome-card{width:min(440px,100%);max-height:min(90dvh,720px);overflow:auto;background:#fff;border:1px solid #dcece2;border-radius:24px;padding:26px 22px 20px;text-align:center;box-shadow:0 24px 80px #071c1460;animation:dalilWelcomeIn .28s ease-out}
+.dalil-welcome-mark{width:66px;height:66px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(145deg,#e5f6eb,#c8ead5);font-size:32px}
+.dalil-welcome-title{margin:0;color:#176b50;font-size:clamp(25px,6vw,31px);font-weight:900}
+.dalil-welcome-hello{margin:9px 0 14px;color:#53665b;font-size:15px}
+.dalil-welcome-main{margin:0 auto 15px;color:#183d2d;font-size:clamp(19px,4.8vw,23px);font-weight:800;line-height:1.65}
+.dalil-welcome-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:0 0 15px}
+.dalil-welcome-actions span{padding:7px 10px;border-radius:999px;background:#f0f7f2;color:#225b40;font-size:13px;font-weight:700}
+.dalil-welcome-sub{margin:0 auto 17px;color:#59685f;font-size:15px;line-height:1.8}
+.dalil-welcome-prayer{margin:0 auto 18px;color:#176b50;font-weight:800;font-size:16px}
+.dalil-welcome-credit{border-top:1px solid #e5eee7;padding-top:13px;color:#758278;font-size:12px;margin-bottom:16px}
+.dalil-welcome-credit strong{display:block;margin-top:4px;color:#315a43;font-size:14px}
+.dalil-welcome-accept{width:100%;min-height:49px;border:0;border-radius:14px;background:linear-gradient(135deg,#176b50,#21835f);color:#fff;font-size:17px;font-weight:800;box-shadow:0 7px 18px #176b5030}
+.dalil-welcome-accept:focus-visible{outline:3px solid #f4b45f;outline-offset:3px}
+@keyframes dalilWelcomeIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.dalil-welcome-card{animation:none}}
+
 </style></head>
 <body>
 <header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a><a href="./about.html">من نحن</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><div id="adminNavWrap" style="display:none;align-items:center;gap:6px;position:relative"><a class="btn outline" id="adminNavBtn" href="./admin.html" aria-label="فتح لوحة الإدارة المستقلة" style="text-decoration:none">🛡️ الإدارة ↗</a><button class="btn outline" id="adminBellBtn" type="button" onclick="toggleAdminBell()" aria-label="إشعارات الإدارة" aria-expanded="false" style="position:relative;padding:10px 12px">🔔<span id="adminBellCount" style="display:none;position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#c62828;color:#fff;font-size:11px;font-weight:900;line-height:20px">0</span></button><div id="adminBellPanel" hidden style="position:absolute;top:calc(100% + 10px);right:0;width:min(330px,calc(100vw - 30px));max-height:65vh;overflow:auto;z-index:50;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 34px #0002;padding:14px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><strong>🔔 إشعارات الإدارة</strong><button class="btn outline" type="button" onclick="refreshAdminBell()">↻ تحديث</button></div><p class="muted" style="margin:7px 0 12px">الحالات التي تحتاج مراجعتك الآن.</p><div id="adminBellItems"><div class="muted">سجّل الدخول بحساب الإدارة لعرض الحالات.</div></div><a href="./admin.html" class="btn primary" style="display:block;text-align:center;text-decoration:none;margin-top:12px">فتح لوحة الإدارة</a></div></div><div class="nav-actions"><button class="install-app-card" id="installAppBtn" type="button" onclick="openDalilInstallModal()" aria-label="ثبّت دليل منبج على جهازك"><span class="install-app-icon" aria-hidden="true">📲</span><span class="install-app-copy"><strong>ثبّت تطبيق دليل منبج</strong><span>كل محلات وإعلانات منبج بلمسة واحدة</span></span><span class="install-app-cta">تثبيت التطبيق</span></button><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
@@ -1134,4 +1153,44 @@ window.addEventListener('storage',function(event){if(event.key==='dalil-content-
   </div>
  </div>
 </div>
+
+<div id="dalilWelcomeModal" class="dalil-welcome-bg" role="dialog" aria-modal="true" aria-labelledby="dalilWelcomeTitle" aria-describedby="dalilWelcomeDescription">
+ <section class="dalil-welcome-card">
+  <div class="dalil-welcome-mark" aria-hidden="true">📍</div>
+  <h2 class="dalil-welcome-title" id="dalilWelcomeTitle">دليل منبج</h2>
+  <p class="dalil-welcome-hello">💚 أهلاً وسهلاً فيك!</p>
+  <p class="dalil-welcome-main">كل منبج وريفها بين إيديك</p>
+  <div class="dalil-welcome-actions" aria-label="خدمات الموقع">
+   <span>🛍️ تسوّق</span><span>🏷️ بيع</span><span>📢 أعلن</span><span>🔎 اكتشف</span>
+  </div>
+  <p class="dalil-welcome-sub" id="dalilWelcomeDescription">كل ما تحتاجه في منبج وريفها، بمكان واحد!</p>
+  <p class="dalil-welcome-prayer">🤲 صلّوا على النبي ﷺ</p>
+  <div class="dalil-welcome-credit">تم التطوير بواسطة<strong>عبد نعسو</strong></div>
+  <button type="button" class="dalil-welcome-accept" id="dalilWelcomeAccept">✓ موافق</button>
+ </section>
+</div>
+<script>
+(function(){
+ const key='dalil-welcome-accepted-v1';
+ const modal=document.getElementById('dalilWelcomeModal');
+ const accept=document.getElementById('dalilWelcomeAccept');
+ if(!modal||!accept)return;
+ function closeWelcome(){
+  try{localStorage.setItem(key,'1')}catch(e){}
+  modal.style.display='none';
+  document.body.style.overflow='';
+ }
+ accept.addEventListener('click',closeWelcome);
+ modal.addEventListener('click',function(e){if(e.target===modal)closeWelcome()});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.style.display==='flex')closeWelcome()});
+ let alreadySeen=false;
+ try{alreadySeen=localStorage.getItem(key)==='1'}catch(e){}
+ if(!alreadySeen){
+  window.setTimeout(function(){
+   if(document.body){modal.style.display='flex';document.body.style.overflow='hidden';accept.focus({preventScroll:true})}
+  },450);
+ }
+})();
+</script>
+
 </body></html>
