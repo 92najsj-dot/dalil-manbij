@@ -648,13 +648,35 @@ async function loadMyAds(){
   box.innerHTML=groups.map(r=>{
    const canPromote=(r._table==='listings'||r._table==='businesses')&&['active','approved'].includes(String(r.status||'').toLowerCase());
    const promoteButton=canPromote?'<button class="btn outline" type="button" onclick="openPromoContactForItem(\''+r._table+'\',\''+esc(r.id)+'\')">📣 ترويج الإعلان</button>':'';
-   const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">✏️ تعديل</button>':'';
+   const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">✏️ تعديل</button>':(r._table==='wanted_requests'&&['pending','active'].includes(r.status)?'<button class="btn outline" type="button" onclick="editMyRequest(\''+esc(r.id)+'\')">✏️ تعديل الطلب</button>':'');
+   const closeRequestButton=r._table==='wanted_requests'&&r.status==='active'?'<button class="btn outline" type="button" onclick="closeMyRequest(\''+esc(r.id)+'\')">✓ تم العثور / إغلاق الطلب</button>':'';
    const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?'<button class="btn outline" type="button" onclick="markMyItemSold(\''+esc(r.id)+'\')">✓ تم البيع</button>':'';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+closeRequestButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
 }
 
+async function editMyRequest(id){
+ if(!currentUser||!db)return;
+ const r=await db.from('wanted_requests').select('id,title,description,budget,budget_currency,category,area,contact_phone,status').eq('id',id).eq('user_id',currentUser.id).maybeSingle();
+ if(r.error||!r.data){toast('تعذّر تحميل الطلب أو لا تملك صلاحية تعديله.');return}
+ const x=r.data;
+ const title=prompt('عنوان الطلب:',x.title||'');if(title===null)return;if(title.trim().length<3){toast('عنوان الطلب يجب أن يكون 3 أحرف على الأقل.');return}
+ const description=prompt('تفاصيل الطلب:',x.description||'');if(description===null)return;
+ const budgetText=prompt('الميزانية (اتركها فارغة إذا لا يوجد):',x.budget==null?'':String(x.budget));if(budgetText===null)return;
+ const currency=prompt('عملة الميزانية: اكتب SYP لليرة أو USD للدولار',x.budget_currency||'SYP');if(currency===null)return;
+ if(budgetText.trim()!==''&&(!Number.isFinite(Number(budgetText))||Number(budgetText)<0)){toast('الميزانية يجب أن تكون رقماً غير سالب.');return}
+ const payload={title:title.trim(),description:description.trim()||null,budget:budgetText.trim()===''?null:Number(budgetText),budget_currency:currency.trim().toUpperCase()==='USD'?'USD':'SYP'};
+ const updated=await db.from('wanted_requests').update(payload).eq('id',id).eq('user_id',currentUser.id).in('status',['pending','active']).select('id');
+ if(updated.error||!updated.data||!updated.data.length){toast('تعذّر حفظ الطلب. تأكد أنه ما زال مفتوحاً.');return}
+ toast('تم تحديث الطلب.');await Promise.allSettled([loadData(),loadMyAds()]);
+}
+async function closeMyRequest(id){
+ if(!currentUser||!db||!confirm('تأكيد إغلاق الطلب؟ سيبقى ظاهراً ضمن طلباتك ولن يعود ضمن الطلبات المفتوحة.'))return;
+ const r=await db.from('wanted_requests').update({status:'closed'}).eq('id',id).eq('user_id',currentUser.id).eq('status','active').select('id');
+ if(r.error||!r.data||!r.data.length){toast('تعذّر إغلاق الطلب. حاول مجدداً.');return}
+ toast('تم إغلاق الطلب.');await Promise.allSettled([loadData(),loadMyAds()]);
+}
 async function editMyItem(table,id){
  if(!currentUser||!db||!['listings','businesses'].includes(table))return;
  const isShop=table==='businesses', f=$('modalForm');
