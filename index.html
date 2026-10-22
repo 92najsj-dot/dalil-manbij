@@ -258,7 +258,7 @@ async function toggleFavorite(type,id){if(!currentUser){toast('سجّل الدخ
 let adminContentActionTarget=null;
 function adminManageContent(table,id){
  if(!isAdminUser()){toast('هذا الإجراء مخصص للإدارة فقط.');return}
- if(!['listings','businesses'].includes(table)){toast('نوع المحتوى غير مدعوم لهذه الإجراءات.');return}
+ if(!['listings','businesses','local_offers'].includes(table)){toast('نوع المحتوى غير مدعوم لهذه الإجراءات.');return}
  const item=(table==='businesses'?businesses:listings).find(x=>String(x.id)===String(id));
  if(!item){toast('لم أجد المحتوى. حدّث الصفحة وحاول مجدداً.');return}
  adminContentActionTarget={table,id:String(id),ownerId:table==='businesses'?item.owner_id:item.user_id,title:table==='businesses'?item.name:item.title,isFeatured:!!item.is_featured};
@@ -402,7 +402,7 @@ async function loadData(){
    withLoadTimeout(db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),'categories'),
    withLoadTimeout(db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,is_verified,image_urls,opening_hours,services,created_at').eq('status','active').order('is_featured',{ascending:false}).order('name'),'businesses'),
    withLoadTimeout(db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('status',['active','sold']).order('created_at',{ascending:false}),'listings'),
-   withLoadTimeout(db.from('wanted_requests').select('id,title,description,budget,category,area,status,created_at,contact_phone').eq('status','active').order('created_at',{ascending:false}),'requests')
+   withLoadTimeout(db.from('wanted_requests').select('id,title,description,budget,budget_currency,category,area,status,created_at,contact_phone').eq('status','active').order('created_at',{ascending:false}),'requests')
   ]);
   const sessionErr=sessionResult.error||null, cats=catsResult.data, catsErr=catsResult.error||null, biz=bizResult.data, bizErr=bizResult.error||null, ads=adsResult.data, adsErr=adsResult.error||null, reqs=reqResult.data, reqErr=reqResult.error||null;
   currentUser=(sessionResult.data&&sessionResult.data.session?sessionResult.data.session.user:undefined)||null;updateAccountUI();if(currentUser)setTimeout(()=>enforceBlockedUser(currentUser),0);
@@ -798,7 +798,7 @@ async function loadAdminPending(){
    const reviewActions=adminShowAll
     ?(row.status==='pending'?'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>':'')
     :'<button type="button" class="btn success" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'active\')">✓ موافقة ونشر</button><button type="button" class="btn reject" onclick="reviewAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\',\'rejected\')">✕ رفض</button>';
-   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف المحتوى: '+adminEscape(row.id||'غير متوفر')+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+ownerAction+'<button type="button" class="btn danger" onclick="deleteAdminItem(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
+   return '<article class="adminitem"><div style="min-width:220px;flex:1"><h3>'+adminEscape(title)+'</h3><div class="adminmeta">'+adminEscape(desc||'لا يوجد وصف إضافي')+'<br>تاريخ الإرسال: '+adminEscape(created)+'<br>معرّف المحتوى: '+adminEscape(row.id||'غير متوفر')+'<br>معرّف صاحب الإعلان: '+adminEscape(ownerId||'غير متوفر')+'</div><div style="margin-top:8px">'+statusTag(row.status)+'</div></div><div class="adminactions">'+reviewActions+ownerAction+'<button type="button" class="btn danger" onclick="adminDeleteContent(\''+adminActiveTable+'\',\''+adminEscape(row.id)+'\')">حذف نهائي</button></div></article>';
   }).join('');
  }catch(e){console.error('admin load:',e);box.innerHTML='<div class="empty">تعذّر تحميل الإدارة. تأكد من تطبيق ترحيل قاعدة البيانات الجديد ثم أعد المحاولة.</div>';}
 }
@@ -911,7 +911,7 @@ async function enforceBlockedUser(user){
 }
 async function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
- if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
+ if(!['listings','businesses','wanted_requests','local_offers'].includes(table)||!['active','rejected'].includes(status))return;
  if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟'))return;
  try{
   const {data,error}=await db.from(table).update({status}).eq('id',id).eq('status','pending').select('id,status');
