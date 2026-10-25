@@ -24,7 +24,57 @@ const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 let db=null,requestOptions=[];
 function money(v){return v==null||v===''?'':Number(v).toLocaleString('en-US')+' ل.س'}
 function card(p,item){const images=item.image_urls;const image=Array.isArray(images)&&images.length?'<div class="photo"><img loading="lazy" src="'+esc(images[0])+'" alt="'+esc(item.title)+'"></div>':'<div class="photo">⭐</div>';return '<article class="card">'+image+'<div class="body"><span class="badge">⭐ إعلان مميز</span><h3>'+esc(item.title)+'</h3><div class="meta">'+esc(item.category||'')+' · '+esc(item.area||'منبج وريفها')+'</div>'+(item.description?'<p class="meta">'+esc(item.description.slice(0,150))+'</p>':'')+(item.price!=null?'<div class="price">'+money(item.price)+'</div>':'')+'<div style="margin-top:13px"><a class="btn primary" href="index.html#'+(p.target_type==='business'?'businesses':'listings')+'">عرض الإعلان</a></div></div></article>'}
-async function init(){const cards=document.getElementById('cards'),sel=document.getElementById('adSelect');try{if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال');db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const now=new Date().toISOString();const [pr,sessionResult]=await Promise.all([db.from('promotions').select('*').eq('is_active',true).lte('starts_at',now).gt('ends_at',now).order('priority',{ascending:false}).order('created_at',{ascending:false}),db.auth.getSession()]);if(pr.error)throw pr.error;const session=sessionResult.data&&sessionResult.data.session;let listings=[],businesses=[];if(session&&session.user){const [ls,bs]=await Promise.all([db.from('listings').select('id,title,description,price,area,image_urls,category,status').eq('status','active').eq('user_id',session.user.id).order('created_at',{ascending:false}),db.from('businesses').select('id,name,description,area,image_urls,category_id,status').eq('status','active').eq('owner_id',session.user.id).order('name')]);if(!ls.error)listings=ls.data||[];if(!bs.error)businesses=bs.data||[]}requestOptions=[...listings.map(x=>({id:x.id,type:'listing',title:x.title,area:x.area,price:x.price,description:x.description,image_urls:x.image_urls,category:x.category})),...businesses.map(x=>({id:x.id,type:'business',title:x.name,area:x.area,description:x.description,image_urls:x.image_urls,category:'محل أو خدمة'}))];sel.innerHTML='<option value="">'+(session&&session.user?'لم أحدد إعلاناً بعد':'سجّل الدخول لعرض إعلاناتك المنشورة')+'</option>'+requestOptions.map(x=>'<option value="'+esc(x.type+':'+x.id)+'">'+esc(x.title)+' — '+esc(x.area||'منبج وريفها')+'</option>').join('');const byId=new Map(requestOptions.map(x=>[x.type+':'+x.id,x]));const visible=(pr.data||[]).map(p=>({p,item:byId.get(p.target_type+':'+p.target_id)})).filter(x=>x.item);cards.innerHTML=visible.length?visible.map(x=>card(x.p,x.item)).join(''):'<div class="empty" style="grid-column:1/-1"><div style="font-size:35px">🌟</div><strong>ما في إعلانات مميزة حالياً</strong><br>تابعنا باستمرار لتكتشف أحدث العروض والإعلانات في منبج وريفها.<br><a class="btn primary" style="margin-top:12px" href="#promote">كن أول من يروّج لإعلانه</a><br><a class="btn outline" style="margin-top:8px" href="index.html#listings">تصفّح جميع الإعلانات</a></div>';document.getElementById('status').textContent='';}catch(e){console.error(e);cards.innerHTML='<div class="empty" style="grid-column:1/-1">تعذّر تحميل الإعلانات حالياً. جرّب تحديث الصفحة بعد قليل.</div>';sel.innerHTML='<option value="">تعذّر تحميل الإعلانات</option>';document.getElementById('status').textContent='قد تكون المشكلة مؤقتة في الاتصال.'}}
+async function init(){
+ const cards=document.getElementById('cards'),sel=document.getElementById('adSelect');
+ try{
+  if(!window.supabase)throw new Error('تعذر تحميل مكتبة الاتصال');
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const now=new Date().toISOString();
+  const [pr,sessionResult]=await Promise.all([
+   db.from('promotions').select('*').eq('is_active',true).lte('starts_at',now).gt('ends_at',now).order('priority',{ascending:false}).order('created_at',{ascending:false}),
+   db.auth.getSession()
+  ]);
+  if(pr.error)throw pr.error;
+  const session=sessionResult.data&&sessionResult.data.session;
+  const activePromotions=pr.data||[];
+  const listingIds=[...new Set(activePromotions.filter(p=>p.target_type!=='business').map(p=>String(p.target_id)))];
+  const businessIds=[...new Set(activePromotions.filter(p=>p.target_type==='business').map(p=>String(p.target_id)))];
+
+  // Public cards are loaded by the promoted IDs, not by the current visitor's account.
+  // The previous code only fetched the logged-in user's own content, hiding other advertisers' promotions.
+  const [publicListings,publicBusinesses]=await Promise.all([
+   listingIds.length?db.from('listings').select('id,title,description,price,area,image_urls,category,status').in('id',listingIds).in('status',['active','approved']):Promise.resolve({data:[],error:null}),
+   businessIds.length?db.from('businesses').select('id,name,description,area,image_urls,category_id,status').in('id',businessIds).in('status',['active','approved']):Promise.resolve({data:[],error:null})
+  ]);
+  if(publicListings.error)console.warn('Could not load promoted listings:',publicListings.error.message);
+  if(publicBusinesses.error)console.warn('Could not load promoted businesses:',publicBusinesses.error.message);
+  const listingMap=new Map((publicListings.data||[]).map(x=>[String(x.id),{...x,type:'listing',title:x.title,category:x.category}]));
+  const businessMap=new Map((publicBusinesses.data||[]).map(x=>[String(x.id),{...x,type:'business',title:x.name,category:'محل أو خدمة'}]));
+  const byId=new Map([...listingMap,...businessMap]);
+
+  // The promotion-request dropdown remains private to the logged-in user's own posts.
+  let ownListings=[],ownBusinesses=[];
+  if(session&&session.user){
+   const [ls,bs]=await Promise.all([
+    db.from('listings').select('id,title,description,price,area,image_urls,category,status').eq('status','active').eq('user_id',session.user.id).order('created_at',{ascending:false}),
+    db.from('businesses').select('id,name,description,area,image_urls,category_id,status').eq('status','active').eq('owner_id',session.user.id).order('name')
+   ]);
+   if(!ls.error)ownListings=ls.data||[];
+   if(!bs.error)ownBusinesses=bs.data||[];
+  }
+  requestOptions=[...ownListings.map(x=>({id:x.id,type:'listing',title:x.title,area:x.area,price:x.price,description:x.description,image_urls:x.image_urls,category:x.category})),...ownBusinesses.map(x=>({id:x.id,type:'business',title:x.name,area:x.area,description:x.description,image_urls:x.image_urls,category:'محل أو خدمة'}))];
+  sel.innerHTML='<option value="">'+(session&&session.user?'لم أحدد إعلاناً بعد':'سجّل الدخول لعرض إعلاناتك المنشورة')+'</option>'+requestOptions.map(x=>'<option value="'+esc(x.type+':'+x.id)+'">'+esc(x.title)+' — '+esc(x.area||'منبج وريفها')+'</option>').join('');
+
+  const visible=activePromotions.map(p=>({p,item:byId.get(String(p.target_id))})).filter(x=>x.item);
+  cards.innerHTML=visible.length?visible.map(x=>card(x.p,x.item)).join(''):'<div class="empty" style="grid-column:1/-1"><div style="font-size:35px">🌟</div><strong>ما في إعلانات مميزة حالياً</strong><br>تابعنا باستمرار لتكتشف أحدث العروض والإعلانات في منبج وريفها.<br><a class="btn primary" style="margin-top:12px" href="#promote">كن أول من يروّج لإعلانه</a><br><a class="btn outline" style="margin-top:8px" href="index.html#listings">تصفّح جميع الإعلانات</a></div>';
+  document.getElementById('status').textContent='';
+ }catch(e){
+  console.error(e);
+  cards.innerHTML='<div class="empty" style="grid-column:1/-1">تعذّر تحميل الإعلانات حالياً. جرّب تحديث الصفحة بعد قليل.</div>';
+  sel.innerHTML='<option value="">تعذّر تحميل الإعلانات</option>';
+  document.getElementById('status').textContent='قد تكون المشكلة مؤقتة في الاتصال.';
+ }
+}
 function copyRequest(){const chosen=document.getElementById('adSelect').value;const item=requestOptions.find(x=>chosen===x.type+':'+x.id);const msg='مرحباً، بدي أستفسر عن ترويج إعلان مميز على دليل منبج.\n'+(item?'الإعلان: '+item.title+'\nالمنطقة: '+(item.area||'منبج وريفها')+'\nرقم الإعلان: '+item.id+'\n':'لم أحدد الإعلان بعد.\n')+'المدة المطلوبة: أريد معرفة الباقات والأسعار المتاحة.';const status=document.getElementById('copyStatus');if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(msg).then(()=>status.textContent='تم نسخ تفاصيل الطلب. افتح فيسبوك أو إنستغرام والصق الرسالة.').catch(()=>fallbackCopy(msg,status))}else fallbackCopy(msg,status)}
 function fallbackCopy(msg,status){const ta=document.createElement('textarea');ta.value=msg;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');status.textContent='تم نسخ تفاصيل الطلب. افتح فيسبوك أو إنستغرام والصق الرسالة.'}catch(e){status.textContent=msg}ta.remove()}
 init();
