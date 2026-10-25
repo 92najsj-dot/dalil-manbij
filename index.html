@@ -586,7 +586,7 @@ async function loadMyBusinessEntry(){
 
 function updateAccountUI(){
  updateOwnerNotificationsVisibility();
- const loggedIn=!!currentUser;const adminNav=$('adminNavBtn');const adminWrap=$('adminNavWrap');if(adminWrap)adminWrap.style.display=isAdminUser()?'inline-flex':'none';if(adminNav)adminNav.style.display='inline-flex';if(isAdminUser()&&db)setTimeout(()=>refreshAdminBell(),100);else closeAdminBell();const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display='none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
+ const loggedIn=!!currentUser;const adminNav=$('adminNavBtn');const adminWrap=$('adminNavWrap');if(adminWrap)adminWrap.style.display=isAdminUser()?'inline-flex':'none';if(adminNav)adminNav.style.display=isAdminUser()?'inline-flex':'none';if(isAdminUser()&&db)setTimeout(()=>refreshAdminBell(),100);else closeAdminBell();const nameSettings=$('displayNameSettings');if(nameSettings)nameSettings.style.display='none';const nameInput=$('displayNameInput');if(nameInput)nameInput.value=(publicProfiles[currentUser?.id]?.display_name)||'';
  const accountBtn=$('accountBtn');if(accountBtn){accountBtn.textContent=loggedIn?'حسابي':'تسجيل الدخول';accountBtn.title=loggedIn?'إدارة حسابك ومحفوظاتك':'تسجيل الدخول إلى حسابك'}
  const loginSection=$('accountLoginBtn');if(loginSection)loginSection.style.display=loggedIn?'none':'flex';
  const accountGroups=[['accountGroupProfile','accountProfileBtn'],['accountGroupLocal','accountLocalManageBtn'],['accountGroupAds','accountMyAdsBtn'],['accountGroupFavorites','accountFavoritesBtn'],['accountGroupSecurity','accountLogoutBtn']];
