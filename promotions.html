@@ -32,7 +32,7 @@ const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let db=null,requestOptions=[];
 function money(v){return v==null||v===''?'':Number(v).toLocaleString('en-US')+' ل.س'}
-function card(p,item){const images=item.image_urls;const image=Array.isArray(images)&&images.length?'<div class="photo"><img loading="lazy" src="'+esc(images[0])+'" alt="'+esc(item.title)+'"></div>':'<div class="photo">⭐</div>';return '<article class="card">'+image+'<div class="body"><span class="badge">⭐ إعلان مميز</span><h3>'+esc(item.title)+'</h3><div class="meta">'+esc(item.category||'')+' · '+esc(item.area||'منبج وريفها')+'</div>'+(item.description?'<p class="meta">'+esc(item.description.slice(0,150))+'</p>':'')+(item.price!=null?'<div class="price">'+money(item.price)+'</div>':'')+'<div style="margin-top:13px"><a class="btn primary" href="index.html#'+(p.target_type==='business'?'businesses':'listings')+'">عرض الإعلان</a></div></div></article>'}
+function card(p,item){const images=item.image_urls;const image=Array.isArray(images)&&images.length?'<div class="photo"><img loading="lazy" src="'+esc(images[0])+'" alt="'+esc(item.title)+'"></div>':'<div class="photo">⭐</div>';return '<article class="card">'+image+'<div class="body"><span class="badge">⭐ إعلان مميز</span><h3>'+esc(item.title)+'</h3><div class="meta">'+esc(item.category||'')+' · '+esc(item.area||'منبج وريفها')+'</div>'+(item.description?'<p class="meta">'+esc(item.description.slice(0,150))+'</p>':'')+(item.price!=null?'<div class="price">'+money(item.price)+'</div>':'')+'<div style="margin-top:13px"><a class="btn primary" href="index.html#'+(p.target_type==='business'?'businesses':p.target_type==='local_offer'?'localOffersSection':'listings')+'">عرض الإعلان</a></div></div></article>'}
 async function init(){
  const cards=document.getElementById('cards'),sel=document.getElementById('adSelect');
  try{
@@ -46,20 +46,23 @@ async function init(){
   if(pr.error)throw pr.error;
   const session=sessionResult.data&&sessionResult.data.session;
   const activePromotions=pr.data||[];
-  const listingIds=[...new Set(activePromotions.filter(p=>p.target_type!=='business').map(p=>String(p.target_id)))];
+  const listingIds=[...new Set(activePromotions.filter(p=>p.target_type==='listing').map(p=>String(p.target_id)))];
   const businessIds=[...new Set(activePromotions.filter(p=>p.target_type==='business').map(p=>String(p.target_id)))];
+  const offerIds=[...new Set(activePromotions.filter(p=>p.target_type==='local_offer').map(p=>String(p.target_id)))];
 
   // Public cards are loaded by the promoted IDs, not by the current visitor's account.
   // The previous code only fetched the logged-in user's own content, hiding other advertisers' promotions.
-  const [publicListings,publicBusinesses]=await Promise.all([
+  const [publicListings,publicBusinesses,publicOffers]=await Promise.all([
    listingIds.length?db.from('listings').select('id,title,description,price,area,image_urls,category,status').in('id',listingIds).in('status',['active','approved']):Promise.resolve({data:[],error:null}),
-   businessIds.length?db.from('businesses').select('id,name,description,area,image_urls,category_id,status').in('id',businessIds).in('status',['active','approved']):Promise.resolve({data:[],error:null})
+   businessIds.length?db.from('businesses').select('id,name,description,area,image_urls,category_id,status').in('id',businessIds).in('status',['active','approved']):Promise.resolve({data:[],error:null}),
+   offerIds.length?db.from('local_offers').select('id,title,description,discounted_price,original_price,currency,area,image_urls,status,starts_at,ends_at').in('id',offerIds).eq('status','active').lte('starts_at',now).gt('ends_at',now):Promise.resolve({data:[],error:null})
   ]);
   if(publicListings.error)console.warn('Could not load promoted listings:',publicListings.error.message);
   if(publicBusinesses.error)console.warn('Could not load promoted businesses:',publicBusinesses.error.message);
   const listingMap=new Map((publicListings.data||[]).map(x=>[String(x.id),{...x,type:'listing',title:x.title,category:x.category}]));
   const businessMap=new Map((publicBusinesses.data||[]).map(x=>[String(x.id),{...x,type:'business',title:x.name,category:'محل أو خدمة'}]));
-  const byId=new Map([...listingMap,...businessMap]);
+  const offerMap=new Map((publicOffers.data||[]).map(x=>[String(x.id),{...x,type:'local_offer',title:x.title,category:'عرض وخصم',price:x.discounted_price,original_price:x.original_price}]));
+  const byId=new Map([...listingMap,...businessMap,...offerMap]);
 
   // The promotion-request dropdown remains private to the logged-in user's own posts.
   let ownListings=[],ownBusinesses=[];
