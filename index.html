@@ -658,13 +658,15 @@ async function loadMyAds(){
   const results=await Promise.all([
    db.from('listings').select('id,title,status,created_at,image_urls').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
    db.from('businesses').select('id,name,status,created_at,image_urls').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),
-   db.from('wanted_requests').select('id,title,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false})
+   db.from('wanted_requests').select('id,title,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   db.from('local_offers').select('id,title,status,created_at,image_urls,rejection_reason,ends_at').eq('owner_id',currentUser.id).order('created_at',{ascending:false})
   ]);
   for(const r of results){if(r.error)throw r.error}
   const groups=[
    ...(results[0].data||[]).map(r=>({...r,_table:'listings',_title:r.title,_kind:'إعلان بيع'})),
    ...(results[1].data||[]).map(r=>({...r,_table:'businesses',_title:r.name,_kind:'محل أو خدمة'})),
-   ...(results[2].data||[]).map(r=>({...r,_table:'wanted_requests',_title:r.title,_kind:'طلب'}))
+   ...(results[2].data||[]).map(r=>({...r,_table:'wanted_requests',_title:r.title,_kind:'طلب'})),
+   ...(results[3].data||[]).map(r=>({...r,_table:'local_offers',_title:r.title,_kind:'عرض وخصم'}))
   ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   if(!groups.length){box.innerHTML=empty('ما أرسلت إعلانات أو طلبات لحد الآن.');return}
   box.innerHTML=groups.map(r=>{
@@ -749,11 +751,11 @@ async function markMyItemSold(id){
  toast('تم تحديد الإعلان كمباع.');await loadMyAds();await loadData();
 }
 async function deleteMyItem(table,id){
- if(!currentUser||!db||['listings','businesses','wanted_requests'].indexOf(table)===-1)return;
+ if(!currentUser||!db||['listings','businesses','wanted_requests','local_offers'].indexOf(table)===-1)return;
  if(!window.confirm('متأكد بدك تحذف هذا المحتوى؟ ما في تراجع بعد الحذف.'))return;
  try{
   let query=db.from(table).delete().eq('id',id);
-  query=query.eq(table==='businesses'?'owner_id':'user_id',currentUser.id);
+  query=query.eq((table==='businesses'||table==='local_offers')?'owner_id':'user_id',currentUser.id);
   const {data,error}=await query.select('id,image_urls');
   if(error)throw error;
   if(!data||!data.length){toast('ما تم الحذف. قد لا تملك الصلاحية أو أن المحتوى تغيّرت حالته.');return}
