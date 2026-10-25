@@ -14,6 +14,7 @@
 <main class="wrap">
 <div id="status" class="status">عم نحمل صفحة المحل…</div>
 <section id="shop" class="shop" hidden></section>
+<section id="shopOffersSection" hidden><div class="sectionhead"><h2>🏷️ عروض وخصومات المحل</h2><span class="small">العروض الفعّالة فقط</span></div><div id="shopOffers" class="grid"></div></section>
 <div class="sectionhead"><h2>🛍️ إعلانات صاحب المحل</h2><span class="small">الإعلانات المنشورة فقط</span></div>
 <div id="listings" class="grid"><div class="status">عم نحمل الإعلانات…</div></div>
 </main>
@@ -54,6 +55,59 @@ async function run(){
   $('shop').innerHTML=photo(x.image_urls,x.cover_image_url)+'<div class="body"><div class="titleline">'+(x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="شعار '+esc(x.name)+'" style="width:62px;height:62px;object-fit:contain;border-radius:13px;border:1px solid var(--line);background:#fff">':'')+'<h1>'+esc(x.name)+'</h1>'+(x.is_verified?'<span class="verified">✓ محل موثّق</span>':'')+'</div><div class="meta">📍 '+esc([x.area,x.village,x.address].filter(Boolean).join(' · ')||'منبج وريفها')+'</div>'+(x.description?'<div class="desc">'+esc(x.description)+'</div>':'')+renderServices(x.services)+renderOpeningHours(x.opening_hours,isOwner,x.id)+'<div class="actions">'+(wa?'<a class="btn primary" href="https://wa.me/'+wa+'?text='+encodeURIComponent('السلام عليكم 🌿، شفت محل '+(x.name||'محلكم')+' على دليل منبج، وحابب استفسر عن خدماتكم. ممكن تفاصيل أكثر لو سمحتوا؟ يعطيكم العافية 🤍')+'" target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>':'')+(x.phone?'<a class="btn" href="tel:'+esc(x.phone)+'">اتصال</a>':'')+(x.map_url?'<a class="btn" href="'+esc(x.map_url)+'" target="_blank" rel="noopener noreferrer">عرض الموقع على الخريطة</a>':'')+(x.website_url?'<a class="btn" href="'+esc(x.website_url)+'" target="_blank" rel="noopener noreferrer">موقع المحل</a>':'')+(isOwner?'<button class="btn primary" type="button" onclick="window.location.href=\'index.html?publish=listing#listings\'">➕ نشر إعلان من داخل المحل</button>':'')+'<button class="btn" type="button" onclick="shareShop()">مشاركة صفحة المحل ↗</button></div></div>';
   window.shareShop=async()=>{const shareUrl=location.href;const shareTitle=x.name+' | دليل منبج';const shareText='شوف صفحة '+x.name+' على دليل منبج';if(navigator.share){try{await navigator.share({title:shareTitle,text:shareText,url:shareUrl});return}catch(e){if(e&&e.name==='AbortError')return}}showShopShareOptions(shareTitle,shareText,shareUrl)};
 function showShopShareOptions(title,text,url){let old=document.getElementById('shopShareChooser');if(old)old.remove();const wrap=document.createElement('div');wrap.id='shopShareChooser';wrap.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl';wrap.innerHTML='<div style="width:min(100%,390px);background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 55px #0003;font-family:inherit;color:#173f34"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><strong style="font-size:21px">مشاركة صفحة المحل</strong><button type="button" id="closeShopShare" aria-label="إغلاق" style="border:0;background:#f0f4f1;border-radius:50%;width:38px;height:38px;font-size:22px">×</button></div><p style="margin:0 0 18px;color:#64736d;line-height:1.7">اختار وين بتحب تشارك رابط المحل</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button type="button" data-share="whatsapp" style="padding:14px 8px;border:1px solid #dce8e1;border-radius:14px;background:#f4fbf6;font-size:16px">🟢 واتساب</button><button type="button" data-share="facebook" style="padding:14px 8px;border:1px solid #dce8e1;border-radius:14px;background:#f4fbf6;font-size:16px">🔵 فيسبوك</button><button type="button" data-share="telegram" style="padding:14px 8px;border:1px solid #dce8e1;border-radius:14px;background:#f4fbf6;font-size:16px">✈️ تلغرام</button><button type="button" data-share="copy" style="padding:14px 8px;border:1px solid #dce8e1;border-radius:14px;background:#f4fbf6;font-size:16px">🔗 نسخ الرابط</button></div></div>';document.body.appendChild(wrap);wrap.querySelector('#closeShopShare').onclick=()=>wrap.remove();wrap.addEventListener('click',async e=>{if(e.target===wrap){wrap.remove();return}const b=e.target.closest('[data-share]');if(!b)return;const mode=b.dataset.share;if(mode==='copy'){try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(url);else{const ta=document.createElement('textarea');ta.value=url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}b.textContent='✅ تم النسخ';setTimeout(()=>wrap.remove(),700)}catch(_){window.prompt('انسخ رابط المحل:',url)}return}const targets={whatsapp:'https://wa.me/?text='+encodeURIComponent(text+' '+url),facebook:'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url),telegram:'https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text)};window.open(targets[mode],'_blank','noopener,noreferrer');wrap.remove()})}
+  const offers=await db.from('local_offers').select('id,title,description,original_price,discounted_price,currency,image_urls,starts_at,ends_at,status').eq('business_id',x.id).eq('status','active').lte('starts_at',new Date().toISOString()).gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:true}).limit(30);
+  if(offers.error)console.warn('shop offers unavailable:',offers.error.message);
+  const offerRows=offers.data||[];
+  if(offerRows.length){
+   $('shopOffersSection').hidden=false;
+   $('shopOffers').innerHTML=offerRows.map(o=>{
+    const imgs=images(o.image_urls),cur=o.currency==='USD'?'.select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,image_urls,created_at,status').eq('user_id',x.owner_id).in('status',['active','approved','sold']).order('created_at',{ascending:false}).limit(60);
+  if(ads.error)throw ads.error;
+  const rows=ads.data||[];
+  $('listings').innerHTML=rows.length?rows.map(a=>{
+   const ownerControls=isOwner?'<div class="actions"><button class="btn" type="button" onclick="editListingFromShop(\''+esc(a.id)+'\')">✏️ تعديل الإعلان</button>'+(a.status!=='sold'?'<button class="btn" type="button" onclick="markSoldFromShop(\''+esc(a.id)+'\')">✓ تم البيع</button>':'<button class="btn" type="button" onclick="markAvailableFromShop(\''+esc(a.id)+'\')">↩ إعادة تنشيط الإعلان</button>')+'<button class="btn" type="button" style="color:#a32626;border-color:#e8bebe" onclick="deleteListingFromShop(\''+esc(a.id)+'\')">🗑️ حذف الإعلان</button></div>':'';
+   return `<article class="card">${listingPhoto(a.image_urls)}<div class="cardbody"><h3>${esc(a.title)}</h3><div class="price">${a.currency==='USD'?'USD':'ل.س'} ${Number(a.price||0).toLocaleString('en-US')}</div><div class="small">📍 ${esc([a.area,a.village].filter(Boolean).join(' · ')||'منبج وريفها')} · ${esc(a.category||'أخرى')}</div>${a.status==='sold'?'<div class="verified" style="display:inline-block;margin:7px 0;background:#fff0d8;color:#80510c">✓ مباع</div>':''}${a.description?'<p class="small">'+esc(a.description.slice(0,140))+'</p>':''}${a.status!=='sold'&&a.contact_phone?'<a class="btn" href="https://wa.me/'+digits(a.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل بخصوص الإعلان</a>':''}${ownerControls}</div></article>`;
+  }).join(''):'<div class="status">ما في إعلانات بيع منشورة مرتبطة بحساب صاحب هذا المحل حالياً. إذا نشرت إعلاناً ولم يظهر، تأكد أنك نشرت من نفس الحساب الذي يملك المحل وأن الإعلان مقبول ومنشور.</div>';
+ }catch(e){console.error(e);$('status').textContent='تعذّر تحميل الصفحة. تحقق من اتصال الإنترنت ثم أعد المحاولة.';$('listings').innerHTML=''}
+}
+async function deleteListingFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('حذف الإعلان متاح لصاحب المحل فقط.');return}
+ if(!confirm('هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن الحذف.'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').delete().eq('id',id).eq('user_id',currentUser.id).select('id');
+ if(r.error||!r.data||!r.data.length){console.error('delete listing:',r.error);alert('تعذّر حذف الإعلان. قد تكون صلاحيات الحذف غير مفعّلة في قاعدة البيانات.');return}
+ alert('تم حذف الإعلان.');
+ location.reload();
+}
+async function markSoldFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('هذا الخيار متاح لصاحب المحل فقط.');return}
+ if(!confirm('تأكيد وضع الإعلان كـ «مباع»؟ سيظهر للزوار أنه مباع ولن يظهر زر التواصل.'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').update({status:'sold'}).eq('id',id).eq('user_id',currentUser.id).select('id');
+ if(r.error||!r.data||!r.data.length){alert('تعذّر تحديث الإعلان.');return}
+ location.reload();
+}
+async function markAvailableFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId))return;
+ if(!confirm('إعادة الإعلان إلى الحالة المنشورة؟'))return;
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const r=await db.from('listings').update({status:'active'}).eq('id',id).eq('user_id',currentUser.id).eq('status','sold').select('id');
+ if(r.error||!r.data||!r.data.length){alert('تعذّر إعادة تنشيط الإعلان.');return}
+ location.reload();
+}
+function editListingFromShop(id){
+ if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('سجّل الدخول بالحساب الذي يملك المحل لتعديل الإعلان.');return}
+ location.href='index.html?editListing='+encodeURIComponent(id)+'#listings';
+}
+
+run();
+</script>
+</body>
+</html>:'ل.س';
+    const pic=imgs.length?'<div class="photo"><img src="'+esc(imgs[0])+'" alt="'+esc(o.title)+'" loading="lazy"></div>':'<div class="photo">🏷️</div>';
+    return '<article class="card">'+pic+'<div class="cardbody"><h3>'+esc(o.title)+'</h3><div class="price"><span style="text-decoration:line-through;color:#7b8580;font-size:13px;margin-left:6px">'+cur+' '+Number(o.original_price||0).toLocaleString('en-US')+'</span>'+cur+' '+Number(o.discounted_price||0).toLocaleString('en-US')+'</div>'+(o.description?'<p class="small">'+esc(o.description)+'</p>':'')+'<div class="verified" style="display:inline-block;margin:7px 0">🏷️ عرض فعّال</div><div class="small">ينتهي: '+esc(new Date(o.ends_at).toLocaleDateString('ar-SY'))+'</div></div></article>';
+   }).join('');
+  }else{$('shopOffersSection').hidden=true}
   const ads=await db.from('listings').select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,image_urls,created_at,status').eq('user_id',x.owner_id).in('status',['active','approved','sold']).order('created_at',{ascending:false}).limit(60);
   if(ads.error)throw ads.error;
   const rows=ads.data||[];
