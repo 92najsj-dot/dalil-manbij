@@ -376,7 +376,8 @@ function adminEscape(value){
  return String((value == null ? '' : value)).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function adminDescription(row,table){
- if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null].filter(Boolean).join(' · ');\n if(table==='local_offers')return [row.description,row.currency==='USD'?'الدولار':'الليرة السورية','السعر قبل الخصم: '+row.original_price,'بعد الخصم: '+row.discounted_price,row.starts_at?'يبدأ: '+new Date(row.starts_at).toLocaleString('ar-SY'):null,row.ends_at?'ينتهي: '+new Date(row.ends_at).toLocaleString('ar-SY'):null].filter(Boolean).join(' · ');
+ if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null].filter(Boolean).join(' · ');
+ if(table==='local_offers')return [row.description,row.currency==='USD'?'الدولار':'الليرة السورية','السعر قبل الخصم: '+row.original_price,'بعد الخصم: '+row.discounted_price,row.starts_at?'يبدأ: '+new Date(row.starts_at).toLocaleString('ar-SY'):null,row.ends_at?'ينتهي: '+new Date(row.ends_at).toLocaleString('ar-SY'):null].filter(Boolean).join(' · ');
  return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null].filter(Boolean).join(' · ');
 }
 function adminReadStorageKey(){return 'dalil-admin-notifications-read:'+String(currentUser&&currentUser.id||'admin')}
