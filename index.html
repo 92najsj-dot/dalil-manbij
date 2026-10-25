@@ -306,7 +306,7 @@ async function adminRunContentAction(action){
  if(action==='confirmPromote'){
   const days=Number(document.getElementById('adminContentPromoDays')?.value||7),priority=Number(document.getElementById('adminContentPromoPriority')?.value||50);
   if(!confirm('ترويج هذا المحتوى في قسم الإعلانات المميزة لمدة '+days+' يوم؟'))return;
-  try{const table=target.table;const q=await db.from(table).select('*').eq('id',target.id).maybeSingle();if(q.error)throw q.error;if(!q.data||!isPublishedContentStatus(q.data.status))throw new Error('لازم يكون المحتوى منشوراً وفعالاً قبل الترويج.');const start=new Date(),end=new Date(start.getTime()+days*86400000);const title=table==='businesses'?q.data.name:q.data.title;const payload={target_type:table==='businesses'?'business':'listing',target_id:target.id,advertiser_name:title||'معلن',starts_at:start.toISOString(),ends_at:end.toISOString(),priority,amount:0,payment_status:'pending',is_active:true,created_by:currentUser.id,display_mode:'featured'};const created=await db.from('promotions').insert(payload).select('id').single();if(created.error)throw created.error;await logAdminAction('create','promotion',created.data.id,{target_type:payload.target_type,target_id:target.id,duration_days:days,priority,source:'public_card'});closeAdminContentActions();toast('تمت إضافة الترويج لمدة '+days+' يوم.');await loadData();return}catch(e){console.error(e);toast('تعذّر الترويج: '+(e.message||'خطأ'))}return
+  try{const table=target.table;const q=await db.from(table).select('*').eq('id',target.id).maybeSingle();if(q.error)throw q.error;if(!q.data||!isPublishedContentStatus(q.data.status))throw new Error('لازم يكون المحتوى منشوراً وفعالاً قبل الترويج.');const start=new Date(),end=new Date(start.getTime()+days*86400000);const title=table==='businesses'?q.data.name:q.data.title;const payload={target_type:table==='businesses'?'business':table==='local_offers'?'local_offer':'listing',target_id:target.id,advertiser_name:title||'معلن',starts_at:start.toISOString(),ends_at:end.toISOString(),priority,amount:0,payment_status:'pending',is_active:true,created_by:currentUser.id,display_mode:'featured'};const created=await db.from('promotions').insert(payload).select('id').single();if(created.error)throw created.error;await logAdminAction('create','promotion',created.data.id,{target_type:payload.target_type,target_id:target.id,duration_days:days,priority,source:'public_card'});closeAdminContentActions();toast('تمت إضافة الترويج لمدة '+days+' يوم.');await loadData();return}catch(e){console.error(e);toast('تعذّر الترويج: '+(e.message||'خطأ'))}return
  }
  if(action==='pin'){
   if(target.table!=='businesses'){toast('التثبيت متاح للمحلات فقط حالياً.');return}
@@ -318,7 +318,7 @@ async function adminRunContentAction(action){
 async function adminHideContent(table,id){
  if(!isAdminUser()||!db||!['listings','businesses','local_offers'].includes(table)){toast('هذا الإجراء مخصص للإدارة فقط.');return}
  if(!confirm('إخفاء هذا المحتوى من العرض العام؟'))return;
- const {data,error}=await db.from(table).update({status:'rejected'}).eq('id',id).select('id');
+ const {data,error}=await db.from(table).update({status:table==='local_offers'?'ended':'rejected'}).eq('id',id).select('id');
  if(error||!data||!data.length){toast('تعذّر إخفاء المحتوى. تحقق من صلاحيات الإدارة وحالات قاعدة البيانات.');return}
  try{await db.from('admin_audit_log').insert({admin_user_id:currentUser.id,action:'hide',entity_type:table,entity_id:String(id),details:{source:'public_card'}})}catch(_){}
  toast('تم إخفاء المحتوى.');await loadData();
