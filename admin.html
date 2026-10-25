@@ -188,6 +188,7 @@ body.admin-page #adminItems,body.admin-page #adminReportsSection,body.admin-page
   <button type="button" class="admintab active" data-admin-tab="listings" onclick="selectAdminTab('listings')">إعلانات البيع</button>
   <button type="button" class="admintab" data-admin-tab="businesses" onclick="selectAdminTab('businesses')">المحلات والخدمات</button>
   <button type="button" class="admintab" data-admin-tab="wanted_requests" onclick="selectAdminTab('wanted_requests')">طلبات الناس</button>
+  <button type="button" class="admintab" data-admin-tab="local_offers" onclick="selectAdminTab('local_offers')">🏷️ العروض والخصومات</button>
   <button type="button" class="admintab" onclick="loadAdminViolations()">🚫 الإعلانات المخالفة</button>
   <button type="button" class="admintab" onclick="loadAdminReports()">🚩 بلاغات المستخدمين</button>
   <button type="button" class="admintab" onclick="loadListingReports()">⚑ بلاغات الإعلانات</button>
@@ -351,13 +352,13 @@ async function deleteMyItem(table,id){
 }
 
 let adminActiveTable='listings';
-const adminTableLabels={listings:'إعلانات البيع',businesses:'المحلات والخدمات',wanted_requests:'طلبات الناس'};
+const adminTableLabels={listings:'إعلانات البيع',businesses:'المحلات والخدمات',wanted_requests:'طلبات الناس',local_offers:'العروض والخصومات'};
 function hideAdminSpecialSections(){
  const r=$('adminReportsSection'),v=$('adminViolationsSection'),i=$('adminItems');
  if(r)r.style.display='none';if(v)v.style.display='none';if(i)i.style.display='';
 }
 function selectAdminTab(table){
- if(!['listings','businesses','wanted_requests'].includes(table))return;
+ if(!['listings','businesses','wanted_requests','local_offers'].includes(table))return;
  hideAdminSpecialSections();
  adminActiveTable=table;
  document.querySelectorAll('.admintab[data-admin-tab]').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===table));
@@ -375,7 +376,7 @@ function adminEscape(value){
  return String((value == null ? '' : value)).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function adminDescription(row,table){
- if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null].filter(Boolean).join(' · ');
+ if(table==='businesses')return [row.description,row.area,row.address,row.phone?'هاتف: '+row.phone:null].filter(Boolean).join(' · ');\n if(table==='local_offers')return [row.description,row.currency==='USD'?'الدولار':'الليرة السورية','السعر قبل الخصم: '+row.original_price,'بعد الخصم: '+row.discounted_price,row.starts_at?'يبدأ: '+new Date(row.starts_at).toLocaleString('ar-SY'):null,row.ends_at?'ينتهي: '+new Date(row.ends_at).toLocaleString('ar-SY'):null].filter(Boolean).join(' · ');
  return [row.description,row.area,row.category,row.price!=null?'السعر: '+row.price:null,row.budget!=null?'الميزانية: '+row.budget:null].filter(Boolean).join(' · ');
 }
 function adminReadStorageKey(){return 'dalil-admin-notifications-read:'+String(currentUser&&currentUser.id||'admin')}
@@ -468,7 +469,7 @@ async function loadAdminPending(){
    else {blockedUsersMap=new Map();console.warn('blocked_users unavailable; continuing without block controls:',blockedResult.error.message);}
   }catch(blockErr){blockedUsersMap=new Map();console.warn('blocked_users unavailable; continuing without block controls:',blockErr);}
 
-  const counts=await Promise.all(['listings','businesses','wanted_requests'].map(async t=>{
+  const counts=await Promise.all(['listings','businesses','wanted_requests','local_offers'].map(async t=>{
    const {count,error:e}=await db.from(t).select('id',{count:'exact',head:true}).eq('status','pending');
    return e?0:(count||0);
   }));
@@ -602,7 +603,7 @@ async function enforceBlockedUser(user){
 }
 async function reviewAdminItem(table,id,status){
  if((currentUser && currentUser.app_metadata && currentUser.app_metadata.role)!=='admin'){toast('ما عندك صلاحية الإدارة.');return}
- if(!['listings','businesses','wanted_requests'].includes(table)||!['active','rejected'].includes(status))return;
+ if(!['listings','businesses','wanted_requests','local_offers'].includes(table)||!['active','rejected'].includes(status))return;
  let reason=null;
  if(status==='rejected'){reason=window.prompt('سبب رفض المحتوى (سيظهر للمشرف عند المراجعة):','مخالفة قواعد دليل منبج');if(reason===null)return;reason=reason.trim()||'مخالفة قواعد دليل منبج'}
  if(!window.confirm(status==='active'?'موافقة ونشر هذا المحتوى؟':'رفض هذا المحتوى؟'))return;
