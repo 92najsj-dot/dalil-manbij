@@ -60,54 +60,14 @@ function showShopShareOptions(title,text,url){let old=document.getElementById('s
   const offerRows=offers.data||[];
   if(offerRows.length){
    $('shopOffersSection').hidden=false;
-   $('shopOffers').innerHTML=offerRows.map(o=>{
-    const imgs=images(o.image_urls),cur=o.currency==='USD'?'.select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,image_urls,created_at,status').eq('user_id',x.owner_id).in('status',['active','approved','sold']).order('created_at',{ascending:false}).limit(60);
-  if(ads.error)throw ads.error;
-  const rows=ads.data||[];
-  $('listings').innerHTML=rows.length?rows.map(a=>{
-   const ownerControls=isOwner?'<div class="actions"><button class="btn" type="button" onclick="editListingFromShop(\''+esc(a.id)+'\')">✏️ تعديل الإعلان</button>'+(a.status!=='sold'?'<button class="btn" type="button" onclick="markSoldFromShop(\''+esc(a.id)+'\')">✓ تم البيع</button>':'<button class="btn" type="button" onclick="markAvailableFromShop(\''+esc(a.id)+'\')">↩ إعادة تنشيط الإعلان</button>')+'<button class="btn" type="button" style="color:#a32626;border-color:#e8bebe" onclick="deleteListingFromShop(\''+esc(a.id)+'\')">🗑️ حذف الإعلان</button></div>':'';
-   return `<article class="card">${listingPhoto(a.image_urls)}<div class="cardbody"><h3>${esc(a.title)}</h3><div class="price">${a.currency==='USD'?'USD':'ل.س'} ${Number(a.price||0).toLocaleString('en-US')}</div><div class="small">📍 ${esc([a.area,a.village].filter(Boolean).join(' · ')||'منبج وريفها')} · ${esc(a.category||'أخرى')}</div>${a.status==='sold'?'<div class="verified" style="display:inline-block;margin:7px 0;background:#fff0d8;color:#80510c">✓ مباع</div>':''}${a.description?'<p class="small">'+esc(a.description.slice(0,140))+'</p>':''}${a.status!=='sold'&&a.contact_phone?'<a class="btn" href="https://wa.me/'+digits(a.contact_phone)+'" target="_blank" rel="noopener noreferrer">تواصل بخصوص الإعلان</a>':''}${ownerControls}</div></article>`;
-  }).join(''):'<div class="status">ما في إعلانات بيع منشورة مرتبطة بحساب صاحب هذا المحل حالياً. إذا نشرت إعلاناً ولم يظهر، تأكد أنك نشرت من نفس الحساب الذي يملك المحل وأن الإعلان مقبول ومنشور.</div>';
- }catch(e){console.error(e);$('status').textContent='تعذّر تحميل الصفحة. تحقق من اتصال الإنترنت ثم أعد المحاولة.';$('listings').innerHTML=''}
-}
-async function deleteListingFromShop(id){
- if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('حذف الإعلان متاح لصاحب المحل فقط.');return}
- if(!confirm('هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن الحذف.'))return;
- const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
- const r=await db.from('listings').delete().eq('id',id).eq('user_id',currentUser.id).select('id');
- if(r.error||!r.data||!r.data.length){console.error('delete listing:',r.error);alert('تعذّر حذف الإعلان. قد تكون صلاحيات الحذف غير مفعّلة في قاعدة البيانات.');return}
- alert('تم حذف الإعلان.');
- location.reload();
-}
-async function markSoldFromShop(id){
- if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('هذا الخيار متاح لصاحب المحل فقط.');return}
- if(!confirm('تأكيد وضع الإعلان كـ «مباع»؟ سيظهر للزوار أنه مباع ولن يظهر زر التواصل.'))return;
- const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
- const r=await db.from('listings').update({status:'sold'}).eq('id',id).eq('user_id',currentUser.id).select('id');
- if(r.error||!r.data||!r.data.length){alert('تعذّر تحديث الإعلان.');return}
- location.reload();
-}
-async function markAvailableFromShop(id){
- if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId))return;
- if(!confirm('إعادة الإعلان إلى الحالة المنشورة؟'))return;
- const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
- const r=await db.from('listings').update({status:'active'}).eq('id',id).eq('user_id',currentUser.id).eq('status','sold').select('id');
- if(r.error||!r.data||!r.data.length){alert('تعذّر إعادة تنشيط الإعلان.');return}
- location.reload();
-}
-function editListingFromShop(id){
- if(!currentUser||!shopOwnerId||String(currentUser.id)!==String(shopOwnerId)){alert('سجّل الدخول بالحساب الذي يملك المحل لتعديل الإعلان.');return}
- location.href='index.html?editListing='+encodeURIComponent(id)+'#listings';
-}
-
-run();
-</script>
-</body>
-</html>:'ل.س';
-    const pic=imgs.length?'<div class="photo"><img src="'+esc(imgs[0])+'" alt="'+esc(o.title)+'" loading="lazy"></div>':'<div class="photo">🏷️</div>';
-    return '<article class="card">'+pic+'<div class="cardbody"><h3>'+esc(o.title)+'</h3><div class="price"><span style="text-decoration:line-through;color:#7b8580;font-size:13px;margin-left:6px">'+cur+' '+Number(o.original_price||0).toLocaleString('en-US')+'</span>'+cur+' '+Number(o.discounted_price||0).toLocaleString('en-US')+'</div>'+(o.description?'<p class="small">'+esc(o.description)+'</p>':'')+'<div class="verified" style="display:inline-block;margin:7px 0">🏷️ عرض فعّال</div><div class="small">ينتهي: '+esc(new Date(o.ends_at).toLocaleDateString('ar-SY'))+'</div></div></article>';
+   $('shopOffers').innerHTML=offerRows.map(function(o){
+    const imgs=images(o.image_urls),cur=o.currency==='USD'?'$':'ل.س';
+    const pic=imgs.length ? '<div class="photo"><img src="'+esc(imgs[0])+'" alt="'+esc(o.title)+'" loading="lazy"></div>' : '<div class="photo">🏷️</div>';
+    const oldPrice=cur+' '+Number(o.original_price||0).toLocaleString('en-US');
+    const newPrice=cur+' '+Number(o.discounted_price||0).toLocaleString('en-US');
+    return '<article class="card">'+pic+'<div class="cardbody"><h3>'+esc(o.title)+'</h3><div class="price"><span style="text-decoration:line-through;color:#7b8580;font-size:13px;margin-left:6px">'+oldPrice+'</span> '+newPrice+'</div>'+(o.description?'<p class="small">'+esc(o.description)+'</p>':'')+'<div class="verified" style="display:inline-block;margin:7px 0">🏷️ عرض فعّال</div><div class="small">ينتهي: '+esc(new Date(o.ends_at).toLocaleDateString('ar-SY'))+'</div></div></article>';
    }).join('');
-  }else{$('shopOffersSection').hidden=true}
+  }else{$('shopOffersSection').hidden=true;}
   const ads=await db.from('listings').select('id,user_id,title,description,price,currency,area,village,category,item_condition,contact_phone,image_urls,created_at,status').eq('user_id',x.owner_id).in('status',['active','approved','sold']).order('created_at',{ascending:false}).limit(60);
   if(ads.error)throw ads.error;
   const rows=ads.data||[];
