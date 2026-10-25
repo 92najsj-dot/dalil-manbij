@@ -625,10 +625,11 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
    if(!currentImages.length){const currentResult=await db.from('businesses').select('image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(currentResult.error)throw currentResult.error;currentImages=Array.isArray(currentResult.data&&currentResult.data.image_urls)?currentResult.data.image_urls:[]}
    if(photo){
     if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');
-    if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');
+    const ext=(photo.name.split('.').pop()||'').toLowerCase(),mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif'},photoMime=photo.type||mimeByExt[ext]||'';
+    if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');
     const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');
     const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;
-    const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type});
+    const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});
     if(uploaded.error)throw uploaded.error;
     const newUrl=db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl;
     payload.image_urls=[newUrl,...currentImages.slice(1)];
@@ -640,7 +641,7 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
    const photoInput=f.querySelector('[name="listing_photos"]'),files=photoInput&&photoInput.files?Array.from(photoInput.files):[];
    const existingImagesResult=await db.from('listings').select('image_urls').eq('id',id).eq('user_id',currentUser.id).maybeSingle();if(existingImagesResult.error)throw existingImagesResult.error;if(!existingImagesResult.data){toast('تعذّر تحميل صور الإعلان الحالية أو لا تملك صلاحية تعديله.');return}let currentImages=Array.isArray(existingImagesResult.data.image_urls)?existingImagesResult.data.image_urls.slice():[];
    if(currentImages.length+files.length>4){toast('الحد الأقصى 4 صور للإعلان.');return}
-   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photo.type});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
+   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase();const mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif'};const photoMime=photo.type||mimeByExt[ext]||'';if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
    if(files.length)payload.image_urls=currentImages;
   }
   const ownerColumn=isShop?'owner_id':'user_id';
