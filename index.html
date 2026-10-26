@@ -625,7 +625,7 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
    let currentImages=Array.isArray(existingShop&&existingShop.image_urls)?existingShop.image_urls.slice():[];
    if(!currentImages.length){const currentResult=await db.from('businesses').select('image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(currentResult.error)throw currentResult.error;currentImages=Array.isArray(currentResult.data&&currentResult.data.image_urls)?currentResult.data.image_urls.slice():[]}
    if(currentImages.length+files.length>4)throw new Error('يمكن أن يحتوي المحل على 4 صور كحد أقصى.');
-   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase(),mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif',heic:'image/heic',heif:'image/heif'},photoMime=photo.type||mimeByExt[ext]||'';if(!['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF أو HEIC.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
+   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase(),mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif',heic:'image/heic',heif:'image/heif'},detectedMime=String(photo.type||'').toLowerCase(),photoMime=['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(detectedMime)?detectedMime:(mimeByExt[ext]||'');if(!['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF أو HEIC.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
    if(files.length)payload.image_urls=currentImages;
   }else{
    const price=String(d.price||'').trim();
@@ -634,7 +634,7 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
    const photoInput=f.querySelector('[name="listing_photos"]'),files=photoInput&&photoInput.files?Array.from(photoInput.files):[];
    const existingImagesResult=await db.from('listings').select('image_urls').eq('id',id).eq('user_id',currentUser.id).maybeSingle();if(existingImagesResult.error)throw existingImagesResult.error;if(!existingImagesResult.data){toast('تعذّر تحميل صور الإعلان الحالية أو لا تملك صلاحية تعديله.');return}let currentImages=Array.isArray(existingImagesResult.data.image_urls)?existingImagesResult.data.image_urls.slice():[];
    if(currentImages.length+files.length>4){toast('الحد الأقصى 4 صور للإعلان.');return}
-   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase();const mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif'};const photoMime=photo.type||mimeByExt[ext]||'';if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
+   for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase();const mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif'};const detectedMime=String(photo.type||'').toLowerCase(),photoMime=['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(detectedMime)?detectedMime:(mimeByExt[ext]||'');if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
    if(files.length)payload.image_urls=currentImages;
   }
   const ownerColumn=isShop?'owner_id':'user_id';
@@ -1123,26 +1123,27 @@ document.addEventListener('visibilitychange',function(){
 });
 window.addEventListener('storage',function(event){if(event.key==='dalil-content-updated')refreshHomepageAfterReturn()});
 /* Offer image picker: show selected photos immediately so mobile users can confirm selection. */
+function showUploadPhotoPreview(src){
+ let modal=document.getElementById('uploadPhotoPreviewModal');
+ if(!modal){modal=document.createElement('div');modal.id='uploadPhotoPreviewModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#000d;display:flex;align-items:center;justify-content:center;padding:18px';modal.innerHTML='<button type="button" aria-label="إغلاق المعاينة" style="position:absolute;top:18px;right:18px;border:0;border-radius:50%;width:44px;height:44px;background:#fff;color:#111;font-size:30px;z-index:2">×</button><img alt="معاينة الصورة" style="max-width:100%;max-height:85vh;object-fit:contain;border-radius:10px">';modal.addEventListener('click',e=>{if(e.target===modal||e.target.tagName==='BUTTON')modal.remove()});document.body.appendChild(modal)}
+ modal.querySelector('img').src=src;
+}
 document.addEventListener('change',function(event){
- const input=event.target;
- if(!(input instanceof HTMLInputElement)||input.type!=='file')return;
+ const input=event.target;if(!(input instanceof HTMLInputElement)||input.type!=='file')return;
  const form=input.closest('form');if(!form)return;
  const previewMap={photos:'[data-photo-preview-for="photos"]',shop_photos:'#shopPhotoPreview',listing_photos:'#listingPhotoPreview'};
  const selector=previewMap[input.name];if(!selector)return;
  const preview=form.querySelector(selector);if(!preview)return;
- const files=Array.from(input.files||[]);
- if(files.length>4){input.value='';toast('اختر 4 صور كحد أقصى.');return}
- const existing=preview.querySelectorAll('img').length;
+ const files=Array.from(input.files||[]);if(files.length>4){input.value='';toast('اختر 4 صور كحد أقصى.');return}
  preview.querySelectorAll('[data-new-photo-preview]').forEach(el=>el.remove());
- if(!files.length)return;
- files.forEach(function(file){
-  const item=document.createElement('div');item.dataset.newPhotoPreview='1';item.style.cssText='width:82px;font-size:12px;text-align:center;overflow-wrap:anywhere';
-  const img=document.createElement('img');img.alt=file.name;img.style.cssText='width:78px;height:78px;object-fit:cover;border-radius:10px;border:1px solid #dce5e2';
-  const url=URL.createObjectURL(file);img.src=url;img.onload=function(){URL.revokeObjectURL(url)};
-  const label=document.createElement('div');label.textContent=file.name;label.style.cssText='max-height:32px;overflow:hidden';item.append(img,label);preview.append(item);
+ files.forEach(function(file,index){
+  const item=document.createElement('div');item.dataset.newPhotoPreview='1';item.style.cssText='position:relative;width:82px;font-size:12px;text-align:center;overflow-wrap:anywhere;margin:3px';
+  const img=document.createElement('img');img.alt=file.name;img.style.cssText='width:78px;height:78px;object-fit:cover;border-radius:10px;border:1px solid #dce5e2;cursor:zoom-in';
+  const url=URL.createObjectURL(file);img.src=url;img.onclick=()=>showUploadPhotoPreview(url);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','إزالة '+file.name);remove.style.cssText='position:absolute;top:-7px;right:-7px;width:26px;height:26px;border:0;border-radius:50%;background:#b42318;color:#fff;font-size:21px;line-height:22px;font-weight:bold;cursor:pointer';remove.onclick=()=>{const dt=new DataTransfer();Array.from(input.files||[]).forEach((f,i)=>{if(i!==index)dt.items.add(f)});input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));toast('تمت إزالة الصورة من الاختيار.')};
+  const label=document.createElement('div');label.textContent=file.name;label.style.cssText='max-height:32px;overflow:hidden';item.append(img,remove,label);preview.append(item);
  });
 });
-
 
 </script>
 <div id="imageGalleryOverlay" class="image-gallery-overlay" role="dialog" aria-modal="true" aria-label="صور الإعلان" onclick="if(event.target===this)closeImageGallery()"><div class="image-gallery-dialog" id="imageGalleryDialog"><button type="button" class="gallery-control gallery-close" aria-label="إغلاق الصور" onclick="closeImageGallery()">×</button><div class="image-gallery-main" id="imageGalleryMain"><button type="button" class="gallery-control gallery-prev" aria-label="الصورة السابقة" onclick="changeGalleryImage(-1)">‹</button><img id="imageGalleryImage" alt="صورة الإعلان" src=""><button type="button" class="gallery-control gallery-next" aria-label="الصورة التالية" onclick="changeGalleryImage(1)">›</button></div><div class="image-gallery-counter" id="imageGalleryCounter">1 / 1</div><div class="image-gallery-thumbs" id="imageGalleryThumbs"></div></div></div>
