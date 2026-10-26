@@ -624,18 +624,20 @@ async function submitForm(e){e.preventDefault();if(!db){toast('قاعدة الب
    const existingShop=businesses.find(b=>String(b.id)===String(id));
    let currentImages=Array.isArray(existingShop&&existingShop.image_urls)?existingShop.image_urls.slice():[];
    if(!currentImages.length){const currentResult=await db.from('businesses').select('image_urls').eq('id',id).eq('owner_id',currentUser.id).maybeSingle();if(currentResult.error)throw currentResult.error;currentImages=Array.isArray(currentResult.data&&currentResult.data.image_urls)?currentResult.data.image_urls.slice():[]}
+   const removedUrls=JSON.parse(photoInput?.dataset.removedImageUrls||'[]');currentImages=currentImages.filter(url=>!removedUrls.includes(url));
    if(currentImages.length+files.length>4)throw new Error('يمكن أن يحتوي المحل على 4 صور كحد أقصى.');
    for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم كل صورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase(),mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif',heic:'image/heic',heif:'image/heif'},detectedMime=String(photo.type||'').toLowerCase(),photoMime=['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(detectedMime)?detectedMime:(mimeByExt[ext]||'');if(!['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF أو HEIC.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
-   if(files.length)payload.image_urls=currentImages;
+   if(files.length||removedUrls.length)payload.image_urls=currentImages;
   }else{
    const price=String(d.price||'').trim();
    if(price!==''&&(!Number.isFinite(Number(price))||Number(price)<0)){toast('السعر لازم يكون رقماً غير سالب.');return}
    payload={title:d.title.trim(),category:String(d.category||'أخرى').trim()||'أخرى',description:String(d.description||'').trim()||null,price:price===''?null:Number(price),currency:['SYP','USD'].includes(d.currency)?d.currency:'SYP',area:String(d.area||'').trim(),village:String(d.village||'').trim()||null,item_condition:String(d.item_condition||'').trim()||null,contact_phone:String(d.contact_phone||'').trim()||null};
    const photoInput=f.querySelector('[name="listing_photos"]'),files=photoInput&&photoInput.files?Array.from(photoInput.files):[];
    const existingImagesResult=await db.from('listings').select('image_urls').eq('id',id).eq('user_id',currentUser.id).maybeSingle();if(existingImagesResult.error)throw existingImagesResult.error;if(!existingImagesResult.data){toast('تعذّر تحميل صور الإعلان الحالية أو لا تملك صلاحية تعديله.');return}let currentImages=Array.isArray(existingImagesResult.data.image_urls)?existingImagesResult.data.image_urls.slice():[];
+   const removedUrls=JSON.parse(photoInput?.dataset.removedImageUrls||'[]');currentImages=currentImages.filter(url=>!removedUrls.includes(url));
    if(currentImages.length+files.length>4){toast('الحد الأقصى 4 صور للإعلان.');return}
    for(const photo of files){if(photo.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.');const ext=(photo.name.split('.').pop()||'').toLowerCase();const mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',avif:'image/avif'};const detectedMime=String(photo.type||'').toLowerCase(),photoMime=['image/jpeg','image/png','image/webp','image/avif','image/heic','image/heif'].includes(detectedMime)?detectedMime:(mimeByExt[ext]||'');if(!['image/jpeg','image/png','image/webp','image/avif'].includes(photoMime))throw new Error('صيغة الصورة غير مدعومة. استخدم JPG أو PNG أو WebP أو AVIF.');const safeName=photo.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=currentUser.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+safeName;const uploaded=await db.storage.from('manbij-images').upload(path,photo,{cacheControl:'3600',upsert:false,contentType:photoMime});if(uploaded.error)throw uploaded.error;currentImages.push(db.storage.from('manbij-images').getPublicUrl(path).data.publicUrl)}
-   if(files.length)payload.image_urls=currentImages;
+   if(files.length||removedUrls.length)payload.image_urls=currentImages;
   }
   const ownerColumn=isShop?'owner_id':'user_id';
   const updated=await db.from(table).update(payload).eq('id',id).eq(ownerColumn,currentUser.id).select('id');
@@ -735,6 +737,12 @@ async function closeMyRequest(id){
  if(r.error||!r.data||!r.data.length){toast('تعذّر إغلاق الطلب. حاول مجدداً.');return}
  toast('تم إغلاق الطلب.');await Promise.allSettled([loadData(),loadMyAds()]);
 }
+
+function wireExistingEditPhotoRemoval(form,previewId,inputName){
+ const preview=document.getElementById(previewId),input=form&&form.elements[inputName];if(!preview||!input)return;
+ let removed=[];input.dataset.removedImageUrls='[]';
+ Array.from(preview.querySelectorAll('img')).forEach((img,index)=>{const url=img.getAttribute('src');if(!url)return;const wrap=document.createElement('div');wrap.style.cssText='position:relative;display:inline-block';img.style.cursor='zoom-in';img.onclick=()=>showUploadPhotoPreview(url);img.parentNode.insertBefore(wrap,img);wrap.appendChild(img);const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','إزالة الصورة الحالية '+(index+1));remove.style.cssText='position:absolute;top:-8px;right:-8px;width:28px;height:28px;border:0;border-radius:50%;background:#b42318;color:#fff;font-size:22px;font-weight:bold;line-height:24px;box-shadow:0 1px 5px #0005;cursor:pointer';remove.onclick=()=>{if(!removed.includes(url))removed.push(url);input.dataset.removedImageUrls=JSON.stringify(removed);wrap.remove();toast('تم تحديد الصورة للإزالة. اضغط حفظ لتأكيد التعديل.')};wrap.appendChild(remove)});
+}
 async function editMyItem(table,id){
  if(!currentUser||!db||!['listings','businesses'].includes(table))return;
  const isShop=table==='businesses', f=$('modalForm');
@@ -776,6 +784,7 @@ async function editMyItem(table,id){
    <button class="btn primary" type="submit">حفظ تعديلات الإعلان</button>`;
   if(isShop){const cat=f.elements.category_id;if(cat)cat.value=x.category_id||''}
   else{const currency=f.elements.currency;if(currency)currency.value=x.currency||'SYP'}
+  if(isShop)wireExistingEditPhotoRemoval(f,'shopPhotoPreview','shop_photos');else wireExistingEditPhotoRemoval(f,'listingPhotoPreview','listing_photos');
   $('modalbg').style.display='flex';document.body.style.overflow='hidden';
  }catch(e){console.error('edit item:',e);toast('تعذّر فتح نموذج التعديل. حاول مرة أخرى.')}
 }
