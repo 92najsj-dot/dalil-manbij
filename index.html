@@ -93,7 +93,18 @@
 .mini-featured-carousel{min-width:0;text-decoration:none!important;position:relative;overflow:hidden;transition:background .35s ease,transform .25s ease}.mini-featured-carousel .install-app-copy strong,.mini-featured-carousel .install-app-copy span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-featured-carousel .install-app-copy strong{font-size:15px}.mini-featured-carousel .install-app-cta{white-space:nowrap}.mini-featured-carousel.is-changing .install-app-copy{animation:miniPromoIn .35s ease}@keyframes miniPromoIn{from{opacity:.25;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){.mini-featured-carousel,.mini-featured-carousel.is-changing .install-app-copy{animation:none;transition:none}}
 .mini-featured-carousel{gap:12px}.mini-featured-thumb{width:76px;height:58px;flex:0 0 76px;border-radius:12px;overflow:hidden;background:#e5f3ec;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.35)}.mini-featured-thumb img{width:100%;height:100%;object-fit:cover;display:block}.mini-featured-thumb span{font-size:28px}.mini-featured-carousel .install-app-copy{flex:1;min-width:0}
 
-</style></head>
+</style>
+<style>
+#dalilWelcomeBg{display:none;position:fixed;inset:0;z-index:30000;background:rgba(5,25,17,.68);padding:18px;align-items:center;justify-content:center}
+#dalilWelcomeBg.open{display:flex}
+#dalilWelcomeCard{position:relative;width:min(420px,100%);background:#fff;border-radius:24px;padding:26px 22px;text-align:center;box-shadow:0 22px 70px #0004;border:1px solid #d9e9df}
+#dalilWelcomeCard .welcome-pin{font-size:42px;margin-bottom:8px}
+#dalilWelcomeCard h2{margin:0 0 10px;color:#176b50;font-size:24px}
+#dalilWelcomeCard p{margin:0 0 20px;color:#4f6258;font-size:15px;line-height:1.95}
+#dalilWelcomeClose{width:100%;border:0;border-radius:13px;background:#176b50;color:white;font:inherit;font-weight:800;padding:13px;cursor:pointer}
+</style>
+
+</head>
 <body>
 <header class="top"><nav class="nav"><div class="brand-lockup"><div class="logo">📍 دليل منبج</div><div class="brand-tagline">🛍️ سوقك بجيبك ومن بيتك</div></div><div class="navlinks"><a href="#home">الرئيسية</a><a href="#businesses">دليل المحلات</a><a href="#listings">بيع وشراء</a><a href="#requests">مطلوب في منبج</a><a href="./about.html">من نحن</a></div><button class="btn outline" id="accountBtn" onclick="accountAction()">تسجيل الدخول</button><div id="adminNavWrap" style="display:none;align-items:center;gap:6px;position:relative"><a class="btn outline" id="adminNavBtn" href="./admin.html" aria-label="فتح لوحة الإدارة المستقلة" style="text-decoration:none">🛡️ الإدارة ↗</a><button class="btn outline" id="adminBellBtn" type="button" onclick="toggleAdminBell()" aria-label="إشعارات الإدارة" aria-expanded="false" style="position:relative;padding:10px 12px">🔔<span id="adminBellCount" style="display:none;position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#c62828;color:#fff;font-size:11px;font-weight:900;line-height:20px">0</span></button><div id="adminBellPanel" hidden style="position:absolute;top:calc(100% + 10px);right:0;width:min(330px,calc(100vw - 30px));max-height:65vh;overflow:auto;z-index:50;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 34px #0002;padding:14px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><strong>🔔 إشعارات الإدارة</strong><button class="btn outline" type="button" onclick="refreshAdminBell()">↻ تحديث</button></div><p class="muted" style="margin:7px 0 12px">الحالات التي تحتاج مراجعتك الآن.</p><div id="adminBellItems"><div class="muted">سجّل الدخول بحساب الإدارة لعرض الحالات.</div></div><a href="./admin.html" class="btn primary" style="display:block;text-align:center;text-decoration:none;margin-top:12px">فتح لوحة الإدارة</a></div></div><div class="nav-actions"><a class="install-app-card mini-featured-carousel" id="miniFeaturedCarousel" href="promotions.html" aria-label="تصفح الإعلانات المميزة"><span class="mini-featured-thumb" id="miniFeaturedThumb" aria-hidden="true"><span>⭐</span></span><span class="install-app-copy"><strong id="miniFeaturedTitle">الإعلانات المميزة</strong><span id="miniFeaturedDescription">عروض وإعلانات مميزة من منبج وريفها</span></span><span class="install-app-cta">شاهد الآن ←</span></a><a class="btn featured-nav-btn" href="promotions.html">⭐ الإعلانات المميزة</a><button class="btn primary" onclick="openModal('listing')">＋ أضف إعلان</button></div></nav></header>
 <main class="wrap" id="home">
@@ -1168,4 +1179,27 @@ document.addEventListener('change',function(event){
   </div>
  </div>
 </div>
+
+<div id="dalilWelcomeBg" role="dialog" aria-modal="true" aria-labelledby="dalilWelcomeTitle">
+ <div id="dalilWelcomeCard">
+  <div class="welcome-pin">📍</div>
+  <h2 id="dalilWelcomeTitle">أهلاً وسهلاً في دليل منبج</h2>
+  <p>كل منبج وريفها بمكان واحد! اكتشف المحلات والخدمات، وتصفّح إعلانات البيع والشراء والطلبات المحلية بسهولة.</p>
+  <button id="dalilWelcomeClose" type="button">يلا نبلّش</button>
+ </div>
+</div>
+<script>
+(function(){
+ const key='dalil_manbij_welcome_seen_v1';
+ const bg=document.getElementById('dalilWelcomeBg');
+ const close=document.getElementById('dalilWelcomeClose');
+ if(!bg||!close)return;
+ function hide(){bg.classList.remove('open');try{sessionStorage.setItem(key,'1')}catch(e){}}
+ close.addEventListener('click',hide);
+ bg.addEventListener('click',function(e){if(e.target===bg)hide()});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&bg.classList.contains('open'))hide()});
+ try{if(!sessionStorage.getItem(key))setTimeout(()=>bg.classList.add('open'),500)}catch(e){setTimeout(()=>bg.classList.add('open'),500)}
+})();
+</script>
+
 </body></html>
