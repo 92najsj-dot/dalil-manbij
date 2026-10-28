@@ -50,7 +50,7 @@ async function run(){
   if(!x){$('status').textContent='المحل غير موجود أو لم يعد منشوراً.';$('listings').innerHTML='';return}
   document.title=x.name+' | دليل منبج';
   // Update discoverability metadata after the public shop record is loaded.
-  const shopDescription=String(x.description||('معلومات التواصل والخدمات وأوقات الدوام لمحل '+x.name+' على دليل منبج، سوق منبج للبيع والشراء في منبج وريفها.')).replace(/\\s+/g,' ').trim().slice(0,300);
+  const shopDescription=String(x.description||('معلومات التواصل والخدمات وأوقات الدوام لمحل '+x.name+' على دليل منبج، سوق منبج للبيع والشراء في منبج وريفها.')).replace(/\s+/g,' ').trim().slice(0,300);
   function setSeoMeta(name,content,property){
     const attr=property?'property':'name';
     let el=document.head.querySelector('meta['+attr+'="'+name+'"]');
