@@ -3,4 +3,10 @@ Allow: /
 Disallow: /admin.html
 Disallow: /ai-moderator.html
 
+# Allow ChatGPT Search to discover public pages.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin.html
+Disallow: /ai-moderator.html
+
 Sitemap: https://dalil-manbij-new.pages.dev/sitemap.xml
