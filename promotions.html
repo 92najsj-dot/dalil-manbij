@@ -55,13 +55,14 @@ async function init(){
   const [publicListings,publicBusinesses,publicOffers]=await Promise.all([
    listingIds.length?db.from('listings').select('id,title,description,price,area,image_urls,category,status').in('id',listingIds).in('status',['active','approved']):Promise.resolve({data:[],error:null}),
    businessIds.length?db.from('businesses').select('id,name,description,area,image_urls,category_id,status').in('id',businessIds).in('status',['active','approved']):Promise.resolve({data:[],error:null}),
-   offerIds.length?db.from('local_offers').select('id,title,description,discounted_price,original_price,currency,area,image_urls,status,starts_at,ends_at').in('id',offerIds).eq('status','active').lte('starts_at',now).gt('ends_at',now):Promise.resolve({data:[],error:null})
+   offerIds.length?db.from('local_offers').select('id,title,description,discounted_price,original_price,currency,image_urls,status,starts_at,ends_at').in('id',offerIds).eq('status','active').lte('starts_at',now).gt('ends_at',now):Promise.resolve({data:[],error:null})
   ]);
   if(publicListings.error)console.warn('Could not load promoted listings:',publicListings.error.message);
   if(publicBusinesses.error)console.warn('Could not load promoted businesses:',publicBusinesses.error.message);
+  if(publicOffers.error)console.warn('Could not load promoted discounts:',publicOffers.error.message);
   const listingMap=new Map((publicListings.data||[]).map(x=>[String(x.id),{...x,type:'listing',title:x.title,category:x.category}]));
   const businessMap=new Map((publicBusinesses.data||[]).map(x=>[String(x.id),{...x,type:'business',title:x.name,category:'محل أو خدمة'}]));
-  const offerMap=new Map((publicOffers.data||[]).map(x=>[String(x.id),{...x,type:'local_offer',title:x.title,category:'عرض وخصم',price:x.discounted_price,original_price:x.original_price}]));
+  const offerMap=new Map((publicOffers.data||[]).map(x=>[String(x.id),{...x,type:'local_offer',title:x.title,category:'عرض وخصم',area:'منبج وريفها',price:x.discounted_price,original_price:x.original_price}]));
   const byId=new Map([...listingMap,...businessMap,...offerMap]);
 
   // The promotion-request dropdown remains private to the logged-in user's own posts.
