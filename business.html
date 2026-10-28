@@ -49,6 +49,41 @@ async function run(){
   const x=r.data;
   if(!x){$('status').textContent='المحل غير موجود أو لم يعد منشوراً.';$('listings').innerHTML='';return}
   document.title=x.name+' | دليل منبج';
+  // Update discoverability metadata after the public shop record is loaded.
+  const shopDescription=String(x.description||('معلومات التواصل والخدمات وأوقات الدوام لمحل '+x.name+' على دليل منبج، سوق منبج للبيع والشراء في منبج وريفها.')).replace(/\\s+/g,' ').trim().slice(0,300);
+  function setSeoMeta(name,content,property){
+    const attr=property?'property':'name';
+    let el=document.head.querySelector('meta['+attr+'="'+name+'"]');
+    if(!el){el=document.createElement('meta');el.setAttribute(attr,name);document.head.appendChild(el)}
+    el.setAttribute('content',content);
+  }
+  setSeoMeta('description',shopDescription);
+  setSeoMeta('og:title',document.title,true);
+  setSeoMeta('og:description',shopDescription,true);
+  setSeoMeta('og:type','business.business',true);
+  setSeoMeta('og:url',location.href.split('#')[0],true);
+  const canonical=document.head.querySelector('link[rel="canonical"]')||document.head.appendChild(document.createElement('link'));
+  canonical.rel='canonical';canonical.href=location.href.split('#')[0];
+  const schema={
+    '@context':'https://schema.org',
+    '@type':'LocalBusiness',
+    '@id':location.href.split('#')[0]+'#business',
+    'name':String(x.name||'دليل منبج'),
+    'url':location.href.split('#')[0],
+    'description':shopDescription,
+    'image':Array.isArray(x.image_urls)&&x.image_urls.length?x.image_urls[0]:(x.cover_image_url||x.logo_url||undefined),
+    'telephone':x.phone||undefined,
+    'address':{
+      '@type':'PostalAddress',
+      'streetAddress':[x.area,x.village,x.address].filter(Boolean).join('، ')||'منبج وريفها',
+      'addressLocality':'منبج',
+      'addressCountry':'SY'
+    }
+  };
+  Object.keys(schema).forEach(k=>schema[k]===undefined&&delete schema[k]);
+  let ld=document.getElementById('shop-jsonld');
+  if(!ld){ld=document.createElement('script');ld.id='shop-jsonld';ld.type='application/ld+json';document.head.appendChild(ld)}
+  ld.textContent=JSON.stringify(schema);
   shopOwnerId=x.owner_id;
   const sessionResult=await db.auth.getSession();
   currentUser=sessionResult.data&&sessionResult.data.session?sessionResult.data.session.user:null;
