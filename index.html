@@ -222,8 +222,8 @@
 window.__dalilSupabaseLoader = async function () {
  if (window.supabase) return window.supabase;
  const sources = [
-  'https://unpkg.com/@supabase/supabase-js@2',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://unpkg.com/@supabase/supabase-js@2'
  ];
  for (const src of sources) {
   const loaded = await new Promise(resolve => {
