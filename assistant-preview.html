@@ -56,7 +56,14 @@ const messages=document.getElementById('messages'),form=document.getElementById(
 const norm=s=>String(s??'').toLocaleLowerCase('ar').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function addMessage(text,who='bot'){const el=document.createElement('div');el.className='msg '+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;return el}
-function classify(q){const n=norm(q);if(/خصم|خصومات|عرض|عروض|تخفيض|تنزيل/.test(n))return 'offers';if(/طلب شراء|طلبات شراء|بدي اشتري|مطلوب|مطلوبه|ابحث عن/.test(n))return 'requests';if(/موبايل|موبايلات|هاتف|هواتف|سامسونج|ايفون|ايفون|لابتوب|كمبيوتر|للبيع|سياره|سيارات|غساله|ثلاجه|اثاث|ملابس|حذاء|دراجه/.test(n))return 'listings';if(/مطعم|مطاعم|محل|محلات|متجر|صيدليه|عياده|خدمه|خدمات|صالون/.test(n))return 'businesses';return 'all'}
+function classify(q){
+ const n=norm(q);
+ if(/خصم|خصومات|عرض|عروض|تخفيض|تنزيل|تخفيضات|كوبون|كوبونات|سعر خاص|عرض خاص/.test(n))return 'offers';
+ if(/طلب شراء|طلبات شراء|بدي اشتري|اريد شراء|مطلوب|مطلوبه|ابحث عن|حدا عنده|مين عنده/.test(n))return 'requests';
+ if(/مطعم|مطاعم|كافيه|كافي|قهوه|محل|محلات|متجر|سوق|صيدليه|عياده|مشفى|مستشفى|دكتور|طبيب|خدمه|خدمات|صالون|حلاق|ورشه|كهربائي|سباك|نجار|حداد|مكتب|شركة|شركه|معرض|مغسله|مخبز|حلويات|خياط/.test(n))return 'businesses';
+ if(/موبايل|موبايلات|جوال|جوالات|هاتف|هواتف|تلفون|تليفون|سامسونج|شاومي|ايفون|ابل|هواوي|ريدمي|اوبو|ريلمي|لابتوب|لاب توب|كمبيوتر|حاسوب|تابلت|ايباد|شاشه|تلفزيون|رسيفر|سماعه|سماعات|شاحن|الكترونيات|الكتروني|سياره|سيارات|دراجه|دراجات|دباب|غساله|ثلاجه|براد|فريزر|مكيف|مدفأه|فرن|غاز|اثاث|كنبايه|كنب|سرير|خزانه|طاوله|كرسي|ملابس|بنطال|قميص|فستان|حذاء|جزمه|شنطه|ساعه|ذهب|فضه|عقار|بيت|منزل|ارض|شقه|دكان|للبيع|بيع مستعمل|مستعمل|مستعمله/.test(n))return 'listings';
+ return 'all';
+}
 function fields(x,type){if(type==='business')return [x.name,x.description,x.address,x.area,x.village,x.category_name,x.phone].join(' ');if(type==='listing')return [x.title,x.description,x.category,x.area,x.village,x.item_condition].join(' ');if(type==='offer')return [x.title,x.description].join(' ');return [x.title,x.description,x.category,x.area].join(' ')}
 function card(x,type){let title='',desc='',loc='',price='',href='https://dalil-manbij-new.pages.dev/';if(type==='business'){title=x.name;desc=x.description;loc=[x.area,x.village,x.address].filter(Boolean).join(' • ');href='https://dalil-manbij-new.pages.dev/business.html?id='+encodeURIComponent(x.id)}else if(type==='listing'){title=x.title;desc=x.description;loc=[x.area,x.village].filter(Boolean).join(' • ');price=x.price==null?'':Number(x.price).toLocaleString('en-US')+' '+(x.currency==='USD'?'$':'ل.س');}else if(type==='offer'){title=x.title;desc=x.description;price=(x.discounted_price==null?'':Number(x.discounted_price).toLocaleString('en-US')+' '+(x.currency==='USD'?'$':'ل.س'))}else{title=x.title;desc=x.description;loc=x.area||'';price=x.budget==null?'':'الميزانية: '+Number(x.budget).toLocaleString('en-US')+' '+(x.budget_currency==='USD'?'$':'ل.س')}
 return '<article class="result"><div class="body"><span class="kind">'+({business:'محل أو خدمة',listing:'إعلان بيع',offer:'خصم أو عرض',request:'طلب شراء'}[type])+'</span><h3>'+esc(title)+'</h3>'+(desc?'<div class="meta">'+esc(String(desc).slice(0,150))+'</div>':'')+(loc?'<div class="meta">📍 '+esc(loc)+'</div>':'')+(price?'<div class="price">'+esc(price)+'</div>':'')+'<div style="margin-top:10px"><a class="linkbtn" style="font-size:12px;padding:8px 10px" target="_blank" rel="noopener noreferrer" href="'+esc(href)+'">افتح دليل منبج ↗</a></div></div></article>'}
@@ -72,7 +79,32 @@ try{
  const results=await Promise.all(jobs);const names=['الإعلانات','المحلات','الطلبات','الخصومات','التصنيفات'];const error=results.findIndex(r=>r.error);if(error>=0)throw new Error('تعذر قراءة '+names[error]+': '+results[error].error.message);
  const [ads,biz,reqs,offers,cats]=results.map(r=>r.data||[]);const catMap=new Map(cats.map(c=>[String(c.id),c.name]));
  biz.forEach(b=>b.category_name=catMap.get(String(b.category_id))||'');
- const query=norm(q),stop=new Set(['للبيع','بيع','شراء','بدي','اريد','عايز','عاوزه','منبج','ريف','في','من','عن','على','الى','مع','او','و','اللي','طلب','طلبات']),tokens=query.split(' ').filter(t=>t.length>1&&!stop.has(t));const rank=(x,t)=>{const hay=norm(fields(x,t));let score=0;for(const token of tokens)if(hay.includes(token))score+=token.length>3?2:1;if(query.length>2&&hay.includes(query))score+=4;return score};
+ const query=norm(q),stop=new Set(['للبيع','بيع','شراء','بدي','اريد','عايز','عاوزه','منبج','ريف','في','من','عن','على','الى','مع','او','و','اللي','طلب','طلبات','بدي','مطلوب','مطلوبه','ابحث','عن','عندي','حدا','مين','سعر','اسعار','رخيص','رخيصه','مناسب','مناسبه']),synonyms=[
+ ['موبايل','موبايلات','جوال','جوالات','هاتف','هواتف','تلفون','تليفون'],
+ ['ايفون','ايفون','ابل','ايفون ابل'],
+ ['سامسونج','جالكسي','galaxy'],
+ ['لابتوب','لاب توب','كمبيوتر','حاسوب','لابتوبات'],
+ ['تابلت','ايباد','ipad'],
+ ['سماعه','سماعات','هيدفون','سماعه راس'],
+ ['سياره','سيارات','مركبه','مركبات','عربيه'],
+ ['دراجه','دراجات','دباب','موتور'],
+ ['غساله','غسالات','غسيل'],
+ ['ثلاجه','براد','فريزر'],
+ ['مكيف','مكيفات','تكييف'],
+ ['اثاث','كنب','كنبايه','غرفه نوم','خزانه','طاوله','كرسي'],
+ ['ملابس','لباس','ثياب','بنطال','قميص','فستان'],
+ ['حذاء','احذيه','جزمه','كندره'],
+ ['ذهب','مصاغ','مجوهرات'],
+ ['بيت','منزل','شقه','عقار','عقارات','ارض'],
+ ['مطعم','مطاعم','اكل','وجبات','شاورما','مشاوي'],
+ ['قهوه','كافيه','كافي','كوفي'],
+ ['صيدليه','صيدليات','دواء','ادويه'],
+ ['حلاق','حلاقه','صالون'],
+ ['مخبز','فرن','مناقيش','معجنات'],
+ ['خصم','خصومات','عرض','عروض','تخفيض','تنزيل']
+];
+const tokens=[...new Set(query.split(' ').filter(t=>t.length>1&&!stop.has(t)).flatMap(t=>{const group=synonyms.find(g=>g.some(w=>norm(w)===t||norm(w).split(' ').includes(t)));return group?[t,...group.map(norm)]:[t]}))];
+const rank=(x,t)=>{const hay=norm(fields(x,t));let score=0;for(const token of tokens)if(hay.includes(token))score+=token.length>3?2:1;if(query.length>2&&hay.includes(query))score+=4;return score};
  let pool=[];if(intent==='all'||intent==='listings')pool.push(...ads.map(x=>({x,t:'listing'})));if(intent==='all'||intent==='businesses')pool.push(...biz.map(x=>({x,t:'business'})));if(intent==='all'||intent==='requests')pool.push(...reqs.map(x=>({x,t:'request'})));if(intent==='all'||intent==='offers')pool.push(...offers.map(x=>({x,t:'offer'})));
  const ranked=pool.map(o=>({...o,score:rank(o.x,o.t)})).filter(o=>tokens.length?o.score>0:true).sort((a,b)=>b.score-a.score).slice(0,8);
  if(!ranked.length){addMessage('ما لقيت نتيجة مطابقة بهالبحث ضمن العناصر النشطة اللي رجعت من قاعدة البيانات. جرّب كلمة أبسط مثل «موبايل» أو «مطعم» أو «ملابس».');statusEl.textContent='انتهى البحث. لم تُعرض نتائج مطابقة؛ قد تكون البيانات أكثر من حد المعاينة أو أن سياسات قاعدة البيانات تمنع القراءة العامة.';return}
