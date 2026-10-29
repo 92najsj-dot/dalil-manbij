@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#176b50">
+<meta name="robots" content="noindex,nofollow">
+<title>معاينة المساعد الذكي | دليل منبج</title>
+<style>
+:root{--g:#176b50;--d:#123d30;--bg:#f3f7f4;--line:#dfe9e2;--muted:#68776e;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#1d2b25;font-family:Tahoma,Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--d),#218562);color:#fff;padding:22px 16px}
+header .inner,main{max-width:900px;margin:auto}header h1{font-size:24px;margin:0 0 8px}header p{margin:0;color:#e0f3e8;line-height:1.8;font-size:14px}
+main{padding:18px 14px}.notice{background:#fff8e8;border:1px solid #f1dba7;color:#6b4b11;padding:12px 14px;border-radius:13px;line-height:1.8;font-size:13px;margin-bottom:14px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px #123d300a}
+.topline{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-size:11px;border-radius:99px;padding:6px 9px;background:#e8f5ed;color:var(--g);font-weight:bold}
+.messages{min-height:240px;max-height:52vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:90%;padding:12px 14px;border-radius:15px;line-height:1.8;font-size:14px;overflow-wrap:anywhere}
+.bot{background:#f0f6f1;border:1px solid #e1ece3;align-self:flex-start;border-bottom-right-radius:4px}
+.user{background:var(--g);color:#fff;align-self:flex-end;border-bottom-left-radius:4px}
+.composer{padding:13px;border-top:1px solid var(--line);background:#fcfdfc}
+form{display:flex;gap:8px}input{min-width:0;flex:1;border:1px solid #d3e0d6;border-radius:12px;padding:13px;font:inherit;outline:none}input:focus{border-color:var(--g);box-shadow:0 0 0 3px #176b5014}
+button,.linkbtn{border:0;border-radius:12px;padding:12px 16px;background:var(--g);color:#fff;font:inherit;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
+button:disabled{opacity:.55;cursor:wait}.quick{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.quick button{background:#fff;color:var(--d);border:1px solid var(--line);font-size:12px;padding:8px 10px}
+.status{font-size:12px;color:var(--muted);padding:10px 15px;border-top:1px solid var(--line);line-height:1.7}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px;width:100%}
+.result{border:1px solid var(--line);background:#fff;border-radius:13px;overflow:hidden;min-width:0}
+.result .body{padding:11px}.result h3{font-size:14px;margin:0 0 7px;line-height:1.6}.meta{font-size:12px;color:var(--muted);line-height:1.8}.price{font-weight:bold;color:var(--g);margin-top:5px}.kind{font-size:10px;background:#e8f5ed;color:var(--g);padding:4px 7px;border-radius:7px;display:inline-block;margin-bottom:6px}
+.empty{font-size:13px;color:var(--muted);line-height:1.8}.foot{font-size:11px;color:var(--muted);text-align:center;margin:14px 0 4px;line-height:1.8}
+@media(max-width:520px){header h1{font-size:21px}.messages{max-height:56vh;padding:12px}.msg{max-width:96%}form button{padding:12px}}
+</style>
+</head>
+<body>
+<header><div class="inner"><h1>🤝 المساعد الذكي — دليل منبج</h1><p>جرّب البحث عن إعلان أو محل أو خصم أو طلب في منبج وريفها، باللهجة اللي بتحكي فيها.</p></div></header>
+<main>
+<div class="notice"><strong>نسخة معاينة فقط:</strong> هذه التجربة تبحث بالكلمات المفتاحية داخل البيانات العامة المنشورة. ليست نموذج ذكاء اصطناعي توليدي بعد، ولا تعدّل أو تنشر أي بيانات، ولا تغيّر الموقع الأساسي.</div>
+<section class="panel" aria-label="محادثة المساعد">
+<div class="topline"><strong>💚 أهلاً فيك، كيف بقدر ساعدك؟</strong><span class="pill">معاينة مستقلة</span></div>
+<div class="messages" id="messages" aria-live="polite"><div class="msg bot">أهلاً وسهلاً! 😊 اكتب شو عم تدور عليه، مثلاً: «موبايل للبيع»، «مطاعم بمنبج»، «خصم على الملابس»، أو «بدي اشتري غسالة».</div></div>
+<div class="composer">
+<form id="chatForm"><input id="question" maxlength="160" autocomplete="off" placeholder="اكتب طلبك هون…" aria-label="اكتب طلبك"><button id="send" type="submit">بحث</button></form>
+<div class="quick"><button type="button" data-q="مطاعم منبج">🍽️ مطاعم</button><button type="button" data-q="موبايل للبيع">📱 موبايلات</button><button type="button" data-q="خصومات وعروض">🏷️ خصومات</button><button type="button" data-q="طلبات شراء">🛍️ طلبات شراء</button></div>
+</div>
+<div class="status" id="status">جاهز للفحص. عند إرسال سؤال، يجلب فقط العناصر النشطة من قاعدة البيانات ويطابق الكلمات داخل المتصفح.</div>
+</section>
+<p class="foot">دليل منبج • تجربة آمنة على فرع منفصل • لا يتم حفظ نص المحادثة.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+const SUPABASE_URL='https://keadoflmrwqpdjauzbhc.supabase.co';
+const SUPABASE_KEY='sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const messages=document.getElementById('messages'),form=document.getElementById('chatForm'),input=document.getElementById('question'),send=document.getElementById('send'),statusEl=document.getElementById('status');
+const norm=s=>String(s??'').toLocaleLowerCase('ar').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function addMessage(text,who='bot'){const el=document.createElement('div');el.className='msg '+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;return el}
+function classify(q){const n=norm(q);if(/خصم|خصومات|عرض|عروض|تخفيض|تنزيل/.test(n))return 'offers';if(/مطعم|مطاعم|محل|محلات|متجر|صيدليه|عياده|خدمه|خدمات|صالون/.test(n))return 'businesses';if(/طلب|طلبات|بدي اشتري|مطلوب|مطلوبه|ابحث عن/.test(n))return 'requests';return 'all'}
+function fields(x,type){if(type==='business')return [x.name,x.description,x.address,x.area,x.village,x.category_name,x.phone].join(' ');if(type==='listing')return [x.title,x.description,x.category,x.area,x.village,x.item_condition].join(' ');if(type==='offer')return [x.title,x.description].join(' ');return [x.title,x.description,x.category,x.area].join(' ')}
+function card(x,type){let title='',desc='',loc='',price='',href='https://dalil-manbij-new.pages.dev/';if(type==='business'){title=x.name;desc=x.description;loc=[x.area,x.village,x.address].filter(Boolean).join(' • ');href='https://dalil-manbij-new.pages.dev/business.html?id='+encodeURIComponent(x.id)}else if(type==='listing'){title=x.title;desc=x.description;loc=[x.area,x.village].filter(Boolean).join(' • ');price=x.price==null?'':Number(x.price).toLocaleString('en-US')+' '+(x.currency==='USD'?'$':'ل.س');}else if(type==='offer'){title=x.title;desc=x.description;price=(x.discounted_price==null?'':Number(x.discounted_price).toLocaleString('en-US')+' '+(x.currency==='USD'?'$':'ل.س'))}else{title=x.title;desc=x.description;loc=x.area||'';price=x.budget==null?'':'الميزانية: '+Number(x.budget).toLocaleString('en-US')+' '+(x.budget_currency==='USD'?'$':'ل.س')}
+return '<article class="result"><div class="body"><span class="kind">'+({business:'محل أو خدمة',listing:'إعلان بيع',offer:'خصم أو عرض',request:'طلب شراء'}[type])+'</span><h3>'+esc(title)+'</h3>'+(desc?'<div class="meta">'+esc(String(desc).slice(0,150))+'</div>':'')+(loc?'<div class="meta">📍 '+esc(loc)+'</div>':'')+(price?'<div class="price">'+esc(price)+'</div>':'')+'<div style="margin-top:10px"><a class="linkbtn" style="font-size:12px;padding:8px 10px" target="_blank" rel="noopener noreferrer" href="'+esc(href)+'">افتح دليل منبج ↗</a></div></div></article>'}
+async function search(q){const intent=classify(q);statusEl.textContent='عم نتحقق من الاتصال ونبحث بالبيانات المنشورة…';send.disabled=true;
+try{
+ const jobs=[
+  db.from('listings').select('id,title,description,price,currency,category,area,village,item_condition,status,created_at').eq('status','active').order('created_at',{ascending:false}).limit(100),
+  db.from('businesses').select('id,name,description,address,area,village,category_id,status,is_verified,created_at').eq('status','active').order('name').limit(100),
+  db.from('wanted_requests').select('id,title,description,budget,budget_currency,category,area,status,created_at').eq('status','active').order('created_at',{ascending:false}).limit(100),
+  db.from('local_offers').select('id,title,description,original_price,discounted_price,currency,starts_at,ends_at,status,created_at').eq('status','active').lte('starts_at',new Date().toISOString()).gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:true}).limit(60),
+  db.from('business_categories').select('id,name').eq('is_active',true).limit(100)
+ ];
+ const results=await Promise.all(jobs);const names=['الإعلانات','المحلات','الطلبات','الخصومات','التصنيفات'];const error=results.findIndex(r=>r.error);if(error>=0)throw new Error('تعذر قراءة '+names[error]+': '+results[error].error.message);
+ const [ads,biz,reqs,offers,cats]=results.map(r=>r.data||[]);const catMap=new Map(cats.map(c=>[String(c.id),c.name]));
+ biz.forEach(b=>b.category_name=catMap.get(String(b.category_id))||'');
+ const query=norm(q),tokens=query.split(' ').filter(t=>t.length>1);const rank=(x,t)=>{const hay=norm(fields(x,t));let score=0;for(const token of tokens)if(hay.includes(token))score+=token.length>3?2:1;if(hay.includes(query))score+=4;return score};
+ let pool=[];if(intent==='all'||intent==='listings')pool.push(...ads.map(x=>({x,t:'listing'})));if(intent==='all'||intent==='businesses')pool.push(...biz.map(x=>({x,t:'business'})));if(intent==='all'||intent==='requests')pool.push(...reqs.map(x=>({x,t:'request'})));if(intent==='all'||intent==='offers')pool.push(...offers.map(x=>({x,t:'offer'})));
+ const ranked=pool.map(o=>({...o,score:rank(o.x,o.t)})).filter(o=>tokens.length?o.score>0:true).sort((a,b)=>b.score-a.score).slice(0,8);
+ if(!ranked.length){addMessage('ما لقيت نتيجة مطابقة بهالبحث ضمن العناصر النشطة اللي رجعت من قاعدة البيانات. جرّب كلمة أبسط مثل «موبايل» أو «مطعم» أو «ملابس».');statusEl.textContent='انتهى البحث. لم تُعرض نتائج مطابقة؛ قد تكون البيانات أكثر من حد المعاينة أو أن سياسات قاعدة البيانات تمنع القراءة العامة.';return}
+ const wrap=document.createElement('div');wrap.className='results';wrap.innerHTML=ranked.map(o=>card(o.x,o.t)).join('');const bubble=document.createElement('div');bubble.className='msg bot';bubble.style.maxWidth='100%';bubble.style.width='100%';bubble.textContent='لقيت '+ranked.length+' نتيجة قريبة من طلبك. النتائج أدناه من قاعدة البيانات الحالية:';bubble.appendChild(wrap);messages.appendChild(bubble);messages.scrollTop=messages.scrollHeight;statusEl.textContent='تم البحث بنجاح. هذه معاينة محدودة إلى أحدث 100 إعلان/محل/طلب و60 خصماً؛ لا توجد تعديلات أو عمليات كتابة على قاعدة البيانات.';
+}catch(e){console.error(e);addMessage('صار خطأ أثناء جلب النتائج. ما غيّرنا أي بيانات. ممكن تكون صلاحيات القراءة العامة أو اتصال قاعدة البيانات بحاجة لفحص.');statusEl.textContent='فشل الفحص: '+String(e.message||e).slice(0,220)}finally{send.disabled=false}}
+form.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q)return;addMessage(q,'user');input.value='';search(q)});
+document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.q;form.requestSubmit()}));
+</script>
+</body>
+</html>
