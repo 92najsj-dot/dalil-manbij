@@ -113,9 +113,11 @@
 /* Homepage section collapse/expand preview */
 .section-toggle{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:7px 11px;border:1px solid #cfe2d8;border-radius:11px;background:#f4faf6;color:#176b50;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap}
 .section-toggle .section-toggle-icon{display:inline-block;font-size:16px;line-height:1;transition:transform .18s ease}
+.section-title-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.section-title-row h2{margin:0}
 .homepage-section-collapsed>:not(.sectionhead){display:none!important}
-.homepage-section-collapsed>.sectionhead .section-toggle .section-toggle-icon{transform:rotate(-90deg)}
-@media(max-width:600px){.sectionhead{flex-wrap:wrap}.sectionhead>.section-toggle{margin-inline-start:auto}.section-toggle{min-height:34px;padding:6px 9px;font-size:12px}}
+.homepage-section-collapsed .section-title-row .section-toggle-icon{transform:rotate(-90deg)}
+@media(max-width:600px){.sectionhead{flex-wrap:wrap}.section-toggle{min-height:32px;padding:5px 8px;font-size:12px}}
 </style>
 <style>
 #dalilWelcomeBg{display:none;position:fixed;inset:0;z-index:30000;background:rgba(5,25,17,.68);padding:18px;align-items:center;justify-content:center}
@@ -1304,7 +1306,16 @@ document.addEventListener('change',function(event){
     if(save){try{localStorage.setItem(prefix+id,collapsed?'1':'0')}catch(_){ }}
    }
    button.addEventListener('click',()=>apply(!collapsed,true));
-   head.appendChild(button);
+   const title=head.querySelector('h2');
+   if(title){
+    const row=document.createElement('div');
+    row.className='section-title-row';
+    title.parentNode.insertBefore(row,title);
+    row.appendChild(title);
+    row.appendChild(button);
+   }else{
+    head.appendChild(button);
+   }
    apply(collapsed,false);
   });
  }
