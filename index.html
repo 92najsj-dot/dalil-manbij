@@ -1134,7 +1134,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePublicProfile()
 /* تثبيت دليل منبج: نافذة تأكيد مخصصة ثم استدعاء نافذة التثبيت الأصلية للمتصفح */
 let dalilInstallPrompt=null;
 const dalilInstallButton=document.getElementById('installAppBtn');
-function isDalilStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
+function isDalilAndroidWebView(){const ua=navigator.userAgent||'';return /;\s*wv\)/i.test(ua)||(/Android/i.test(ua)&&/Version\/[\d.]+.*Chrome\/[\d.]+.*Mobile Safari/i.test(ua)&&!(/Chrome\/\d+.*EdgA|OPR\//i.test(ua)))}
+function isDalilStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true||isDalilAndroidWebView()}
 function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.style.display=(show&&!isDalilStandalone())?'flex':'none'}
 /* أخفِ زر التثبيت داخل النسخة المثبتة، وأبقِه ظاهراً في المتصفح فقط */
 showDalilInstallButton(!isDalilStandalone());
