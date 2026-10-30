@@ -456,6 +456,20 @@ async function decideVerificationRequest(requestId,businessId,approve){
   await loadVerificationAdmin();
  }catch(e){console.error(e);toast('تعذّرت مراجعة طلب التوثيق: '+(e.message||'خطأ غير معروف'))}
 }
+async function deleteAdminItem(table,id){
+ if(!db||!isAdminUser()){toast('الحذف متاح للإدارة فقط.');return}
+ const allowedTables=['listings','businesses','wanted_requests','local_offers'];
+ if(!allowedTables.includes(table)){toast('نوع المحتوى غير مسموح حذفه.');return}
+ if(!id||!confirm('تأكيد الحذف النهائي؟ لا يمكن التراجع عن هذا الإجراء.'))return;
+ try{
+  const result=await db.from(table).delete().eq('id',id).select('id');
+  if(result.error)throw result.error;
+  if(!result.data||!result.data.length)throw new Error('لم يُحذف المحتوى. قد لا تملك صلاحية الحذف أو أن السجل لم يعد موجوداً.');
+  await logAdminAction('delete_content',table,id,{source:'admin_pending'});
+  toast('تم حذف المحتوى نهائياً.');
+  await loadAdminPending();
+ }catch(e){console.error('admin delete:',e);toast('تعذّر حذف المحتوى: '+(e.message||'خطأ غير معروف'))}
+}
 async function loadAdminPending(){
  if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
  const box=$('adminItems');if(!box)return;
