@@ -950,6 +950,12 @@ async function recordSiteVisit(section,eventType='page_view'){
  try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home',p_event_type:eventType});if(error)console.warn('site analytics:',error.message)}catch(e){console.warn('site analytics:',e)}
 }
 function initSiteAnalytics(){
+ const ua=navigator.userAgent||'';
+ const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ const isWebView=/;\\s*wv\\)/i.test(ua)||(/Android/i.test(ua)&&/Version\\/[\\d.]+.*Chrome\\/[\\d.]+.*Mobile Safari/i.test(ua)&&!/EdgA|OPR\\//i.test(ua));
+ const appSection=isWebView?'app_apk':(standalone?'app_pwa':null);
+ if(appSection)recordSiteVisit(appSection,'app_open');
+ if(standalone&&!localStorage.getItem('dalil_pwa_install_event_v1')){recordSiteVisit('app_pwa','app_install');localStorage.setItem('dalil_pwa_install_event_v1','1')}
  recordSiteVisit('home');
  document.addEventListener('click',e=>{
   const el=e.target.closest('a,button,[data-cat]');
@@ -968,6 +974,11 @@ function initSiteAnalytics(){
    else if(/ترويج|إعلان مميّز/.test(text))section='promotions';
   }
   if(section)recordSiteVisit(section,'section_click');
+  const link=el.closest('a');const href=link?(link.href||''):'';
+  if(/wa\\.me|whatsapp\\.com/i.test(href))recordSiteVisit(section||'other','whatsapp_click');
+  if(el.matches('button[type="submit"],input[type="submit"]')&&(/search|بحث/i.test((el.form?.innerText||'')+' '+(el.form?.id||''))))recordSiteVisit('search','search');
+  if(link&&/#listing|listing=|ad=/i.test(href))recordSiteVisit('listings','listing_open');
+  if(link&&/#business|business=/i.test(href))recordSiteVisit('businesses','business_open');
  },{passive:true});
 }
 async function loadAdminStatistics(){
