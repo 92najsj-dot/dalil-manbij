@@ -451,7 +451,7 @@ async function loadFavorites(){
   if(!rows.length){box.innerHTML=empty('ما عندك إعلانات محفوظة حالياً. اضغط ♡ حفظ على أي إعلان حتى يظهر هون.');return}
   const idsByType={listing:rows.filter(x=>x.target_type==='listing').map(x=>x.target_id),business:rows.filter(x=>x.target_type==='business').map(x=>x.target_id)};
   const [ads,biz]=await Promise.all([
-   idsByType.listing.length?db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',idsByType.listing).eq('status','active'):{data:[],error:null},
+   idsByType.listing.length?db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('id',idsByType.listing).eq('status','active').or('expires_at.is.null,expires_at.gt.'+new Date().toISOString()):{data:[],error:null},
    idsByType.business.length?db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,area,village,address,category_id,status,is_verified,image_urls,created_at').in('id',idsByType.business).eq('status','active'):{data:[],error:null}
   ]);
   if(ads.error)throw ads.error;if(biz.error)throw biz.error;
@@ -479,7 +479,7 @@ async function loadData(){
    withLoadTimeout(db.auth.getSession(),'session'),
    withLoadTimeout(db.from('business_categories').select('id,name,slug,icon,sort_order,is_active').eq('is_active',true).order('sort_order'),'categories'),
    withLoadTimeout(db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,website_url,address,area,village,map_url,category_id,status,is_featured,is_verified,image_urls,cover_image_url,logo_url,opening_hours,services,created_at').eq('status','active').order('is_featured',{ascending:false}).order('name'),'businesses'),
-   withLoadTimeout(db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('status',['active','sold']).order('created_at',{ascending:false}),'listings'),
+   withLoadTimeout(db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').in('status',['active','sold']).or('expires_at.is.null,expires_at.gt.'+new Date().toISOString()).order('created_at',{ascending:false}),'listings'),
    withLoadTimeout(db.from('wanted_requests').select('id,title,description,budget,budget_currency,category,area,status,created_at,contact_phone').eq('status','active').order('created_at',{ascending:false}),'requests')
   ]);
   const sessionErr=sessionResult.error||null, cats=catsResult.data, catsErr=catsResult.error||null, biz=bizResult.data, bizErr=bizResult.error||null, ads=adsResult.data, adsErr=adsResult.error||null, reqs=reqResult.data, reqErr=reqResult.error||null;
@@ -1104,7 +1104,7 @@ async function openPublicProfile(userId){
   const p=publicProfiles[userId], shop=businesses.find(x=>String(x.owner_id)===String(userId));
   const label=(shop&&shop.name)||(p&&p.display_name)||'صاحب الإعلان';
   const [a,b]=await Promise.all([
-   db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',userId).in('status',['active','sold']).order('created_at',{ascending:false}),
+   db.from('listings').select('id,user_id,title,description,price,currency,village,category,area,item_condition,contact_phone,status,created_at,image_urls').eq('user_id',userId).in('status',['active','sold']).or('expires_at.is.null,expires_at.gt.'+new Date().toISOString()).order('created_at',{ascending:false}),
    db.from('businesses').select('id,owner_id,name,description,phone,whatsapp,address,area,village,category_id,status,is_verified,image_urls,created_at,map_url').eq('owner_id',userId).eq('status','active').order('name')
   ]);
   if(a.error)throw a.error;if(b.error)throw b.error;
