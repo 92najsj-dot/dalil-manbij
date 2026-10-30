@@ -576,7 +576,7 @@ async function loadAdminStatistics(){
    card('🏬 مشاهدات صفحات المحلات خلال 7 أيام',data.business_opens_7_days,''),
    card('⭐ مشاهدات الترويج',data.promotions_views,'ضغطات الترويج: '+n(data.promotions_clicks))
   ];extraCards.innerHTML=rows.join('')}
-  const app=$('adminStatsApp');if(app){app.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div>📦 أجهزة APK التي فتحت التطبيق خلال 30 يوماً: <strong>'+n(data.apk_devices_30_days)+'</strong></div><div>📲 أجهزة PWA النشطة خلال 30 يوماً: <strong>'+n(data.pwa_devices_30_days)+'</strong></div><div>✅ تثبيتات PWA مؤكدة منذ بدء التسجيل: <strong>'+n(data.pwa_installs_total)+'</strong></div><div>🔥 أجهزة تطبيق نشطة خلال 7 أيام: <strong>'+n(data.app_devices_7_days)+'</strong></div></div>'}
+  const app=$('adminStatsApp');if(app){app.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div>📦 أجهزة APK التي فتحت التطبيق خلال 30 يوماً: <strong>'+n(data.apk_devices_30_days)+'</strong></div><div>📲 أجهزة PWA النشطة خلال 30 يوماً: <strong>'+n(data.pwa_devices_30_days)+'</strong></div><div>✅ أجهزة شغّلت PWA بوضع التطبيق لأول مرة منذ بدء التسجيل: <strong>'+n(data.pwa_installs_total)+'</strong></div><div>🔥 أجهزة تطبيق نشطة خلال 7 أيام: <strong>'+n(data.app_devices_7_days)+'</strong></div></div>'}
   if(status)status.textContent='آخر تحديث: '+new Date(data.generated_at||Date.now()).toLocaleString('ar-SY')+' · بيانات الزوار تُسجّل من وقت تفعيل الإحصائيات فقط.';
  }catch(e){console.error('admin statistics:',e);if(status)status.textContent='تعذّر تحميل الإحصائيات: '+(e.message||'خطأ غير معروف');if(cards)cards.innerHTML=empty('تأكد من صلاحية الإدارة واتصال قاعدة البيانات ثم أعد المحاولة.')}
 }
