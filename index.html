@@ -525,6 +525,7 @@ async function loadData(){
    }
   }
   if(recoveryLinkAtLoad){const {data:{session:recoverySession}}=await db.auth.getSession();if(recoverySession&&!recoveryModalOpened){recoveryModalOpened=true;openPasswordUpdateModal()}}
+  initSiteAnalytics();
  }catch(e){console.error(e);setStatus(false,'تعذر الاتصال بقاعدة البيانات');$('businessGrid').innerHTML=empty('ما قدرنا نحمل دليل المحلات. تحقق من الإنترنت وإعدادات Supabase ثم أعد المحاولة.');$('listingGrid').innerHTML=empty('ما قدرنا نحمل الإعلانات حالياً.');$('requestList').innerHTML=empty('ما قدرنا نحمل الطلبات حالياً.');toast('تعذر الاتصال: '+(e.message||'خطأ غير معروف'))}
 }
 function renderCategories(){const all=`<button class="cat ${activeCat==='الكل'?'active':''}" data-cat="الكل" onclick="chooseCat(this)"><span class="emoji">✨</span><strong>الكل</strong></button>`;const rest=categories.map(c=>`<button class="cat ${activeCat===c.name?'active':''}" data-cat="${esc(c.name)}" onclick="chooseCat(this)"><span class="emoji">${esc(c.icon||emojiFor(c.name))}</span><strong>${esc(c.name)}</strong></button>`).join('');$('categories').innerHTML=all+rest}
@@ -946,16 +947,18 @@ function siteVisitorId(){
  try{let id=localStorage.getItem('dalil_manbij_visitor_id');if(!id){id=crypto.randomUUID();localStorage.setItem('dalil_manbij_visitor_id',id)}return id}catch(e){return crypto.randomUUID()}
 }
 async function recordSiteVisit(section,eventType='page_view'){
- if(!db)return;
- try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home',p_event_type:eventType});if(error)console.warn('site analytics:',error.message)}catch(e){console.warn('site analytics:',e)}
+ if(!db)return false;
+ try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home',p_event_type:eventType});if(error){console.warn('site analytics:',error.message);return false}return true}catch(e){console.warn('site analytics:',e);return false}
 }
 function initSiteAnalytics(){
+ if(window.__dalilSiteAnalyticsInitialized||!db)return;
+ window.__dalilSiteAnalyticsInitialized=true;
  const ua=navigator.userAgent||'';
  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
  const isWebView=/;\s*wv\)/i.test(ua)||(/Android/i.test(ua)&&/Version\/[\d.]+.*Chrome\/[\d.]+.*Mobile Safari/i.test(ua)&&!/EdgA|OPR\//i.test(ua));
  const appSection=isWebView?'app_apk':(standalone?'app_pwa':null);
  if(appSection)recordSiteVisit(appSection,'app_open');
- if(standalone&&!localStorage.getItem('dalil_pwa_install_event_v1')){recordSiteVisit('app_pwa','app_install');localStorage.setItem('dalil_pwa_install_event_v1','1')}
+ if(standalone&&!localStorage.getItem('dalil_pwa_install_event_v1'))recordSiteVisit('app_pwa','app_install').then(ok=>{if(ok)try{localStorage.setItem('dalil_pwa_install_event_v1','1')}catch(e){}});
  recordSiteVisit('home');
  document.addEventListener('click',e=>{
   const el=e.target.closest('a,button,[data-cat]');
@@ -1079,7 +1082,6 @@ async function refreshAdminBell(){if(!db||!isAdminUser()||adminBellRefreshBusy)r
 async function accountAction(){if(currentUser){const section=$('accountSection');if(section)section.scrollIntoView({behavior:'smooth',block:'start'});return}openModal('auth')}
 async function logoutAccount(){if(!db)return;try{const {error}=await db.auth.signOut();if(error)throw error;currentUser=null;updateAccountUI();toast('تم تسجيل الخروج بنجاح.');window.scrollTo({top:0,behavior:'smooth'});}catch(e){toast('تعذّر تسجيل الخروج: '+(e.message||'خطأ غير معروف'))}}
 loadData();
-initSiteAnalytics();
 
 function openPromoContactForItem(table,id){
  const modal=document.getElementById("promoContactModal");if(!modal)return;
