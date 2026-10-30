@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#087f5b">
+<link rel="manifest" href="/manifest.webmanifest">
 <meta name="description" content="نزّل تطبيق دليل منبج للأندرويد واكتشف المحلات والخدمات والإعلانات في منبج وريفها.">
 <title>تنزيل تطبيق دليل منبج</title>
 <style>
@@ -105,6 +106,19 @@
          showHelp();
        }
      }else{
+       if ('serviceWorker' in navigator && location.protocol === 'https:') {
+         status.textContent='نجهّز التثبيت لأول مرة… انتظر لحظة وسيُعاد تحميل الصفحة.';
+         btn.disabled=true;
+         try {
+           await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+           await navigator.serviceWorker.ready;
+           setTimeout(function(){ location.reload(); }, 900);
+           return;
+         } catch (err) {
+           console.warn('PWA service worker registration failed:', err);
+         }
+         btn.disabled=false;
+       }
        status.textContent='التثبيت المباشر غير متاح في هذا المتصفح حالياً. يمكنك إضافة اختصار باتباع الخطوات التالية:';
        showHelp();
      }
