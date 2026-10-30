@@ -22,6 +22,17 @@
 <h1>أهلاً وسهلاً فيك!</h1>
 <p class="slogan">كل منبج وريفها بين إيديك 💚</p>
 <p>تسوّق، بيع، أعلن واكتشف المحلات والخدمات والإعلانات المحلية، كلّها بمكان واحد.</p>
+
+<section class="steps" id="browser-install" style="margin-top:22px;border:2px solid #bfe8d2;background:linear-gradient(135deg,#f2fff7,#fff)">
+<h2 style="text-align:center;color:#07543f">📲 ثبّت دليل منبج من المتصفح</h2>
+<p style="text-align:center;color:#64766f;line-height:1.8;font-size:13px">بدون تحميل APK — أضف الموقع إلى شاشة هاتفك وافتحه مثل أي تطبيق.</p>
+<button id="pwa-install-btn" class="download" type="button" style="width:100%;border:0;cursor:pointer;margin:16px auto 8px">📲 تثبيت دليل منبج الآن</button>
+<p id="install-status" class="note" role="status" aria-live="polite" style="text-align:center">إذا كان التثبيت المباشر مدعوماً سيظهر لك تأكيد التثبيت من المتصفح.</p>
+<div id="install-help" hidden style="margin-top:14px;background:#fff;border:1px solid #e2eee8;border-radius:15px;padding:15px;text-align:right">
+<strong style="color:#07543f">طريقة إضافة الاختصار:</strong>
+<p id="install-help-text" style="font-size:13px;color:#64766f;line-height:1.9;margin:8px 0 0"></p>
+</div>
+</section>
 <div class="download-options" style="display:grid;gap:12px;max-width:440px;margin:26px auto 12px">
 <a class="download" style="margin:0;max-width:none" href="https://github.com/92najsj-dot/dalil-manbij-android/releases/download/v1.0.0/app-debug.apk?v=20261028">
 <span aria-hidden="true" style="font-size:25px">⬇</span><span>تنزيل التطبيق مباشرةً<small>للأندرويد · APK · آخر بناء 28 أكتوبر 2026</small></span>
@@ -47,5 +58,60 @@
 <a class="web" href="https://dalil-manbij-new.pages.dev/">↩ العودة إلى الموقع الرئيسي لدليل منبج</a>
 </main>
 <footer class="wrap footer"><strong>دليل منبج</strong><br>كل ما تحتاجه منبج وريفها، بمكان واحد.<br>تم التطوير بواسطة عبد نعسو ❤️</footer>
+
+<script>
+(function(){
+ const btn=document.getElementById('pwa-install-btn');
+ const status=document.getElementById('install-status');
+ const help=document.getElementById('install-help');
+ const helpText=document.getElementById('install-help-text');
+ let deferredPrompt=null;
+ const standalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+ function showHelp(){
+   help.hidden=false;
+   const ua=navigator.userAgent||'';
+   if(/iphone|ipad|ipod/i.test(ua)){
+     helpText.textContent='افتح الصفحة في Safari، ثم اضغط زر المشاركة (مربع وسهم للأعلى)، واختر «إضافة إلى الشاشة الرئيسية»، ثم اضغط «إضافة».';
+   }else if(/android/i.test(ua)){
+     helpText.textContent='افتح هذه الصفحة في Google Chrome، ثم اضغط قائمة ⋮ واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»، وبعدها أكّد الإضافة. قد يختلف الاسم حسب الهاتف والمتصفح.';
+   }else{
+     helpText.textContent='افتح قائمة المتصفح وابحث عن «تثبيت التطبيق» أو «إنشاء اختصار»، ثم اتبع التعليمات. جرّب Google Chrome أو Safari على الهاتف للحصول على أفضل تجربة.';
+   }
+ }
+ if(standalone){
+   btn.textContent='✓ دليل منبج مثبت بالفعل';
+   btn.disabled=true;
+   btn.style.opacity='.8';
+   status.textContent='يمكنك فتح دليل منبج من أيقونته على الشاشة الرئيسية.';
+ }else{
+   window.addEventListener('beforeinstallprompt',function(e){
+     e.preventDefault(); deferredPrompt=e;
+     btn.textContent='📲 تثبيت دليل منبج الآن';
+   });
+   window.addEventListener('appinstalled',function(){
+     deferredPrompt=null; btn.textContent='✓ تم تثبيت دليل منبج';
+     btn.disabled=true; status.textContent='أهلاً بك! أصبح دليل منبج على شاشة هاتفك.';
+     help.hidden=true;
+   });
+   btn.addEventListener('click',async function(){
+     if(deferredPrompt){
+       deferredPrompt.prompt();
+       const choice=await deferredPrompt.userChoice;
+       deferredPrompt=null;
+       if(choice && choice.outcome==='accepted'){
+         status.textContent='تم اختيار التثبيت. انتظر اكتمال العملية على جهازك.';
+       }else{
+         status.textContent='لم يتم التثبيت. يمكنك تجربة إضافة اختصار للشاشة الرئيسية.';
+         showHelp();
+       }
+     }else{
+       status.textContent='التثبيت المباشر غير متاح في هذا المتصفح حالياً. يمكنك إضافة اختصار باتباع الخطوات التالية:';
+       showHelp();
+     }
+   });
+ }
+})();
+</script>
+
 </body>
 </html>
