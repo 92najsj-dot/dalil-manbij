@@ -77,11 +77,12 @@
 .install-app-icon{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;border-radius:50%;background:#ffffff18;color:#fff;font-size:20px;box-shadow:none}
 .install-app-copy{flex:1;min-width:0}.install-app-copy strong{display:block;color:#fff;font-size:13px;margin-bottom:3px}.install-app-copy span{display:block;color:#d8f5e9;font-size:11px;line-height:1.5}
 .install-app-cta{border:0;border-radius:10px;background:#fff;color:#00694f;font-weight:800;font-size:12px;padding:10px 13px;white-space:nowrap}
-.install-modal-bg{display:none;position:fixed;inset:0;z-index:20000;background:rgba(8,25,17,.62);align-items:center;justify-content:center;padding:20px}
-.install-modal-bg.open{display:flex}.install-modal{width:min(390px,100%);background:#fff;border-radius:23px;padding:24px 20px;text-align:center;box-shadow:0 20px 70px #0003;animation:installPop .18s ease-out}
-.install-modal-icon{width:72px;height:72px;margin:0 auto 14px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(145deg,#e2f6e9,#f4fbf6);font-size:38px;border:1px solid #cbe7d4}
-.install-modal h2{font-size:21px;color:#174b38;margin:0 0 9px}.install-modal p{font-size:14px;color:#65746b;line-height:1.9;margin:0 0 20px}
-.install-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.install-modal-actions button{min-height:46px;border-radius:12px;font:inherit;font-weight:800}.install-confirm{border:0;background:#176b50;color:#fff}.install-cancel{border:1px solid #dce7df;background:#fff;color:#42554a}
+.install-modal-bg{display:none;position:fixed;inset:0;z-index:20000;background:rgba(8,25,17,.62);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+ .install-modal-bg.open{display:flex}.install-modal{position:relative;width:min(390px,100%);background:linear-gradient(180deg,#fff 0%,#f8fcf9 100%);border:1px solid #dcefe4;border-radius:25px;padding:28px 21px 22px;text-align:center;box-shadow:0 22px 75px #062b1d45;animation:installPop .22s ease-out}
+ .install-modal-close{position:absolute;top:10px;left:10px;width:30px;height:30px;border:1px solid #e1ebe4;border-radius:50%;background:#f5faf6;color:#557064;font-size:19px;line-height:1;cursor:pointer}
+ .install-modal-icon{width:72px;height:72px;margin:0 auto 14px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(145deg,#e2f6e9,#f4fbf6);font-size:38px;border:1px solid #cbe7d4}
+ .install-modal h2{font-size:21px;color:#174b38;margin:0 0 9px}.install-modal p{font-size:14px;color:#65746b;line-height:1.9;margin:0 0 20px}
+ .install-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.install-modal-actions button{min-height:46px;border-radius:13px;font:inherit;font-weight:800;cursor:pointer}.install-confirm{border:0;background:linear-gradient(135deg,#0a9967,#07543f);color:#fff;box-shadow:0 7px 17px #087f5b30}.install-cancel{border:1px solid #dce7df;background:#fff;color:#42554a}
 @keyframes installPop{from{transform:translateY(8px) scale(.98);opacity:.6}to{transform:translateY(0) scale(1);opacity:1}}
 @media(max-width:650px){.install-app-card{gap:8px;padding:7px 9px;min-height:54px}.install-app-icon{width:32px;height:32px;flex-basis:32px;font-size:18px}.install-app-copy strong{font-size:12px}.install-app-copy span{font-size:10px}.install-app-cta{padding:9px 10px;font-size:11px}}
 
@@ -1139,27 +1140,24 @@ function showDalilInstallButton(show){if(dalilInstallButton)dalilInstallButton.s
 showDalilInstallButton(!isDalilStandalone());
 window.addEventListener('pageshow',()=>{if(isDalilStandalone())showDalilInstallButton(false)});
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();dalilInstallPrompt=event;if(!isDalilStandalone())showDalilInstallButton(true)});
-window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;closeDalilInstallModal();showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
-function openDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal){modal.classList.add('open');document.body.style.overflow='hidden'}}
+window.addEventListener('appinstalled',()=>{dalilInstallPrompt=null;try{localStorage.setItem('dalil_manbij_app_installed_v1','1');localStorage.removeItem(dalilInstallSnoozeKey)}catch(e){}closeDalilInstallModal();showDalilInstallButton(false);if(typeof toast==='function')toast('تم تثبيت دليل منبج بنجاح 💚')});
+const dalilInstallSnoozeKey='dalil_install_prompt_snooze_until_v1';
+function dalilInstallPromptSuppressed(){try{return Number(localStorage.getItem(dalilInstallSnoozeKey)||0)>Date.now()}catch(e){return false}}
+function dismissDalilInstallPrompt(){try{localStorage.setItem(dalilInstallSnoozeKey,String(Date.now()+24*60*60*1000))}catch(e){}closeDalilInstallModal()}
+function openDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal&&!isDalilStandalone()){modal.classList.add('open');document.body.style.overflow='hidden'}}
 function closeDalilInstallModal(){const modal=document.getElementById('dalilInstallModal');if(modal)modal.classList.remove('open');document.body.style.overflow=''}
-async function confirmDalilInstall(){
- const modal=document.getElementById('dalilInstallModal');
- if(dalilInstallPrompt){
-  const promptEvent=dalilInstallPrompt;dalilInstallPrompt=null;
-  try{
-   closeDalilInstallModal();
-   await promptEvent.prompt();
-   const choice=await promptEvent.userChoice;
-   if(choice&&choice.outcome==='accepted')showDalilInstallButton(false);
-   return;
-  }catch(error){console.warn('Native install prompt failed:',error)}
- }
- const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
- const isAndroid=/android/i.test(navigator.userAgent);
- const msg=isIOS?'للتثبيت على iPhone: اضغط مشاركة في Safari ثم «إضافة إلى الشاشة الرئيسية».':isAndroid?'المتصفح لم يوفّر نافذة التثبيت المباشر. افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».':'افتح قائمة المتصفح واختر «تثبيت دليل منبج» أو «إنشاء اختصار».';
- closeDalilInstallModal();window.alert(msg);
+function confirmDalilInstall(){window.location.href='/download.html'}
+function scheduleDalilInstallPrompt(){
+ let alreadyShown=false;try{alreadyShown=sessionStorage.getItem('dalil_install_prompt_shown_session_v1')==='1'}catch(e){}
+ if(isDalilStandalone()||dalilInstallPromptSuppressed()||alreadyShown||(()=>{try{return localStorage.getItem('dalil_manbij_app_installed_v1')==='1'}catch(e){return false}})())return;
+ setTimeout(()=>{
+  if(!isDalilStandalone()&&!dalilInstallPromptSuppressed()){
+   try{sessionStorage.setItem('dalil_install_prompt_shown_session_v1','1')}catch(e){}
+   openDalilInstallModal();
+  }
+ },20000);
 }
-document.addEventListener('keydown',event=>{if(event.key==='Escape')closeDalilInstallModal()});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('dalilInstallModal')?.classList.contains('open'))dismissDalilInstallPrompt()});
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Service worker registration failed:',err)))}
 
 (function(){
@@ -1224,14 +1222,15 @@ document.addEventListener('change',function(event){
 </script>
 <div id="imageGalleryOverlay" class="image-gallery-overlay" role="dialog" aria-modal="true" aria-label="صور الإعلان" onclick="if(event.target===this)closeImageGallery()"><div class="image-gallery-dialog" id="imageGalleryDialog"><button type="button" class="gallery-control gallery-close" aria-label="إغلاق الصور" onclick="closeImageGallery()">×</button><div class="image-gallery-main" id="imageGalleryMain"><button type="button" class="gallery-control gallery-prev" aria-label="الصورة السابقة" onclick="changeGalleryImage(-1)">‹</button><img id="imageGalleryImage" alt="صورة الإعلان" src=""><button type="button" class="gallery-control gallery-next" aria-label="الصورة التالية" onclick="changeGalleryImage(1)">›</button></div><div class="image-gallery-counter" id="imageGalleryCounter">1 / 1</div><div class="image-gallery-thumbs" id="imageGalleryThumbs"></div></div></div>
 
-<div id="dalilInstallModal" class="install-modal-bg" role="dialog" aria-modal="true" aria-labelledby="dalilInstallTitle" onclick="if(event.target===this)closeDalilInstallModal()">
+<div id="dalilInstallModal" class="install-modal-bg" role="dialog" aria-modal="true" aria-labelledby="dalilInstallTitle" onclick="if(event.target===this)dismissDalilInstallPrompt()">
  <div class="install-modal">
-  <div class="install-modal-icon">📍</div>
-  <h2 id="dalilInstallTitle">تثبيت دليل منبج؟</h2>
-  <p>خلّي دليل منبج بجيبك! ثبّت التطبيق لتوصل للمحلات والخدمات والإعلانات المحلية بسرعة من الشاشة الرئيسية.</p>
-  <div class="install-modal-actions">
-   <button type="button" class="install-cancel" onclick="closeDalilInstallModal()">مو هلأ</button>
-   <button type="button" class="install-confirm" onclick="confirmDalilInstall()">إي، ثبّت التطبيق</button>
+   <button type="button" class="install-modal-close" aria-label="إغلاق" onclick="dismissDalilInstallPrompt()">×</button>
+   <div class="install-modal-icon">📱</div>
+   <h2 id="dalilInstallTitle">خلّي منبج أقرب إلك!</h2>
+   <p>كل المحلات والعروض والإعلانات والخدمات بجيبك. ثبّت تطبيق دليل منبج واستمتع بتجربة أسهل وأسرع، ووصل لكل جديد بمنبج وريفها 💚</p>
+   <div class="install-modal-actions">
+    <button type="button" class="install-cancel" onclick="dismissDalilInstallPrompt()">مو هلأ، شكراً</button>
+   <button type="button" class="install-confirm" onclick="confirmDalilInstall()">📲 ثبّت التطبيق الآن</button>
   </div>
  </div>
 </div>
@@ -1253,11 +1252,11 @@ document.addEventListener('change',function(event){
  const bg=document.getElementById('dalilWelcomeBg');
  const close=document.getElementById('dalilWelcomeClose');
  if(!bg||!close)return;
- function hide(){bg.classList.remove('open');try{sessionStorage.setItem(key,'1')}catch(e){}}
+ function hide(){bg.classList.remove('open');try{sessionStorage.setItem(key,'1')}catch(e){}scheduleDalilInstallPrompt()}
  close.addEventListener('click',hide);
  bg.addEventListener('click',function(e){if(e.target===bg)hide()});
  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&bg.classList.contains('open'))hide()});
- try{if(!sessionStorage.getItem(key))setTimeout(()=>bg.classList.add('open'),500)}catch(e){setTimeout(()=>bg.classList.add('open'),500)}
+ try{if(!sessionStorage.getItem(key))setTimeout(()=>bg.classList.add('open'),500);else scheduleDalilInstallPrompt()}catch(e){setTimeout(()=>bg.classList.add('open'),500)}
 })();
 </script>
 
