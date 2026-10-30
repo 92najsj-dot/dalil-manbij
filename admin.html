@@ -456,6 +456,20 @@ async function decideVerificationRequest(requestId,businessId,approve){
   await loadVerificationAdmin();
  }catch(e){console.error(e);toast('تعذّرت مراجعة طلب التوثيق: '+(e.message||'خطأ غير معروف'))}
 }
+async function deleteAdminItem(table,id){
+ if(!db||!isAdminUser()){toast('الحذف متاح للإدارة فقط.');return}
+ const allowedTables=['listings','businesses','wanted_requests','local_offers'];
+ if(!allowedTables.includes(table)){toast('نوع المحتوى غير مسموح حذفه.');return}
+ if(!id||!confirm('تأكيد الحذف النهائي؟ لا يمكن التراجع عن هذا الإجراء.'))return;
+ try{
+  const result=await db.from(table).delete().eq('id',id).select('id');
+  if(result.error)throw result.error;
+  if(!result.data||!result.data.length)throw new Error('لم يُحذف المحتوى. قد لا تملك صلاحية الحذف أو أن السجل لم يعد موجوداً.');
+  await logAdminAction('delete_content',table,id,{source:'admin_pending'});
+  toast('تم حذف المحتوى نهائياً.');
+  await loadAdminPending();
+ }catch(e){console.error('admin delete:',e);toast('تعذّر حذف المحتوى: '+(e.message||'خطأ غير معروف'))}
+}
 async function loadAdminPending(){
  if(!db||!(currentUser && currentUser.app_metadata && currentUser.app_metadata.role==='admin'))return;
  const box=$('adminItems');if(!box)return;
@@ -562,7 +576,7 @@ async function loadAdminStatistics(){
    card('🏬 مشاهدات صفحات المحلات خلال 7 أيام',data.business_opens_7_days,''),
    card('⭐ مشاهدات الترويج',data.promotions_views,'ضغطات الترويج: '+n(data.promotions_clicks))
   ];extraCards.innerHTML=rows.join('')}
-  const app=$('adminStatsApp');if(app){app.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div>📦 أجهزة APK التي فتحت التطبيق خلال 30 يوماً: <strong>'+n(data.apk_devices_30_days)+'</strong></div><div>📲 أجهزة PWA النشطة خلال 30 يوماً: <strong>'+n(data.pwa_devices_30_days)+'</strong></div><div>✅ تثبيتات PWA مؤكدة منذ بدء التسجيل: <strong>'+n(data.pwa_installs_total)+'</strong></div><div>🔥 أجهزة تطبيق نشطة خلال 7 أيام: <strong>'+n(data.app_devices_7_days)+'</strong></div></div>'}
+  const app=$('adminStatsApp');if(app){app.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div>📦 أجهزة APK التي فتحت التطبيق خلال 30 يوماً: <strong>'+n(data.apk_devices_30_days)+'</strong></div><div>📲 أجهزة PWA النشطة خلال 30 يوماً: <strong>'+n(data.pwa_devices_30_days)+'</strong></div><div>✅ أجهزة شغّلت PWA بوضع التطبيق لأول مرة منذ بدء التسجيل: <strong>'+n(data.pwa_installs_total)+'</strong></div><div>🔥 أجهزة تطبيق نشطة خلال 7 أيام: <strong>'+n(data.app_devices_7_days)+'</strong></div></div>'}
   if(status)status.textContent='آخر تحديث: '+new Date(data.generated_at||Date.now()).toLocaleString('ar-SY')+' · بيانات الزوار تُسجّل من وقت تفعيل الإحصائيات فقط.';
  }catch(e){console.error('admin statistics:',e);if(status)status.textContent='تعذّر تحميل الإحصائيات: '+(e.message||'خطأ غير معروف');if(cards)cards.innerHTML=empty('تأكد من صلاحية الإدارة واتصال قاعدة البيانات ثم أعد المحاولة.')}
 }
