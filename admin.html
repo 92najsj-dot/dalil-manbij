@@ -504,7 +504,13 @@ async function recordSiteVisit(section,eventType='page_view'){
  try{const {error}=await db.rpc('track_site_visit',{p_visitor_id:siteVisitorId(),p_path:location.pathname||'/',p_section:section||'home',p_event_type:eventType});if(error)console.warn('site analytics:',error.message)}catch(e){console.warn('site analytics:',e)}
 }
 function initSiteAnalytics(){
- recordSiteVisit('home');
+ // سجّل فتح التطبيق أيضاً عند فتح لوحة الإدارة مباشرة داخل APK أو PWA.
+ const ua=navigator.userAgent||'';
+ const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ const isAndroidWebView=/;\s*wv\)/i.test(ua)||(/Android/i.test(ua)&&/Version\/[\d.]+.*Chrome\/[\d.]+.*Mobile Safari/i.test(ua)&&!/EdgA|OPR\//i.test(ua));
+ const appSection=isAndroidWebView?'app_apk':(standalone?'app_pwa':null);
+ if(appSection)recordSiteVisit(appSection,'app_open');
+ if(standalone){try{if(!localStorage.getItem('dalil_pwa_install_event_v1')){recordSiteVisit('app_pwa','app_install');localStorage.setItem('dalil_pwa_install_event_v1','1')}}catch(e){}} recordSiteVisit('home');
  document.addEventListener('click',e=>{
   const el=e.target.closest('a,button,[data-cat]');
   if(!el)return;
