@@ -1155,7 +1155,7 @@ function scheduleDalilInstallPrompt(){
    try{sessionStorage.setItem('dalil_install_prompt_shown_session_v1','1')}catch(e){}
    openDalilInstallModal();
   }
- },35000);
+ },20000);
 }
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('dalilInstallModal')?.classList.contains('open'))dismissDalilInstallPrompt()});
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Service worker registration failed:',err)))}
