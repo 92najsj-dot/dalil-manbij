@@ -469,7 +469,7 @@ async function loadFavorites(){
  }catch(e){console.error(e);box.innerHTML=empty('تعذّر تحميل المحفوظات. تحقق من اتصال قاعدة البيانات وصلاحياتها.')}
 }
 async function optimizeImageForUpload(file){
- if(!file||!/^image\\/(?:jpeg|png|webp|avif)$/i.test(file.type||'')||file.size<300*1024||typeof createImageBitmap!=='function')return file;
+ if(!file||!/^image\/(?:jpeg|png|webp|avif)$/i.test(file.type||'')||file.size<300*1024||typeof createImageBitmap!=='function')return file;
  let bitmap=null;
  try{
   bitmap=await createImageBitmap(file);
@@ -481,7 +481,7 @@ async function optimizeImageForUpload(file){
   context.drawImage(bitmap,0,0,canvas.width,canvas.height);
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.82));
   if(!blob||blob.size>=file.size)return file;
-  const baseName=(file.name||'image').replace(/\\.[^.]+$/,'');
+  const baseName=(file.name||'image').replace(/\.[^.]+$/,'');
   return new File([blob],baseName+'.webp',{type:'image/webp',lastModified:Date.now()});
  }catch(error){console.warn('Image optimization skipped; uploading original:',error);return file}
  finally{if(bitmap&&typeof bitmap.close==='function')bitmap.close()}
