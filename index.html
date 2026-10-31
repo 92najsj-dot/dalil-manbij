@@ -798,9 +798,22 @@ async function loadMyAds(){
    const editButton=(r._table==='listings'||r._table==='businesses')?'<button class="btn outline" type="button" onclick="editMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">✏️ تعديل</button>':(r._table==='wanted_requests'&&['pending','active'].includes(r.status)?'<button class="btn outline" type="button" onclick="editMyRequest(\''+esc(r.id)+'\')">✏️ تعديل الطلب</button>':'');
    const closeRequestButton=r._table==='wanted_requests'&&r.status==='active'?'<button class="btn outline" type="button" onclick="closeMyRequest(\''+esc(r.id)+'\')">✓ تم العثور / إغلاق الطلب</button>':'';
    const soldButton=r._table==='listings'&&String(r.status||'').toLowerCase()==='active'?'<button class="btn outline" type="button" onclick="markMyItemSold(\''+esc(r.id)+'\')">✓ تم البيع</button>':'';
-   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div></div><div class="adminactions">'+editButton+closeRequestButton+soldButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
+   const expirable=['listings','wanted_requests'].includes(r._table), expired=expirable&&r.expires_at&&new Date(r.expires_at)<=new Date();
+   const expiryInfo=expirable&&r.expires_at?'<div class="adminmeta">'+(expired?'انتهت صلاحية النشر':'ينتهي النشر')+' · '+esc(new Date(r.expires_at).toLocaleDateString('ar-SY'))+'</div>':'';
+   const renewButton=expirable&&expired&&['active','sold','closed'].includes(String(r.status||'').toLowerCase())?'<button class="btn outline" type="button" onclick="renewMyAd(\''+r._table+'\',\''+esc(r.id)+'\')">↻ تجديد الإعلان</button>':'';
+   return '<article class="adminitem"><div style="min-width:180px;flex:1"><h3>'+esc(r._title||'بدون عنوان')+'</h3><div class="adminmeta">'+esc(r._kind)+' · '+esc(r.created_at?new Date(r.created_at).toLocaleDateString('ar-SY'):'')+'</div><div style="margin-top:8px">'+statusTag(r.status)+'</div>'+expiryInfo+'</div><div class="adminactions">'+editButton+closeRequestButton+soldButton+renewButton+promoteButton+'<button class="btn reject" type="button" onclick="deleteMyItem(\''+r._table+'\',\''+esc(r.id)+'\')">حذف إعلاني</button></div></article>';
   }).join('');
  }catch(e){console.error('my ads:',e);box.innerHTML=empty('تعذّر تحميل إعلاناتك. تحقق من اتصالك وصلاحيات الحساب ثم أعد المحاولة.')}
+}
+
+async function renewMyAd(table,id){
+ if(!currentUser||!db||!['listings','wanted_requests'].includes(table))return;
+ const raw=prompt('اختر مدة التجديد بالأيام: 3 أو 7 أو 15 أو 30','7');if(raw===null)return;
+ const days=Number(raw);if(![3,7,15,30].includes(days)){toast('المدة المسموحة: 3 أو 7 أو 15 أو 30 يوماً.');return}
+ const ownerColumn='user_id',expiresAt=new Date(Date.now()+days*86400000).toISOString();
+ const result=await db.from(table).update({duration_days:days,expires_at:expiresAt,status:'active'}).eq('id',id).eq(ownerColumn,currentUser.id).select('id');
+ if(result.error||!result.data?.length){toast('تعذّر تجديد الإعلان. تأكد من صلاحيات الحساب وحالة الإعلان.');return}
+ toast('تم تجديد الإعلان لمدة '+days+' يوم.');await Promise.allSettled([loadData(),loadMyAds()]);
 }
 
 async function editMyRequest(id){
