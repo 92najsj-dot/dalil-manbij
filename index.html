@@ -781,7 +781,7 @@ async function loadMyAds(){
   const results=await Promise.all([
    db.from('listings').select('id,title,status,created_at,image_urls,expires_at,duration_days').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
    db.from('businesses').select('id,name,status,created_at,image_urls').eq('owner_id',currentUser.id).order('created_at',{ascending:false}),
-   db.from('wanted_requests').select('id,title,status,created_at,expires_at,duration_days').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   (async()=>{let q=await db.from('wanted_requests').select('id,title,status,created_at,expires_at,duration_days').eq('user_id',currentUser.id).order('created_at',{ascending:false});if(q.error&&(String(q.error.code||'')==='42703'||String(q.error.code||'')==='PGRST204'||/expires_at|duration_days/i.test(q.error.message||''))){console.warn('My wanted requests: expiry columns are not deployed; using compatible fields.',q.error.message);q=await db.from('wanted_requests').select('id,title,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});}return q;})(),
    db.from('local_offers').select('id,title,status,created_at,image_urls,rejection_reason,ends_at').eq('owner_id',currentUser.id).order('created_at',{ascending:false})
   ]);
   for(const r of results){if(r.error)throw r.error}
