@@ -966,7 +966,35 @@ function siteVisitorId(){
 }
 const siteVisitQueue=[];let siteVisitFlushTimer=null,siteVisitFlushBusy=false,siteVisitBatchMode='unknown';const siteVisitClientThrottle=new Map();
 function scheduleSiteVisitFlush(){if(siteVisitFlushTimer)return;siteVisitFlushTimer=setTimeout(()=>{siteVisitFlushTimer=null;flushSiteVisitQueue()},2500)}
-async function flushSiteVisitQueue(){if(!db||siteVisitFlushBusy||!siteVisitQueue.length||siteVisitBatchMode==='blocked')return false;siteVisitFlushBusy=true;const batch=siteVisitQueue.splice(0,20);try{if(siteVisitBatchMode!=='legacy'){const result=await db.rpc('track_site_visits_batch',{p_events:batch});if(!result.error){siteVisitBatchMode='batch';return true}const errorText=String(result.error.code||'')+' '+String(result.error.message||'');if(/PGRST202|42883|Could not find the function|does not exist/i.test(errorText))siteVisitBatchMode='legacy';else if(/402|quota|restricted/i.test(errorText)){siteVisitBatchMode='blocked';return false}else{console.warn('site analytics batch:',result.error.message);return false}}if(siteVisitBatchMode==='legacy'){const results=await Promise.all(batch.map(event=>db.rpc('track_site_visit',{p_visitor_id:event.visitor_id,p_path:event.path,p_section:event.section,p_event_type:event.event_type})));const failed=results.find(x=>x.error);if(failed){const errorText=String(failed.error.code||'')+' '+String(failed.error.message||'');if(/402|quota|restricted/i.test(errorText))siteVisitBatchMode='blocked';console.warn('site analytics fallback:',failed.error.message)}return !failed}return false}catch(e){console.warn('site analytics:',e);return false}finally{siteVisitFlushBusy=false;if(siteVisitQueue.length&&siteVisitBatchMode!=='blocked')scheduleSiteVisitFlush()}}
+async function flushSiteVisitQueue(){
+ if(!db||siteVisitFlushBusy||!siteVisitQueue.length||siteVisitBatchMode==='blocked')return false;
+ siteVisitFlushBusy=true;
+ const batch=siteVisitQueue.splice(0,20);
+ const markInstallDelivered=()=>{if(batch.some(event=>event.event_type==='app_install'))try{localStorage.setItem('dalil_pwa_install_event_v1','1')}catch(e){}};
+ try{
+  if(siteVisitBatchMode!=='legacy'){
+   const result=await db.rpc('track_site_visits_batch',{p_events:batch});
+   if(!result.error){siteVisitBatchMode='batch';markInstallDelivered();return true}
+   const errorText=String(result.error.code||'')+' '+String(result.error.message||'');
+   if(/PGRST202|42883|Could not find the function|does not exist/i.test(errorText))siteVisitBatchMode='legacy';
+   else if(/402|quota|restricted/i.test(errorText)){siteVisitBatchMode='blocked';return false}
+   else{console.warn('site analytics batch:',result.error.message);siteVisitQueue.unshift(...batch);return false}
+  }
+  if(siteVisitBatchMode==='legacy'){
+   const results=await Promise.all(batch.map(event=>db.rpc('track_site_visit',{p_visitor_id:event.visitor_id,p_path:event.path,p_section:event.section,p_event_type:event.event_type})));
+   const failed=results.find(x=>x.error);
+   if(failed){
+    const errorText=String(failed.error.code||'')+' '+String(failed.error.message||'');
+    if(/402|quota|restricted/i.test(errorText))siteVisitBatchMode='blocked';
+    else siteVisitQueue.unshift(...batch);
+    console.warn('site analytics fallback:',failed.error.message);
+   }else markInstallDelivered();
+   return !failed;
+  }
+  return false;
+ }catch(e){console.warn('site analytics:',e);siteVisitQueue.unshift(...batch);return false}
+ finally{siteVisitFlushBusy=false;if(siteVisitQueue.length&&siteVisitBatchMode!=='blocked')scheduleSiteVisitFlush()}
+}
 async function recordSiteVisit(section,eventType='page_view'){
  if(!db||siteVisitBatchMode==='blocked')return false;
  const safeSection=section||'home',safeType=eventType||'page_view',now=Date.now(),throttleMs=safeType==='section_click'?10000:(safeType==='search'?2500:0),throttleKey=safeType+'|'+safeSection+'|'+(location.pathname||'/');
@@ -985,7 +1013,7 @@ function initSiteAnalytics(){
  const isWebView=/;\s*wv\)/i.test(ua)||(/Android/i.test(ua)&&/Version\/[\d.]+.*Chrome\/[\d.]+.*Mobile Safari/i.test(ua)&&!/EdgA|OPR\//i.test(ua));
  const appSection=isWebView?'app_apk':(standalone?'app_pwa':null);
  if(appSection)recordSiteVisit(appSection,'app_open');
- if(standalone&&!localStorage.getItem('dalil_pwa_install_event_v1'))recordSiteVisit('app_pwa','app_install').then(ok=>{if(ok)try{localStorage.setItem('dalil_pwa_install_event_v1','1')}catch(e){}});
+ if(standalone&&!localStorage.getItem('dalil_pwa_install_event_v1'))recordSiteVisit('app_pwa','app_install');
  recordSiteVisit('home');
  document.addEventListener('click',e=>{
   const el=e.target.closest('a,button,[data-cat]');
