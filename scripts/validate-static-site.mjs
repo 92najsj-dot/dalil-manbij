@@ -17,7 +17,8 @@ for (const file of htmlFiles) {
     if (end < 0) throw new Error(file + ': unterminated script block');
     const attrs = html.slice(start + 7, openEnd);
     const body = html.slice(openEnd + 1, end);
-    if (!/src\\s*=/i.test(attrs) && !/application\\/(?:ld\\+json|importmap)/i.test(attrs)) {
+    const lowerAttrs = attrs.toLowerCase();
+    if (!lowerAttrs.includes('src=') && !lowerAttrs.includes('application/ld+json') && !lowerAttrs.includes('application/importmap')) {
       new vm.Script(body, { filename: file + '#inline-script-' + (++checked) });
     }
     cursor = end + 9;
@@ -32,6 +33,7 @@ if (!Array.isArray(manifest.icons) || !manifest.icons.some(icon => icon.src.incl
 const sw = fs.readFileSync('sw.js', 'utf8');
 new vm.Script(sw, { filename: 'sw.js' });
 if (!sw.includes('/storage/v1/object/public/manbij-images/')) throw new Error('Public image cache route missing');
+if (!sw.includes('dalil-manbij-public-api-v1') || !sw.includes('PUBLIC_SUPABASE_KEY')) throw new Error('Anonymous public API cache missing');
 if (!sw.includes('while (keys.length > 40)')) throw new Error('Public image cache eviction limit missing');
 const guest = fs.readFileSync('supabase/functions/guest-listing/index.ts', 'utf8');
 if (!guest.includes('cacheControl: "31536000"')) throw new Error('Guest image cache TTL not updated');
