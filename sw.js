@@ -1,4 +1,4 @@
-const CACHE_NAME = "dalil-manbij-shell-v11";
+const CACHE_NAME = "dalil-manbij-shell-v12";
 const CORE_SHELL = [
   "./",
   "./index.html",
@@ -45,7 +45,34 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
-  if (request.method !== "GET" || url.origin !== self.location.origin) return;
+  if (request.method !== "GET") return;
+
+  // Public listing images use immutable object paths. Cache locally on each device
+  // to avoid repeatedly downloading the same large photos on revisits.
+  const isDalilPublicImage = url.origin === "https://keadoflmrwqpdjauzbhc.supabase.co" &&
+    url.pathname.startsWith("/storage/v1/object/public/manbij-images/") &&
+    request.destination === "image";
+  if (isDalilPublicImage) {
+    event.respondWith((async () => {
+      const cache = await caches.open("dalil-manbij-public-images-v1");
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response && (response.ok || response.type === "opaque")) {
+        try {
+          await cache.put(request, response.clone());
+          const keys = await cache.keys();
+          while (keys.length > 40) await cache.delete(keys.shift());
+        } catch (error) {
+          console.warn("Public image cache skipped:", error);
+        }
+      }
+      return response;
+    })());
+    return;
+  }
+
+  if (url.origin !== self.location.origin) return;
 
   // Do not cache live database, authentication, or storage requests.
   if (url.pathname.includes("/rest/v1/") ||
