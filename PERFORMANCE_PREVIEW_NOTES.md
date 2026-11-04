@@ -4,6 +4,7 @@ Branch: `perf/resource-optimization-preview-20261104`
 
 ## Included changes
 - Service worker caches up to 40 public `manbij-images` image responses per device. Original Storage objects are not changed or deleted.
+- Service worker caches only anonymous GET responses from an explicit allowlist of public directory tables for 30 seconds, with a 6-hour stale fallback on errors. Authenticated requests, favorites, personal ads, and admin endpoints bypass this cache.
 - New guest listing uploads are optimized in the browser using the existing WebP optimizer and receive a one-year browser cache TTL on their unique object paths.
 - Listing images use lazy loading, asynchronous decoding, and low fetch priority.
 - Site analytics are queued and sent in batches of up to 20 events. The browser falls back to the existing single-event RPC until the batch migration is installed.
