@@ -59,7 +59,7 @@ begin
   if p_events is null or jsonb_typeof(p_events) <> 'array' then
     return 0;
   end if;
-  if jsonb_array_length(p_events) = 0 then
+  if jsonb_array_length(p_events) = 0 or jsonb_array_length(p_events) > 20 then
     return 0;
   end if;
 
