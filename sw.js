@@ -75,6 +75,11 @@ self.addEventListener("fetch", (event) => {
         if (response && response.ok && response.type === "cors") {
           try {
             const headers = new Headers(response.headers);
+            // Fetch exposes a decoded body; do not retain transport encoding/length headers.
+            headers.delete("content-encoding");
+            headers.delete("content-length");
+            headers.delete("transfer-encoding");
+            headers.delete("connection");
             headers.set("x-dalil-cache-time", String(Date.now()));
             const stored = new Response(response.clone().body, {
               status: response.status,
