@@ -1,0 +1,19 @@
+name: Preview static quality checks
+on:
+  push:
+    branches:
+      - perf/resource-optimization-preview-20261104
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/validate-static-site.mjs
