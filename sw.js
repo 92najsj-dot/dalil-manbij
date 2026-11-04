@@ -1,4 +1,4 @@
-const CACHE_NAME = "dalil-manbij-shell-v11";
+const CACHE_NAME = "dalil-manbij-shell-v12";
 const CORE_SHELL = [
   "./",
   "./index.html",
@@ -45,7 +45,91 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
-  if (request.method !== "GET" || url.origin !== self.location.origin) return;
+  if (request.method !== "GET") return;
+
+  // Cache only anonymous reads from explicitly public directory tables.
+  // Authenticated requests (favorites, personal ads, admin data) never enter this cache.
+  const PUBLIC_SUPABASE_KEY = "sb_publishable_S2ytDQHuffiAdwk5-2Ckug_sO1jBg-G";
+  const publicTable = url.pathname.split("/").pop();
+  const publicTables = new Set([
+    "business_categories", "businesses", "listings", "wanted_requests",
+    "local_offers", "promotions", "site_banners", "public_profiles"
+  ]);
+  const isAnonymousPublicRead =
+    url.origin === "https://keadoflmrwqpdjauzbhc.supabase.co" &&
+    url.pathname.startsWith("/rest/v1/") &&
+    publicTables.has(publicTable) &&
+    request.headers.get("apikey") === PUBLIC_SUPABASE_KEY &&
+    request.headers.get("authorization") === "Bearer " + PUBLIC_SUPABASE_KEY;
+
+  if (isAnonymousPublicRead) {
+    event.respondWith((async () => {
+      const cache = await caches.open("dalil-manbij-public-api-v1");
+      const cached = await cache.match(request);
+      const cachedAt = cached ? Number(cached.headers.get("x-dalil-cache-time") || 0) : 0;
+      const cacheAge = cachedAt ? Date.now() - cachedAt : Number.POSITIVE_INFINITY;
+      if (cached && cacheAge <= 30000) return cached;
+
+      try {
+        const response = await fetch(request);
+        if (response && response.ok && response.type === "cors") {
+          try {
+            const headers = new Headers(response.headers);
+            // Fetch exposes a decoded body; do not retain transport encoding/length headers.
+            headers.delete("content-encoding");
+            headers.delete("content-length");
+            headers.delete("transfer-encoding");
+            headers.delete("connection");
+            headers.set("x-dalil-cache-time", String(Date.now()));
+            const stored = new Response(response.clone().body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers
+            });
+            await cache.put(request, stored);
+            const keys = await cache.keys();
+            while (keys.length > 80) await cache.delete(keys.shift());
+          } catch (error) {
+            console.warn("Public API cache skipped:", error);
+          }
+        } else if (cached && cacheAge <= 6 * 60 * 60 * 1000) {
+          return cached;
+        }
+        return response;
+      } catch (error) {
+        if (cached && cacheAge <= 6 * 60 * 60 * 1000) return cached;
+        throw error;
+      }
+    })());
+    return;
+  }
+
+  // Public listing images use immutable object paths. Cache locally on each device
+  // to avoid repeatedly downloading the same large photos on revisits.
+  const isDalilPublicImage = url.origin === "https://keadoflmrwqpdjauzbhc.supabase.co" &&
+    url.pathname.startsWith("/storage/v1/object/public/manbij-images/") &&
+    request.destination === "image";
+  if (isDalilPublicImage) {
+    event.respondWith((async () => {
+      const cache = await caches.open("dalil-manbij-public-images-v1");
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response && (response.ok || response.type === "opaque")) {
+        try {
+          await cache.put(request, response.clone());
+          const keys = await cache.keys();
+          while (keys.length > 40) await cache.delete(keys.shift());
+        } catch (error) {
+          console.warn("Public image cache skipped:", error);
+        }
+      }
+      return response;
+    })());
+    return;
+  }
+
+  if (url.origin !== self.location.origin) return;
 
   // Do not cache live database, authentication, or storage requests.
   if (url.pathname.includes("/rest/v1/") ||

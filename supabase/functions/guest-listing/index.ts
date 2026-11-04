@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
     for (const file of files) {
       const ext = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/avif": "avif" } as Record<string, string>)[file.type];
       const path = `guest-listings/${crypto.randomUUID()}.${ext}`;
-      const upload = await client.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false, cacheControl: "3600" });
+      const upload = await client.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false, cacheControl: "31536000" });
       if (upload.error) throw new Error("تعذّر رفع إحدى الصور. حاول مرة أخرى.");
       const { data } = client.storage.from(BUCKET).getPublicUrl(path);
       imageUrls.push(data.publicUrl);
